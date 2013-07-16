@@ -725,8 +725,6 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			targetList.add(pair.getValB());
 		}
 		
-		// Sanity check
-		assert curInst.getSuccessorCount() == 2;
 		List<AnalyzedDexInstruction> switchSuccessors = curInst.getSuccesors();
 		// Note: targetList may have duplicated entries.
 		//assert switchSuccessors.size() <= targetList.size();
