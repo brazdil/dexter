@@ -938,9 +938,9 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			operands_list.add(arguments.get(regIndex++));
 		}
 		// Filter out high reg for long/double type
-		// We are not in interested in 'this' parameter
-		for(int i=0 ;i<prototype.getParameterCount(false); i++) {
-			DexRegisterType paramType = prototype.getParameterType(i, false, null);
+		// We are not in interested in 'this' parameter so force it to be static
+		for(int i=0 ;i<prototype.getParameterCount(true); i++) {
+			DexRegisterType paramType = prototype.getParameterType(i, true, null);
 			operands_list.add(arguments.get(regIndex));
 			regIndex += paramType.getRegisters();
 		}

@@ -385,8 +385,8 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		}
 		
 		// We don't want to see 'this' parameter here.
-		for(int i=0 ;i<prototype.getParameterCount(false); i++) {
-			DexRegisterType paramType = prototype.getParameterType(i, false, null);
+		for(int i=0 ;i<prototype.getParameterCount(true); i++) {
+			DexRegisterType paramType = prototype.getParameterType(i, true, null);
 			useFreezedRegister(arguments.get(regIndex), RopType.getRopType(paramType));
 			regIndex += paramType.getRegisters();
 		}
