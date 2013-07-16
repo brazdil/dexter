@@ -7,8 +7,9 @@ import org.jf.dexlib.Code.Format.Instruction21t;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.code.Utils;
+import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
-public class DexInstruction_IfTestZero_Test {
+public class DexInstruction_IfTestZero_Test extends HierarchyTest {
 
   @Test
   public void testParse_IfTestZero() {
@@ -33,6 +34,7 @@ public class DexInstruction_IfTestZero_Test {
         "if-lez v180, L13",
         "L13:",
         "nop"
-      });
+      },
+      this.hierarchy);
   }
 }

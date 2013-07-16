@@ -1,18 +1,15 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import lombok.val;
-
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.Utils;
+import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
-public class DexInstruction_BinaryOp_Test {
+public class DexInstruction_BinaryOp_Test extends HierarchyTest {
 
   @Test
   public void testParse_BinaryOp() throws InstructionParseError {
@@ -33,7 +30,23 @@ public class DexInstruction_BinaryOp_Test {
         new Instruction23x(Opcode.SUB_FLOAT, (short) 234, (short) 235, (short) 236),
         new Instruction23x(Opcode.MUL_FLOAT, (short) 234, (short) 235, (short) 236),
         new Instruction23x(Opcode.DIV_FLOAT, (short) 234, (short) 235, (short) 236),
-        new Instruction23x(Opcode.REM_FLOAT, (short) 234, (short) 235, (short) 236)
+        new Instruction23x(Opcode.REM_FLOAT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.ADD_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SUB_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.MUL_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.DIV_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.REM_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.AND_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.OR_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.XOR_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SHL_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SHR_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.USHR_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.ADD_DOUBLE, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SUB_DOUBLE, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.MUL_DOUBLE, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.DIV_DOUBLE, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.REM_DOUBLE, (short) 234, (short) 235, (short) 236)
       }, new String[] {
         "add-int v234, v235, v236",
         "sub-int v234, v235, v236",
@@ -50,8 +63,25 @@ public class DexInstruction_BinaryOp_Test {
         "sub-float v234, v235, v236",
         "mul-float v234, v235, v236",
         "div-float v234, v235, v236",
-        "rem-float v234, v235, v236"
-      });
+        "rem-float v234, v235, v236",
+        "add-long v234|v235, v235|v236, v236|v237",
+        "sub-long v234|v235, v235|v236, v236|v237",
+        "mul-long v234|v235, v235|v236, v236|v237",
+        "div-long v234|v235, v235|v236, v236|v237",
+        "rem-long v234|v235, v235|v236, v236|v237",
+        "and-long v234|v235, v235|v236, v236|v237",
+        "or-long v234|v235, v235|v236, v236|v237",
+        "xor-long v234|v235, v235|v236, v236|v237",
+        "shl-long v234|v235, v235|v236, v236|v237",
+        "shr-long v234|v235, v235|v236, v236|v237",
+        "ushr-long v234|v235, v235|v236, v236|v237",
+        "add-double v234|v235, v235|v236, v236|v237",
+        "sub-double v234|v235, v235|v236, v236|v237",
+        "mul-double v234|v235, v235|v236, v236|v237",
+        "div-double v234|v235, v235|v236, v236|v237",
+        "rem-double v234|v235, v235|v236, v236|v237"
+      },
+      this.hierarchy);
   }
 
   @Test
@@ -74,6 +104,22 @@ public class DexInstruction_BinaryOp_Test {
         new Instruction12x(Opcode.MUL_FLOAT_2ADDR, (byte) 2, (byte) 10),
         new Instruction12x(Opcode.DIV_FLOAT_2ADDR, (byte) 2, (byte) 10),
         new Instruction12x(Opcode.REM_FLOAT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.ADD_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.SUB_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.MUL_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.DIV_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.REM_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.AND_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.OR_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.XOR_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.SHL_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.SHR_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.USHR_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.ADD_DOUBLE_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.SUB_DOUBLE_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.MUL_DOUBLE_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.DIV_DOUBLE_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.REM_DOUBLE_2ADDR, (byte) 4, (byte) 14)
       }, new String[] {
         "add-int v2, v2, v10",
         "sub-int v2, v2, v10",
@@ -91,22 +137,23 @@ public class DexInstruction_BinaryOp_Test {
         "mul-float v2, v2, v10",
         "div-float v2, v2, v10",
         "rem-float v2, v2, v10",
-      });
-  }
-
-    @Test
-  public void testInstrument() {
-    val reg1 = new DexRegister(0);
-    val reg2 = new DexRegister(1);
-    val reg3 = new DexRegister(2);
-    val code = new DexCode();
-    code.add(new DexInstruction_BinaryOp(code, reg1, reg2, reg3, Opcode_BinaryOp.XorInt));
-
-    Utils.instrumentAndCompare(
-      code,
-      new String[] {
-        "xor-int v0, v1, v2",
-        "or-int v3, v4, v5"
-      });
+        "add-long v4|v5, v4|v5, v14|v15",
+        "sub-long v4|v5, v4|v5, v14|v15",
+        "mul-long v4|v5, v4|v5, v14|v15",
+        "div-long v4|v5, v4|v5, v14|v15",
+        "rem-long v4|v5, v4|v5, v14|v15",
+        "and-long v4|v5, v4|v5, v14|v15",
+        "or-long v4|v5, v4|v5, v14|v15",
+        "xor-long v4|v5, v4|v5, v14|v15",
+        "shl-long v4|v5, v4|v5, v14|v15",
+        "shr-long v4|v5, v4|v5, v14|v15",
+        "ushr-long v4|v5, v4|v5, v14|v15",
+        "add-double v4|v5, v4|v5, v14|v15",
+        "sub-double v4|v5, v4|v5, v14|v15",
+        "mul-double v4|v5, v4|v5, v14|v15",
+        "div-double v4|v5, v4|v5, v14|v15",
+        "rem-double v4|v5, v4|v5, v14|v15"
+      },
+      this.hierarchy);
   }
 }
