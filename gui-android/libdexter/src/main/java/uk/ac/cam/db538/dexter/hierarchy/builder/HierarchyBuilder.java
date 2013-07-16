@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -280,28 +281,32 @@ public class HierarchyBuilder implements Serializable {
 			fos.close();
 		}
 	}
-	
+
 	public static HierarchyBuilder deserialize(File inputFile) throws IOException {
 		val fis = new FileInputStream(inputFile);
 		try {
-			val ois = new ObjectInputStream(new BufferedInputStream(fis));
-			try {
-				Object hierarchy;
-				try {
-					hierarchy = ois.readObject();
-				} catch (ClassNotFoundException ex) {
-					throw new HierarchyException(ex);
-				}
-				
-				if (hierarchy instanceof HierarchyBuilder)
-					return (HierarchyBuilder) hierarchy;
-				else
-					throw new HierarchyException("Input file does not contain an instance of HierarchyBuilder");
-			} finally {
-				ois.close();
-			}
+			return deserialize(fis);
 		} finally {
 			fis.close();
+		}
+	}
+	
+	public static HierarchyBuilder deserialize(InputStream is) throws IOException {
+		val ois = new ObjectInputStream(new BufferedInputStream(is));
+		try {
+			Object hierarchy;
+			try {
+				hierarchy = ois.readObject();
+			} catch (ClassNotFoundException ex) {
+				throw new HierarchyException(ex);
+			}
+			
+			if (hierarchy instanceof HierarchyBuilder)
+				return (HierarchyBuilder) hierarchy;
+			else
+				throw new HierarchyException("Input file does not contain an instance of HierarchyBuilder");
+		} finally {
+			ois.close();
 		}
 	}
 	

@@ -1,13 +1,13 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import lombok.val;
 
+import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.StringIdItem;
@@ -15,45 +15,37 @@ import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class Utils {
 
-  public static DexCodeElement parseAndCompare(Instruction insn, String output) {
-    DexCode code = new DexCode(new Instruction[] { insn }, new DexTypeCache());
+  private static InstructionList parse(Instruction[] insns, RuntimeHierarchy hierarchy) {
+	  val codeItem = CodeItem.internCodeItem(null, 16, 16, 16, null, Arrays.asList(insns), null, null);
+	  val parserCache = new CodeParserState(codeItem, hierarchy);
 
-    val insnList = code.getInstructionList();
+	  val insnsList = new ArrayList<DexCodeElement>();
+	  for (val insn : insns)
+		  insnsList.add(CodeParser.parseInstruction(insn, parserCache));
+	  return new InstructionList(insnsList);
+  }
+	
+  public static DexCodeElement parseAndCompare(Instruction insn, String output, RuntimeHierarchy hierarchy) {
+    val insnList = parse(new Instruction[] { insn }, hierarchy);
 
     assertEquals(1, insnList.size());
 
     val insnInsn = insnList.get(0);
-    assertEquals(output, insnInsn.getOriginalAssembly());
+    assertEquals(output, insnInsn.toString());
 
     return insnInsn;
   }
 
-  public static void parseAndCompare(Instruction[] insns, String[] output) {
-    DexCode code;
-    try {
-      code = new DexCode(insns, new DexTypeCache());
-    } catch (UnknownTypeException e) {
-      fail(e.getClass().getName() + ": " + e.getMessage());
-      return;
-    }
-
-    val insnList = code.getInstructionList();
+  public static void parseAndCompare(Instruction[] insns, String[] output, RuntimeHierarchy hierarchy) {
+    val insnList = parse(insns, hierarchy);
 
     assertEquals(output.length, insnList.size());
     for (int i = 0; i < output.length; ++i)
-      assertEquals(output[i], insnList.get(i).getOriginalAssembly());
-  }
-
-  public static Map<DexRegister, Integer> genRegAlloc(DexRegister ... regs) {
-    val regAlloc = new HashMap<DexRegister, Integer>();
-    for (val reg : regs)
-      regAlloc.put(reg, reg.getOriginalIndex());
-    return regAlloc;
+      assertEquals(output[i], insnList.get(i).toString());
   }
 
   public static long numFitsInto_Signed(int bits) {
@@ -64,13 +56,13 @@ public class Utils {
     return (1 << bits) - 1;
   }
 
-  public static void instrumentAndCompare(DexCode code, String[] output) {
-    code.instrument();
-    val insnList = code.getInstructionList();
-    assertEquals(output.length, insnList.size());
-    for (int i = 0; i < output.length; ++i)
-      assertEquals(output[i], insnList.get(i).getOriginalAssembly());
-  }
+//  public static void instrumentAndCompare(DexCode code, String[] output) {
+//    code.instrument();
+//    val insnList = code.getInstructionList();
+//    assertEquals(output.length, insnList.size());
+//    for (int i = 0; i < output.length; ++i)
+//      assertEquals(output[i], insnList.get(i).getOriginalAssembly());
+//  }
 
   public static TypeIdItem getTypeItem(String desc) {
     return TypeIdItem.internTypeIdItem(new DexFile(), desc);

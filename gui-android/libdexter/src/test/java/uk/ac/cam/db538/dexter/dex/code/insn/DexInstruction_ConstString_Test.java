@@ -6,8 +6,9 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.code.Utils;
+import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
-public class DexInstruction_ConstString_Test {
+public class DexInstruction_ConstString_Test extends HierarchyTest {
 
   @Test
   public void testParse() throws InstructionParseError {
@@ -24,6 +25,7 @@ public class DexInstruction_ConstString_Test {
         "const-string v238, \"123456789012345\"",
         "const-string v239, \"123456789012345...\"",
         "const-string v240, \"12345678901234\\...\""
-      });
+      },
+      this.hierarchy);
   }
 }

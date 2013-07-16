@@ -230,7 +230,7 @@ public abstract class CodeParser {
 		return new InstructionList(finalInstructionList);
 	}
 
-	  private static DexInstruction parseInstruction(Instruction insn, CodeParserState parsingCache) {
+	  static DexInstruction parseInstruction(Instruction insn, CodeParserState parsingCache) {
 		    switch (insn.opcode) {
 
 		    case NOP:
