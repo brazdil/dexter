@@ -120,7 +120,7 @@ public class AnalyzedDexInstruction {
 	    	}
 	    }
 		public Set<DexRegister> getUsedRegisters() {
-			return usedRegisterMap.keySet();
+			return useSet.keySet();
 		}
 		
 	    public RopType getUsedRegisterType(DexRegister reg) {
@@ -136,7 +136,7 @@ public class AnalyzedDexInstruction {
 	    }
 
 		public Set<DexRegister> getDefinedRegisters() {
-			return definedRegisterMap.keySet();
+			return defSet.keySet();
 		}
 
 		public RopType getDefinedRegisterType(DexRegister reg) {
