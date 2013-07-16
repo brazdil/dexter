@@ -57,7 +57,7 @@ public class ControlFlowGraph {
 
       currentBlock.add(insn);
 
-      if ((insn.cfgEndsBasicBlock() || insn.cfgExitsMethod() || insn.cfgGetSuccessors().size() > 1) && !currentBlock.isEmpty()) {
+      if ((insn.cfgEndsBasicBlock() || insn.cfgExitsMethod(insns) || insn.cfgGetSuccessors(insns).size() > 1) && !currentBlock.isEmpty()) {
         val block = new CfgBasicBlock(new InstructionList(currentBlock));
         basicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
@@ -83,13 +83,13 @@ public class ControlFlowGraph {
       // provided by each instruction
       for (val block : basicBlocks) {
         val lastInsn = block.getLastInstruction();
-        val lastInsnSuccs = lastInsn.cfgGetSuccessors();
+        val lastInsnSuccs = lastInsn.cfgGetSuccessors(insns);
 
         for (val succ : lastInsnSuccs)
           CfgBlock.createEdge(block, getBlockByFirstInsn(succ, insnBlockMap));
 
         // if a block ends with a returning instruction connect it to EXIT
-        if (lastInsn.cfgExitsMethod() || lastInsnSuccs.isEmpty())
+        if (lastInsn.cfgExitsMethod(insns) || lastInsnSuccs.isEmpty())
           CfgBlock.createEdge(block, exitBlock);
       }
     }

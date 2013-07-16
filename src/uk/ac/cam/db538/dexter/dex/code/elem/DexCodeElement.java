@@ -26,7 +26,7 @@ public abstract class DexCodeElement {
     return false;
   }
 
-  public boolean cfgExitsMethod() {
+  public boolean cfgExitsMethod(InstructionList code) {
     return false;
   }
 
@@ -34,9 +34,9 @@ public abstract class DexCodeElement {
 	return Sets.newHashSet(code.getFollower(this));
   }
 
-  public Set<DexCodeElement> cfgGetSuccessors() {
+  public Set<DexCodeElement> cfgGetSuccessors(InstructionList code) {
     val set = new HashSet<DexCodeElement>();
-    for (DexCodeElement target : cfgJumpTargets(null))
+    for (DexCodeElement target : cfgJumpTargets(code))
     	set.add(target);
     return set;
   }

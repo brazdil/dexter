@@ -33,8 +33,8 @@ public abstract class DexInstruction extends DexCodeElement {
   // THROWING INSTRUCTIONS
 
   @Override
-  public final boolean cfgExitsMethod() {
-	val jumpTargets = this.cfgJumpTargets(null);
+  public final boolean cfgExitsMethod(InstructionList code) {
+	val jumpTargets = this.cfgJumpTargets(code);
 	if (jumpTargets.isEmpty())
 		return true;
     val exceptions = this.throwsExceptions();
@@ -57,13 +57,13 @@ public abstract class DexInstruction extends DexCodeElement {
   }
 
   @Override
-  public final Set<DexCodeElement> cfgGetSuccessors() {
+  public final Set<DexCodeElement> cfgGetSuccessors(InstructionList code) {
 	  // uses the DexCodeElement definition of cfgGetSuccessors
 	  // (non-throwing semantics) but adds behavior after exceptions
 	  // are thrown
 	  
-	  val set = super.cfgGetSuccessors();
-	  set.addAll(cfgGetExceptionSuccessors(null));
+	  val set = super.cfgGetSuccessors(code);
+	  set.addAll(cfgGetExceptionSuccessors(code));
 	  
 	  return set;
   }

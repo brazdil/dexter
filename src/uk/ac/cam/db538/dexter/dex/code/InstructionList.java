@@ -112,6 +112,10 @@ public class InstructionList implements Collection<DexCodeElement> {
 		instructionList.clear();
 	}
 	
+	public DexCodeElement get(int index) {
+		return instructionList.get(index);
+	}
+	
 	public int getIndex(DexCodeElement elem) {
 		int index = instructionList.indexOf(elem);
 		if (index < 0)

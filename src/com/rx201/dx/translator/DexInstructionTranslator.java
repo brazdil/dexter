@@ -167,7 +167,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				result.addSuccessor(result.primarySuccessor);
 			}
 		} else {
-			assert inst.getInstruction() == null || inst.getInstruction().cfgExitsMethod();
+			assert inst.getInstruction() == null || inst.getInstruction().cfgExitsMethod(null);
 		}
 		
 		return result;
