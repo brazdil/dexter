@@ -89,7 +89,7 @@ public abstract class CodeParser {
 		val regCount = codeItem.getRegisterCount();
 		
 		val params = new ArrayList<Parameter>(paramCount);
-		int regId = regCount - paramRegCount - 1;
+		int regId = regCount - paramRegCount;
 		
 		for (int i = 0; i < paramCount; i++) {
 			val paramType = prototype.getParameterType(i, isStatic, definingClass);
