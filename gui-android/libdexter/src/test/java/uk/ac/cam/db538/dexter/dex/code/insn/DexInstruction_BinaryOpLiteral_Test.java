@@ -7,8 +7,9 @@ import org.jf.dexlib.Code.Format.Instruction22s;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.code.Utils;
+import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
-public class DexInstruction_BinaryOpLiteral_Test {
+public class DexInstruction_BinaryOpLiteral_Test extends HierarchyTest {
 
   @Test
   public void testParse_BinaryOp() throws InstructionParseError {
@@ -53,6 +54,7 @@ public class DexInstruction_BinaryOpLiteral_Test {
         "shl-int/lit v200, v215, #-120",
         "shr-int/lit v200, v215, #-120",
         "ushr-int/lit v200, v215, #-120"
-      });
+      },
+      this.hierarchy);
   }
 }

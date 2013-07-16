@@ -1,49 +1,12 @@
 package uk.ac.cam.db538.dexter.hierarchy;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-
-import lombok.val;
-
-import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
-
-public class BaseClassDefinition_Test {
-
-	private RuntimeHierarchy hierarchy;
-	private DexTypeCache typeCache;
-	
-	private ClassDefinition classObject;
-	private ClassDefinition classThrowable;
-	private ClassDefinition classException;
-	private ClassDefinition classError;
-	private InterfaceDefinition classList;
-	
-	@Before
-	public void setUp() throws Exception {
-		hierarchy = HierarchyBuilder.deserialize(new File("test/hierarchy.dump")).build();
-		typeCache = hierarchy.getTypeCache();
-		
-		val typeObject = DexClassType.parse("Ljava/lang/Object;", typeCache);
-		classObject = hierarchy.getClassDefinition(typeObject);
-
-		val typeThrowable = DexClassType.parse("Ljava/lang/Throwable;", typeCache);
-		classThrowable = hierarchy.getClassDefinition(typeThrowable);
-
-		val typeException = DexClassType.parse("Ljava/lang/Exception;", typeCache);
-		classException = hierarchy.getClassDefinition(typeException);
-
-		val typeError = DexClassType.parse("Ljava/lang/Error;", typeCache);
-		classError = hierarchy.getClassDefinition(typeError);
-		
-		val typeList = DexClassType.parse("Ljava/util/List;", typeCache);
-		classList = hierarchy.getInterfaceDefinition(typeList);
-	}
+public class BaseClassDefinition_Test extends HierarchyTest {
 
 	@Test
 	public void test_IsRoot() {

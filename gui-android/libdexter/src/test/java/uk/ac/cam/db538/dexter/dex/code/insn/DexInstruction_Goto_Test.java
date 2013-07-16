@@ -10,8 +10,9 @@ import org.jf.dexlib.Code.Format.Instruction32x;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.code.Utils;
+import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
-public class DexInstruction_Goto_Test {
+public class DexInstruction_Goto_Test extends HierarchyTest {
 
   @Test
   public void testGoto() {
@@ -25,7 +26,8 @@ public class DexInstruction_Goto_Test {
         "nop",
         "goto L0",
         "nop"
-      });
+      },
+      this.hierarchy);
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction32x(Opcode.MOVE_16, 12345, 23456),
@@ -36,7 +38,8 @@ public class DexInstruction_Goto_Test {
         "goto L4",
         "L4:",
         "nop"
-      });
+      },
+      this.hierarchy);
   }
 
   @Test
@@ -51,7 +54,8 @@ public class DexInstruction_Goto_Test {
         "nop",
         "goto L0",
         "nop"
-      });
+      },
+      this.hierarchy);
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction32x(Opcode.MOVE_16, 12345, 23456),
@@ -62,7 +66,8 @@ public class DexInstruction_Goto_Test {
         "goto L5",
         "L5:",
         "nop"
-      });
+      },
+      this.hierarchy);
   }
 
   @Test
@@ -77,7 +82,8 @@ public class DexInstruction_Goto_Test {
         "nop",
         "goto L0",
         "nop"
-      });
+      },
+      this.hierarchy);
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction32x(Opcode.MOVE_16, 12345, 23456),
@@ -88,6 +94,7 @@ public class DexInstruction_Goto_Test {
         "goto L6",
         "L6:",
         "nop"
-      });
+      },
+      this.hierarchy);
   }
 }
