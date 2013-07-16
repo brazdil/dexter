@@ -728,18 +728,19 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		List<AnalyzedDexInstruction> switchSuccessors = curInst.getSuccesors();
 		// Note: targetList may have duplicated entries.
 		//assert switchSuccessors.size() <= targetList.size();
+		AnalyzedDexInstruction defaultSuccessor = null;
 		HashSet<DexCodeElement> set0 = new HashSet<DexCodeElement>(targetList);
 		HashSet<DexCodeElement> set1 = new HashSet<DexCodeElement>();
-		for(int i=0; i<switchSuccessors.size(); i++)
-			set1.add(switchSuccessors.get(i).auxillaryElement);
-		assert set0.equals(set1);
-
-		AnalyzedDexInstruction defaultSuccessor;
-		if (curInst.getSuccesors().get(0).auxillaryElement == instruction.getSwitchTable())
-			defaultSuccessor = curInst.getSuccesors().get(1);
-		else 
-			defaultSuccessor = curInst.getSuccesors().get(0);
-			
+		for(int i=0; i<switchSuccessors.size(); i++) {
+			AnalyzedDexInstruction suc = switchSuccessors.get(i);
+			if (set0.contains(suc.getCodeElement())) {
+				set0.remove(suc.getCodeElement());
+			} else {
+				assert defaultSuccessor == null;
+				defaultSuccessor = suc;
+			}
+		}
+		assert set0.isEmpty();
 
 		// Overwrite result.successor here, according to the requirement of Rops.SWITCH
 		result.successors.clear();
