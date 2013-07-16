@@ -697,13 +697,8 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	        }
 		}
 		
-			
 		result.addInstruction(new FillArrayDataInsn(Rops.FILL_ARRAY_DATA, SourcePosition.NO_INFO,
 				makeOperands(instruction.getRegArray()), values, arrayType));
-		
-		// Skip DexLabel and DexInstruction_FillArrayData
-		AnalyzedDexInstruction successor = curInst.getOnlySuccesor().getOnlySuccesor().getOnlySuccesor();
-		result.setPrimarySuccessor(successor).addSuccessor(successor);
 	}
 
 
@@ -928,25 +923,11 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_Invoke instruction) {
 		Rop opcode = null;
-		ArrayList<DexRegister> operands_list = new ArrayList<DexRegister>();
-		
 		List<DexStandardRegister> arguments = instruction.getArgumentRegisters();
-		DexPrototype prototype = instruction.getMethodId().getPrototype();
-		
-		int regIndex = 0;
-		if (!instruction.getCallType().isStatic()) {
-			operands_list.add(arguments.get(regIndex++));
-		}
-		// Filter out high reg for long/double type
-		// We are not in interested in 'this' parameter so force it to be static
-		for(int i=0 ;i<prototype.getParameterCount(true); i++) {
-			DexRegisterType paramType = prototype.getParameterType(i, true, null);
-			operands_list.add(arguments.get(regIndex));
-			regIndex += paramType.getRegisters();
-		}
 
-		DexRegister[] operands_array = operands_list.toArray(new DexRegister[operands_list.size()]);
+		DexRegister[] operands_array = arguments.toArray(new DexRegister[arguments.size()]);
 		RegisterSpecList operands = makeOperands(operands_array);
+		
 		switch(instruction.getCallType()) {
 		case Direct:
 			opcode = new Rop(RegOps.INVOKE_DIRECT, operands, StdTypeList.THROWABLE);
