@@ -50,19 +50,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
-import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_FilledNewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalClassAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetMethodCaller;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetQueryTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetServiceTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintIntegerConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
@@ -1209,97 +1196,6 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_Unknown instruction) {
 		// should not happen
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_FilledNewArray instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_GetInternalClassAnnotation instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_GetInternalMethodAnnotation instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_GetMethodCaller instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_GetObjectTaint instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_GetQueryTaint instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_GetServiceTaint instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_PrintInteger instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_PrintIntegerConst instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_PrintString instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_PrintStringConst instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexMacro_SetObjectTaint instruction) {
-		// macro instruction should have already been unwrapped.
-		assert false;
-	}
-
-
-	@Override
-	public void visit(DexPseudoinstruction_Invoke instruction) {
-		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 }

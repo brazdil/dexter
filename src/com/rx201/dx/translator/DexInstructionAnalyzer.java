@@ -42,19 +42,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
-import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_FilledNewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalClassAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetMethodCaller;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetQueryTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetServiceTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintIntegerConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
@@ -592,44 +579,4 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	public void visit(DexInstruction_Unknown instruction) {
 		assert false;
 	}
-
-	@Override
-	public void visit(DexMacro_FilledNewArray DexMacro_FilledNewArray) {}
-
-	@Override
-	public void visit(DexMacro_GetInternalClassAnnotation DexMacro_GetInternalClassAnnotation) {}
-
-	@Override
-	public void visit(DexMacro_GetInternalMethodAnnotation DexMacro_GetInternalMethodAnnotation) {}
-
-	@Override
-	public void visit(DexMacro_GetMethodCaller DexMacro_GetMethodCaller) {}
-
-	@Override
-	public void visit(DexMacro_GetObjectTaint DexMacro_GetObjectTaint) {}
-
-	@Override
-	public void visit(DexMacro_GetQueryTaint DexMacro_GetQueryTaint) {}
-
-	@Override
-	public void visit(DexMacro_GetServiceTaint DexMacro_GetServiceTaint) {}	
-	
-	@Override
-	public void visit(DexMacro_PrintInteger DexMacro_PrintInteger) {}
-
-	@Override
-	public void visit(DexMacro_PrintIntegerConst DexMacro_PrintIntegerConst) {}
-
-	@Override
-	public void visit(DexMacro_PrintString DexMacro_PrintString) {}	
-	
-	@Override
-	public void visit(DexMacro_PrintStringConst DexMacro_PrintStringConst) {}
-
-	@Override
-	public void visit(DexMacro_SetObjectTaint DexMacro_SetObjectTaint) {}
-	
-	@Override
-	public void visit(DexPseudoinstruction_Invoke DexMacro_Invoke) {}
-	
 };

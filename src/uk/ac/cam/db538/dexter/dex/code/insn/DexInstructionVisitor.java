@@ -1,18 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_FilledNewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalClassAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetMethodCaller;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetQueryTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetServiceTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintIntegerConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
 
 public interface DexInstructionVisitor {
 
@@ -83,30 +70,4 @@ public interface DexInstructionVisitor {
 	void visit(DexInstruction_BinaryOpLiteral instruction);
 
 	void visit(DexInstruction_Unknown instruction);
-
-	void visit(DexMacro_FilledNewArray instruction);
-
-	void visit(DexMacro_GetInternalClassAnnotation instruction);
-
-	void visit(DexMacro_GetInternalMethodAnnotation instruction);
-
-	void visit(DexMacro_GetMethodCaller instruction);
-
-	void visit(DexMacro_GetObjectTaint instruction);
-
-	void visit(DexMacro_GetQueryTaint instruction);
-
-	void visit(DexMacro_GetServiceTaint instruction);
-
-	void visit(DexMacro_PrintInteger instruction);
-
-	void visit(DexMacro_PrintIntegerConst instruction);
-
-	void visit(DexMacro_PrintString instruction);
-
-	void visit(DexMacro_PrintStringConst instruction);
-
-	void visit(DexMacro_SetObjectTaint instruction);
-
-    void visit(DexPseudoinstruction_Invoke instruction);
 }
