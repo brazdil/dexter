@@ -1,1 +1,1 @@
-include ':Dexter', ':libdexter'
+include ':Dexter', ':libdexter:smali:dexlib'

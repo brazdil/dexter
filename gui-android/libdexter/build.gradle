@@ -1,28 +1,15 @@
-import org.ajoberstar.gradle.git.tasks.*
-
-apply plugin: 'java'
-apply plugin: 'eclipse'
-
-buildscript {
-  repositories { mavenCentral() }
-  dependencies { classpath 'org.ajoberstar:gradle-git:0.6.0' }
+allprojects {
+    apply plugin: 'java'
+    sourceCompatibility = targetCompatibility = 1.6
 }
+
+apply plugin: 'eclipse'
 
 repositories { mavenCentral() }
 
-sourceCompatibility = targetCompatibility = 1.6
-
-task cloneSmali(type: GitClone) {
-        def destination = file("smali")
-        uri = "https://code.google.com/p/smali/"
-        destinationPath = destination
-        bare = false
-        checkout = true
-        ref = "refs/tags/v1.4.2"
-        enabled = !destination.exists() //to clone only once
-}
-
 dependencies {
+    compile project(':libdexter:smali:dexlib')
+
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
     compile group: 'org.projectlombok', name: 'lombok', version: '0.11.8'
