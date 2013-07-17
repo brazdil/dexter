@@ -11,11 +11,11 @@ import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
-import uk.ac.cam.db538.dexter.merge.InternalClassAnnotation;
-import uk.ac.cam.db538.dexter.merge.InternalMethodAnnotation;
-import uk.ac.cam.db538.dexter.merge.MethodCallHelper;
-import uk.ac.cam.db538.dexter.merge.ObjectTaintStorage;
-import uk.ac.cam.db538.dexter.merge.TaintConstants;
+import uk.ac.cam.db538.dexter.aux.InternalClassAnnotation;
+import uk.ac.cam.db538.dexter.aux.InternalMethodAnnotation;
+import uk.ac.cam.db538.dexter.aux.MethodCallHelper;
+import uk.ac.cam.db538.dexter.aux.ObjectTaintStorage;
+import uk.ac.cam.db538.dexter.aux.TaintConstants;
 
 public class AuxiliaryDex extends Dex {
 

@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.merge;
+package uk.ac.cam.db538.dexter.aux;
 
 public class TaintConstants {
 

@@ -1,0 +1,22 @@
+import com.android.dx.command.dexer.Main
+
+buildscript {
+    repositories { mavenCentral() }
+    dependencies {
+        classpath 'com.google.android.tools:dx:1.7'
+    }
+}
+
+project.ext.jarFile = new File(libsDir, project.name + ".jar")
+project.ext.dexFile = new File(libsDir, project.name + ".dex")
+
+task dex (dependsOn: jar) {
+
+    inputs.file jarFile
+    outputs.file dexFile
+
+    doLast {
+        Main.main([ "--output", dexFile.getPath(), jarFile.getPath() ] as String[])
+    }
+}
+
