@@ -12,8 +12,10 @@ public class HierarchyTest {
 
 	protected RuntimeHierarchy hierarchy;
 	protected DexTypeCache typeCache;
-	
+
 	protected ClassDefinition classObject;
+	protected ClassDefinition classInteger;
+	protected ClassDefinition classLong;
 	protected InterfaceDefinition classList;
 	protected ClassDefinition classArrayList;
 	protected ClassDefinition classLinkedList;
@@ -31,6 +33,12 @@ public class HierarchyTest {
 		val typeObject = DexClassType.parse("Ljava/lang/Object;", typeCache);
 		classObject = hierarchy.getClassDefinition(typeObject);
 
+		val typeInteger = DexClassType.parse("Ljava/lang/Integer;", typeCache);
+		classInteger = hierarchy.getClassDefinition(typeInteger);
+
+		val typeLong = DexClassType.parse("Ljava/lang/Long;", typeCache);
+		classLong = hierarchy.getClassDefinition(typeLong);
+		
 		val typeList = DexClassType.parse("Ljava/util/List;", typeCache);
 		classList = hierarchy.getInterfaceDefinition(typeList);
 

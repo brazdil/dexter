@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 
@@ -18,16 +17,16 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.Utils;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleOriginalRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexWideOriginalRegister;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.DexType;
+import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
-public class DexInstruction_Invoke_Test {
+public class DexInstruction_Invoke_Test extends HierarchyTest {
 
   @Test
   public void testParse_Invoke_Standard_RegisterParsing_Static() throws InstructionParseError {
@@ -52,8 +51,8 @@ public class DexInstruction_Invoke_Test {
         : (i == 2) ? "invoke-static com.test.myMethod(v11, v12)"
         : (i == 3) ? "invoke-static com.test.myMethod(v11, v12, v13)"
         : (i == 4) ? "invoke-static com.test.myMethod(v11, v12, v13, v14)"
-        : "invoke-static com.test.myMethod(v11, v12, v13, v14, v15)"
-      );
+        : "invoke-static com.test.myMethod(v11, v12, v13, v14, v15)",
+        this.hierarchy);
     }
   }
 
@@ -79,8 +78,8 @@ public class DexInstruction_Invoke_Test {
         : (i == 1) ? "invoke-direct com.test.myMethod{v11}(v12)"
         : (i == 2) ? "invoke-direct com.test.myMethod{v11}(v12, v13)"
         : (i == 3) ? "invoke-direct com.test.myMethod{v11}(v12, v13, v14)"
-        : "invoke-direct com.test.myMethod{v11}(v12, v13, v14, v15)"
-      );
+        : "invoke-direct com.test.myMethod{v11}(v12, v13, v14, v15)",
+        this.hierarchy);
     }
   }
 
@@ -112,7 +111,7 @@ public class DexInstruction_Invoke_Test {
         "invoke-direct com.test.myMethod{v11}(v12)",
         "invoke-super com.test.myMethod{v11}(v12)",
         "invoke-interface com.test.myMethod{v11}(v12)"
-      });
+      }, this.hierarchy);
   }
 
   @Test
@@ -144,108 +143,46 @@ public class DexInstruction_Invoke_Test {
         "invoke-direct com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
         "invoke-super com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
         "invoke-interface com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)"
-      }
-    );
+      }, this.hierarchy);
   }
 
   @Test
   public void testCheckArguments_Static_Correct() {
-    val cache = new DexTypeCache();
+    val cache = this.hierarchy.getTypeCache();
     val params = Arrays.asList(new DexRegisterType[] {
                                  DexRegisterType.parse("J", cache)
                                });
-    val regs = Arrays.asList(new DexRegister[] {
-                               new DexRegister(),
-                               new DexRegister()
+    val regs = Arrays.asList(new DexStandardRegister[] {
+                               new DexWideOriginalRegister(1)
                              });
 
-    new DexInstruction_Invoke(new DexCode(),
-                              DexClassType.parse("Lcom.test;", cache),
-                              "myMethod",
-                              new DexPrototype(DexType.parse("V", cache), params),
+    new DexInstruction_Invoke(this.classLong.getType(),
+                              DexMethodId.parseMethodId(
+                            		  "valueOf",
+                            		  new DexPrototype(this.classLong.getType(), params),
+                            		  cache),
                               regs,
-                              Opcode_Invoke.Static);
+                              Opcode_Invoke.Static,
+                              this.hierarchy);
   }
 
   @Test(expected=Error.class)
   public void testCheckArguments_Static_Incorrect() {
-    val cache = new DexTypeCache();
-    val params = Arrays.asList(new DexRegisterType[] {
-                                 DexRegisterType.parse("J", cache)
-                               });
-    val regs = Arrays.asList(new DexRegister[] {
-                               new DexRegister(),
-                               // new DexRegister()
-                             });
+	    val cache = this.hierarchy.getTypeCache();
+	    val params = Arrays.asList(new DexRegisterType[] {
+	                                 DexRegisterType.parse("J", cache)
+	                               });
+	    val regs = Arrays.asList(new DexStandardRegister[] {
+	                               new DexSingleOriginalRegister(1)
+	                             });
 
-    new DexInstruction_Invoke(new DexCode(),
-                              DexClassType.parse("Lcom.test;", cache),
-                              "myMethod",
-                              new DexPrototype(DexType.parse("V", cache), params),
-                              regs,
-                              Opcode_Invoke.Static);
-  }
-
-  @Test
-  public void testCheckArguments_Direct_Correct() {
-    val cache = new DexTypeCache();
-    val params = Arrays.asList(new DexRegisterType[] {
-                                 DexRegisterType.parse("J", cache)
-                               });
-    val regs = Arrays.asList(new DexRegister[] {
-                               new DexRegister(),
-                               new DexRegister(),
-                               new DexRegister()
-                             });
-
-    new DexInstruction_Invoke(new DexCode(),
-                              DexClassType.parse("Lcom.test;", cache),
-                              "myMethod",
-                              new DexPrototype(DexType.parse("V", cache), params),
-                              regs,
-                              Opcode_Invoke.Direct);
-  }
-
-  @Test(expected=Error.class)
-  public void testCheckArguments_Direct_Incorrect() {
-    val cache = new DexTypeCache();
-    val params = Arrays.asList(new DexRegisterType[] {
-                                 DexRegisterType.parse("J", cache)
-                               });
-    val regs = Arrays.asList(new DexRegister[] {
-                               new DexRegister(),
-                               new DexRegister(),
-                               // new DexRegister()
-                             });
-
-    new DexInstruction_Invoke(new DexCode(),
-                              DexClassType.parse("Lcom.test;", cache),
-                              "myMethod",
-                              new DexPrototype(DexType.parse("V", cache), params),
-                              regs,
-                              Opcode_Invoke.Direct);
-  }
-
-  @Test(expected=Error.class)
-  public void testCheckArguments_TooManyArgRegs() {
-    val cache = new DexTypeCache();
-
-    int paramCount = 256; // > 5
-    val params = new ArrayList<DexRegisterType>(paramCount);
-    val r = new DexRegister[paramCount];
-
-    for (int i = 0; i < paramCount; ++i) {
-      params.add(DexRegisterType.parse("I", cache));
-      r[i] = new DexRegister();
-    }
-
-    new DexInstruction_Invoke(
-      new DexCode(),
-      DexClassType.parse("Lcom.test;", cache),
-      "myMethod",
-      new DexPrototype(DexType.parse("V", cache), params),
-      Arrays.asList(r),
-      Opcode_Invoke.Static);
+	    new DexInstruction_Invoke(this.classLong.getType(),
+	                              DexMethodId.parseMethodId(
+	                            		  "valueOf",
+	                            		  new DexPrototype(this.classLong.getType(), params),
+	                            		  cache),
+	                              regs,
+	                              Opcode_Invoke.Static,
+	                              this.hierarchy);
   }
 }
-
