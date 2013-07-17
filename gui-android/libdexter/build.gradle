@@ -4,8 +4,6 @@ allprojects {
     sourceCompatibility = targetCompatibility = 1.6
 }
 
-repositories { mavenCentral() }
-
 dependencies {
     compile project(':libdexter:smali:dexlib')
 
