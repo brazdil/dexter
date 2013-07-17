@@ -1,10 +1,25 @@
+import org.ajoberstar.gradle.git.tasks.*
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
+buildscript {
+  repositories { mavenCentral() }
+  dependencies { classpath 'org.ajoberstar:gradle-git:0.6.0' }
+}
+
+repositories { mavenCentral() }
+
 sourceCompatibility = targetCompatibility = 1.6
 
-repositories {
-    mavenCentral()
+task cloneSmali(type: GitClone) {
+        def destination = file("smali")
+        uri = "https://code.google.com/p/smali/"
+        destinationPath = destination
+        bare = false
+        checkout = true
+        ref = "refs/tags/v1.4.2"
+        enabled = !destination.exists() //to clone only once
 }
 
 dependencies {
@@ -19,8 +34,8 @@ dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
 }
 
-
 jar {
     // create a "fat" jar (include dependencies in the jar)
+    // TODO: includes lombok, which is needed only at compile time
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }
