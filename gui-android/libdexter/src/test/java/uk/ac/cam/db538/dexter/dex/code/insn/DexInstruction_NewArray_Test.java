@@ -5,13 +5,15 @@ import org.jf.dexlib.Code.Format.Instruction22c;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.code.Utils;
+import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
-public class DexInstruction_NewArray_Test {
+public class DexInstruction_NewArray_Test extends HierarchyTest {
 
   @Test
-  public void testParse_NewArray() throws InstructionParseError {
+  public void testParse_NewArray() {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.NEW_ARRAY, (byte) 4, (byte) 8, Utils.getTypeItem("[I")),
-      "new-array v4, v8, [I");
+      "new-array v4, v8, [I",
+      this.hierarchy);
   }
 }

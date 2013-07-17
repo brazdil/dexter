@@ -6,8 +6,9 @@ import org.jf.dexlib.Code.Format.Instruction11x;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.code.Utils;
+import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
-public class DexInstruction_Monitor_Test {
+public class DexInstruction_Monitor_Test extends HierarchyTest {
 
   @Test
   public void testParse() {
@@ -18,6 +19,7 @@ public class DexInstruction_Monitor_Test {
       }, new String[] {
         "monitor-enter v255",
         "monitor-exit v254"
-      });
+      },
+      this.hierarchy);
   }
 }
