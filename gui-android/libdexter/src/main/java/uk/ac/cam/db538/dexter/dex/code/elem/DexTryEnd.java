@@ -1,6 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.code.elem;
 
+import java.util.Collections;
+import java.util.Set;
+
 import lombok.Getter;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 
 public class DexTryEnd extends DexCodeElement {
 
