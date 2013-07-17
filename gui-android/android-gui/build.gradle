@@ -1,7 +1,5 @@
 buildscript {
-    repositories {
-        maven { url 'http://repo1.maven.org/maven2' }
-    }
+    repositories { mavenCentral() }
     dependencies {
         classpath 'com.android.tools.build:gradle:0.4'
     }
@@ -9,8 +7,8 @@ buildscript {
 apply plugin: 'android'
 
 dependencies {
+    compile project(':libdexter')
     compile files('libs/android-support-v4.jar')
-    compile files('libs/dexter-standalone.jar')
 }
 
 android {
