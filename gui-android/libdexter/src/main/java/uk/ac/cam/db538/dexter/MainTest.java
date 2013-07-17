@@ -1,26 +1,21 @@
 package uk.ac.cam.db538.dexter;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
 import lombok.val;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jConstants;
 
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.DexFileFromMemory;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import com.rx201.dx.translator.DexCodeGeneration;
 import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 import com.rx201.dx.translator.DexCodeGeneration;
+
 
 public class MainTest {
 
@@ -39,23 +34,23 @@ public class MainTest {
 		}
 	}	    
 
-  private static void writeToJar(Dex dex, File targetFile) {
-     final byte[] newDex = dex.writeToFile();
-
-     System.out.println("Creating JAR");
-     try {
-	     targetFile.delete();
-	     ZipFile jarFile = new ZipFile(targetFile);
-	     
-	     ZipParameters parameters = new ZipParameters();
-	     parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
-	     parameters.setFileNameInZip("classes.dex");
-	     parameters.setSourceExternalStream(true);
-	
-	     jarFile.addStream(new ByteArrayInputStream(newDex), parameters);
-     } catch (ZipException e) {
-     }
-  }
+//  private static void writeToJar(Dex dex, File targetFile) {
+//     final byte[] newDex = dex.writeToFile();
+//
+//     System.out.println("Creating JAR");
+//     try {
+//	     targetFile.delete();
+//	     ZipFile jarFile = new ZipFile(targetFile);
+//	     
+//	     ZipParameters parameters = new ZipParameters();
+//	     parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+//	     parameters.setFileNameInZip("classes.dex");
+//	     parameters.setSourceExternalStream(true);
+//	
+//	     jarFile.addStream(new ByteArrayInputStream(newDex), parameters);
+//     } catch (ZipException e) {
+//     }
+//  }
 	
   public static void main(String[] args) throws IOException {
 	long epoch = System.currentTimeMillis();
@@ -114,7 +109,7 @@ public class MainTest {
 //    	dex.instrument(false);
     }
     
-    writeToJar(dexApp, apkFile_new);
+//    writeToJar(dexApp, apkFile_new);
 //    Apk.produceAPK(apkFile, apkFile_new, "ApplicationClass", dexApp.writeToFile());
     
     long analysisTime = DexCodeGeneration.totalAnalysisTime;
