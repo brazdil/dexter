@@ -127,6 +127,10 @@ public class InstructionList implements Collection<DexCodeElement> {
 	public DexCodeElement getFollower(DexCodeElement elem) {
 		return instructionList.get(getIndex(elem) + 1);
 	}
+	
+	public boolean isLast(DexCodeElement elem) {
+		return getIndex(elem) == instructionList.size() - 1;
+	}
 
 	public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, int indexSought) {
 		int indexStart = getIndex(elemStart);

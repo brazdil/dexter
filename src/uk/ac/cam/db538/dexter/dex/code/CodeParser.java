@@ -120,6 +120,9 @@ public abstract class CodeParser {
 				parsedCode.add(new Fragment<DexInstruction>(insnOffset, parsedInsn));
 			insnOffset += insn.getSize(0);
 		}
+
+		// store the final offset with null as an instruction
+		parsedCode.add(new Fragment<DexInstruction>(insnOffset, null));
 		
 		return parsedCode;
 	}
@@ -189,42 +192,26 @@ public abstract class CodeParser {
 		labels.sortFragments();
 		catches.sortFragments();
 		catchAlls.sortFragments();
-		
+
+		long offset;
 		while (!instructions.isEmpty()) {
 			val headInsn = instructions.pop();
-			val offset = headInsn.getAbsoluteOffset();
-			
-			// Check that markers don't have a lower offset than the current instruction
-			// If they do, the file is inconsistent (markers can only be placed at
-			// positions with instructions, not between).
-			for (val fragList : nonInstructionFragments) {
-				if (!fragList.isEmpty() && fragList.peek().getAbsoluteOffset() < offset) {
-					System.err.println("INSTRUCTIONS");
-					instructions.dump();
-					System.err.println("TRY STARTS");
-					tryStarts.dump();
-					System.err.println("TRY ENDS");
-					tryEnds.dump();
-					System.err.println("LABELS");
-					labels.dump();
-					System.err.println("CATCHES");
-					catches.dump();
-					System.err.println("CATCH ALLS");
-					catchAlls.dump();
-					throw new InstructionParseError("A " + fragList.peek().getValB().getClass().getSimpleName() + " marker is defined between instructions");
-				}
-			}
+			offset = headInsn.getAbsoluteOffset();
 			
 			// Place them in the final instruction list. Order of combining is given by the definition of the nonInstructionFragments array
 			for (val fragList : nonInstructionFragments) {
-				while (!fragList.isEmpty() && fragList.peek().getAbsoluteOffset() == offset) {
+				while (!fragList.isEmpty() && fragList.peek().getAbsoluteOffset() <= offset) {
 					val fragment = fragList.pop();
 					finalInstructionList.add(fragment.getElement());
 				}
 			}
 			
 			// Add the instruction into the instruction list
-			finalInstructionList.add(headInsn.getElement());
+			// Check emptiness of the list again. Last fragment does not
+			// contain actual instruction. Need it so that markers after
+			// the last real instruction get parsed too.
+			if (!instructions.isEmpty())
+				finalInstructionList.add(headInsn.getElement());
 		}
 		
 		return new InstructionList(finalInstructionList);
@@ -234,8 +221,8 @@ public abstract class CodeParser {
 		    switch (insn.opcode) {
 
 		    case NOP:
-		    	return null;
-		    
+	    		return null;
+		    	
 		    case MOVE:
 		    case MOVE_OBJECT:
 		    case MOVE_FROM16:
@@ -546,7 +533,10 @@ public abstract class CodeParser {
 			
 			@Override
 			public String toString() {
-				return getValA().toString() + ": " + getValB().toString();
+				if (getValB() == null)
+					return getValA().toString() + ": null";
+				else
+					return getValA().toString() + ": " + getValB().toString();
 			}
 		}
 		
