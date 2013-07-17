@@ -18,3 +18,9 @@ dependencies {
     
     compile fileTree(dir: 'libs', include: '*.jar')
 }
+
+
+jar {
+    // create a "fat" jar (include dependencies in the jar)
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
