@@ -204,10 +204,9 @@ public class DexClass {
 			asmStaticFields.add(outField);
         
 			EncodedValue initialValue = field.getInitialValue();
-			if (initialValue != null) {
+			if (initialValue != null)
 				initialValue = DexUtils.cloneEncodedValue(initialValue, cache);
-				staticFieldInitializers.add(new StaticFieldInitializer(initialValue, outField));
-			}
+			staticFieldInitializers.add(new StaticFieldInitializer(initialValue, outField));
 		}
     
 		for (val field : _instanceFields)
