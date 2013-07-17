@@ -32,7 +32,7 @@ public class DexInstruction_Move extends DexInstruction {
 	
     this.regTo = regTo;
     this.regFrom = regFrom;
-    this.type = objectMoving ? RegisterType.REFERENCE : RegisterType.WIDE_PRIMITIVE;
+    this.type = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
   }
 
   public DexInstruction_Move(DexWideRegister regTo, DexWideRegister regFrom, RuntimeHierarchy hierarchy) {
