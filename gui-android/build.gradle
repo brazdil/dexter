@@ -1,3 +1,6 @@
 allprojects {
   repositories { mavenCentral() }
 }
+
+task build (dependsOn: ':android-gui:build') << {
+}

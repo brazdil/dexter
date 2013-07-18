@@ -9,9 +9,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
+import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexterApplication extends Application {
 
@@ -121,10 +123,10 @@ public class DexterApplication extends Application {
         hierarchyAvailable.release();
     }
 
-    public RuntimeHierarchy getRuntimeHierarchy(DexFile file) {
+    public Pair<RuntimeHierarchy, ClassRenamer> getRuntimeHierarchy(DexFile fileApp, DexFile fileAux) {
         waitForHierarchy();
         synchronized (hierarchyBuilder) {
-            return hierarchyBuilder.buildAgainstApp(file);
+            return hierarchyBuilder.buildAgainstApp(fileApp, fileAux);
         }
     }
 

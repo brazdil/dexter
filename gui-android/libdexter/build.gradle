@@ -18,15 +18,15 @@ dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
 }
 
-jar {
-    // create a "fat" jar (include dependencies in the jar)
-    // TODO: includes lombok, which is needed only at compile time
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-}
+// jar {
+//     // create a "fat" jar (include dependencies in the jar)
+//     // TODO: includes lombok, which is needed only at compile time
+//     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+// }
 
-task copy_dexter_aux (dependsOn: ':libdexter:dexter_aux:dex', type: Copy) << {
-    from project(':libdexter:dexter_aux').dexFile
-    into sourceSets.main.output.resourcesDir
-}
+// task copy_dexter_aux (dependsOn: ':libdexter:dexter_aux:dex', type: Copy) << {
+//     from project(':libdexter:dexter_aux').dexFile
+//     into sourceSets.main.output.resourcesDir
+// }
 
-processResources.dependsOn copy_dexter_aux
+// processResources.dependsOn copy_dexter_aux

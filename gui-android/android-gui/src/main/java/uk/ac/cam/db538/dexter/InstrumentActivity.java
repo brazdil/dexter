@@ -9,15 +9,20 @@ import android.os.Bundle;
 import android.widget.EditText;
 
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.DexFileFromMemory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class InstrumentActivity extends Activity {
 
@@ -79,17 +84,19 @@ public class InstrumentActivity extends Activity {
                 terminalDone();
 
                 terminalMessage("Loading application");
-                DexFile dexFile = new DexFile(packageFile);
+                DexFile fileApp = new DexFile(packageFile);
+                DexFile fileAux = new DexFileFromMemory(ClassLoader.getSystemResourceAsStream("merge-classes.dex"));
                 terminalDone();
 
                 terminalMessage("Building runtime hierarchy");
-                RuntimeHierarchy hierarchy = thisApp.getRuntimeHierarchy(dexFile);
+                Pair<RuntimeHierarchy, ClassRenamer> buildData = thisApp.getRuntimeHierarchy(fileApp, fileAux);
+                RuntimeHierarchy hierarchy = buildData.getValA();
+                ClassRenamer renamerAux = buildData.getValB();
                 terminalDone();
-
-                InputStream auxiliaryDex = InstrumentActivity.this.getResources().openRawResource(R.raw.aux);
-
+    
                 terminalMessage("Parsing application");
-                Dex dex = new Dex(dexFile, hierarchy, auxiliaryDex);
+                AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
+                Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
                 terminalDone();
 
 //                terminalMessage("Instrumenting application");
@@ -97,7 +104,7 @@ public class InstrumentActivity extends Activity {
 //                terminalDone();
 
                 terminalMessage("Compiling application");
-                dex.writeToFile();
+                dexApp.writeToFile();
                 terminalDone();
 
             } catch (IOException ex) {
