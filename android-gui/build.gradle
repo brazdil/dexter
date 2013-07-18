@@ -14,6 +14,8 @@ project(':libdexter:smali:dexlib') {
 dependencies {
     compile project(':libdexter')
     compile files('libs/android-support-v4.jar')
+
+    compile fileTree(dir: '../libdexter/libs', include: '*.jar')
 }
 
 android {
