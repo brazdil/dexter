@@ -18,9 +18,6 @@ import java.io.InputStream;
 import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
-import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -85,7 +82,7 @@ public class InstrumentActivity extends Activity {
 
                 terminalMessage("Loading application");
                 DexFile fileApp = new DexFile(packageFile);
-                DexFile fileAux = new DexFileFromMemory(ClassLoader.getSystemResourceAsStream("merge-classes.dex"));
+                DexFile fileAux = new DexFileFromMemory(thisApp.getAssets().open("dexter_aux.dex"));
                 terminalDone();
 
                 terminalMessage("Building runtime hierarchy");
