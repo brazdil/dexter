@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.merge;
+package uk.ac.cam.db538.dexter.aux;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import uk.ac.cam.db538.dexter.merge.ObjectTaintStorage.Entry;
+import uk.ac.cam.db538.dexter.aux.ObjectTaintStorage.Entry;
 
 public class ObjectTaintStorage_Test {
 
