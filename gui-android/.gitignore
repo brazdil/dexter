@@ -1,7 +1,0 @@
-local.properties
-.idea/
-.gradle/
-build/
-*.iml
-*.ipr
-*.iws

@@ -1,4 +1,7 @@
-*.class
-build/**/*
-/bin/
-/merges/
+local.properties
+.idea/
+.gradle/
+build/
+*.iml
+*.ipr
+*.iws
