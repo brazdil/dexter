@@ -27,8 +27,8 @@ import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 public class TranslationTest {
 
 //	private static File frameworkDir = new File("framework-2.3-lite");
-	private static File testsDir = new File("cg_test/tests/");
-	private static File frameworkDir = new File("framework-2.3");
+	private static File testsDir = new File("../cg_test/tests/");
+	private static File frameworkDir = new File("../framework");
 //	private static File testsDir = new File("cg_test/android-apps/");
 	
 	private static HierarchyBuilder hierarchyBuilder;
@@ -76,7 +76,7 @@ public class TranslationTest {
 
 		System.out.println("Scanning application");
 	    val fileApp = new DexFile(file);
-	    val fileAux = new DexFileFromMemory(ClassLoader.getSystemResourceAsStream("merge-classes.dex"));
+	    val fileAux = new DexFile("dexter_aux/build/libs/dexter_aux.dex");
 	    
 	    System.out.println("Building hierarchy");
 	    val buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);
