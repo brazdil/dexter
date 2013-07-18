@@ -34,5 +34,5 @@ android.applicationVariants.each { variant ->
         }
     }
 
-    variant.mergeAssets.dependsOn "copy_dexter_aux_$varname"
+    variant.packageApplication.dependsOn "copy_dexter_aux_$varname"
 }
