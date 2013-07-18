@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -ea -jar build/jar/dexter-standalone.jar $@
+java -ea -cp "libdexter/build/libs/*" uk.ac.cam.db538.dexter.MainConsole $@

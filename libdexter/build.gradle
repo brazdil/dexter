@@ -20,7 +20,7 @@ dependencies {
 
 def resdir = sourceSets.main.output.resourcesDir
 
-task copy_dexter_aux (dependsOn: [ ':libdexter:dexter_aux:dex', ':libdexter:create_resdir' ]) {
+task copy_dexter_aux (dependsOn: [ ':libdexter:dexter_aux:dex' ]) {
     doLast {
         copy {
             from project(':libdexter:dexter_aux').dexFile
@@ -29,5 +29,10 @@ task copy_dexter_aux (dependsOn: [ ':libdexter:dexter_aux:dex', ':libdexter:crea
     }
 }
 
-classes.dependsOn copy_dexter_aux
+task aggregate_libs(type: Copy) {
+     from configurations.runtime
+     into "$buildDir/libs"
+}
 
+classes.dependsOn copy_dexter_aux
+assemble.dependsOn aggregate_libs
