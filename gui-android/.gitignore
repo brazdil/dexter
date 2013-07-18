@@ -1,5 +1,7 @@
 local.properties
-.idea/workspace.xml
+.idea/
 .gradle/
 build/
-smali
+*.iml
+*.ipr
+*.iws
