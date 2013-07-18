@@ -7,13 +7,13 @@ buildscript {
     }
 }
 
-project.ext.jarFile = new File(libsDir, project.name + ".jar")
-project.ext.dexFile = new File(libsDir, project.name + ".dex")
+ext.jarFile = new File(libsDir, project.name + ".jar")
+ext.dexFile = new File(libsDir, project.name + ".dex")
 
 task dex (dependsOn: jar) {
 
-    inputs.file jarFile
-    outputs.file dexFile
+    inputs.file project.ext.jarFile
+    outputs.file project.ext.dexFile
 
     doLast {
         Main.main([ "--output", dexFile.getPath(), jarFile.getPath() ] as String[])

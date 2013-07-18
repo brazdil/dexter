@@ -24,9 +24,24 @@ dependencies {
 //     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 // }
 
-// task copy_dexter_aux (dependsOn: ':libdexter:dexter_aux:dex', type: Copy) << {
-//     from project(':libdexter:dexter_aux').dexFile
-//     into sourceSets.main.output.resourcesDir
-// }
+def resdir = sourceSets.main.output.resourcesDir
 
-// processResources.dependsOn copy_dexter_aux
+task create_resdir {
+    enabled = !resdir.exists()
+    
+    doLast {
+        resdir.mkdirs()
+    }
+}
+
+task copy_dexter_aux (dependsOn: [ ':libdexter:dexter_aux:dex', ':libdexter:create_resdir' ]) {
+    doLast {
+        copy {
+            from project(':libdexter:dexter_aux').dexFile
+            into sourceSets.main.output.resourcesDir
+        }
+    }
+}
+
+classes.dependsOn copy_dexter_aux
+

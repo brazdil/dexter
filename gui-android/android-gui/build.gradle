@@ -26,14 +26,16 @@ android {
     }
 }
 
-//task copy_dexter_aux (dependsOn: ':libdexter:dexter_aux:dex', type: Copy) << {
-//    from project(':libdexter:dexter_aux').dexFile
-//    into sourceSets.main.output.resourcesDir
-//}
-//
-//processReleaseResources.dependsOn copy_dexter_aux
+android.applicationVariants.each { variant ->
+    def varname = variant.name
+    task "copy_dexter_aux_$varname" (dependsOn: ':libdexter:dexter_aux:dex') {
+        doLast {
+            copy {
+                from project(':libdexter:dexter_aux').dexFile
+                into "$project.buildDir/assets/$variant.dirName"
+            }
+        }
+    }
 
-task test << {
-  println android.sourceSets.main.output.resourcesDir
-  android.applicationVariants.each { variant -> println variant.name }
+    variant.mergeAssets.dependsOn "copy_dexter_aux_$varname"
 }
