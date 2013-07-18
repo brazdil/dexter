@@ -2,6 +2,8 @@ package uk.ac.cam.db538.dexter;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,13 +12,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.lang.NegativeArraySizeException;
+import java.lang.RuntimeException;
+
 public class PackageListItem extends LinearLayout {
 
     private PackageInfo packageInfo;
 
     private final ImageView imgPackageIcon;
+    private final TextView textApplicationName;
     private final TextView textPackageName;
-    private final TextView textApkPath;
 
     public PackageListItem(Context context, ViewGroup parent) {
         super(context);
@@ -25,8 +30,8 @@ public class PackageListItem extends LinearLayout {
         this.addView(inflater.inflate(R.layout.listitem_packages, parent, false));
 
         this.imgPackageIcon = (ImageView) this.findViewById(R.id.imgPackageIcon);
-        this.textPackageName = (TextView) this.findViewById(R.id.textPackageName);
-        this.textApkPath = (TextView) this.findViewById(R.id.textApkPath);
+        this.textApplicationName = (TextView) this.findViewById(R.id.textPackageName);
+        this.textPackageName = (TextView) this.findViewById(R.id.textApkPath);
     }
 
     public ImageView getImgPackageIcon() {
@@ -37,8 +42,8 @@ public class PackageListItem extends LinearLayout {
         return textPackageName;
     }
 
-    public TextView getTextApkPath() {
-        return textApkPath;
+    public TextView getTextApplicationName() {
+        return textApplicationName;
     }
 
     public PackageInfo getPackageInfo() {
@@ -48,14 +53,27 @@ public class PackageListItem extends LinearLayout {
     public void setPackageInfo(PackageInfo packageInfo) {
         this.packageInfo = packageInfo;
 
-        Drawable pkgIcon = this.packageInfo.applicationInfo.loadIcon(
-            this.getContext().getPackageManager());
-        String pkgName = this.packageInfo.applicationInfo.packageName;
-        String pkgApkPath = this.packageInfo.applicationInfo.sourceDir;
+        PackageManager pm = this.getContext().getPackageManager();
 
+        try {
+            CharSequence appName = pm
+                .getResourcesForApplication(this.packageInfo.applicationInfo)
+                .getText(this.packageInfo.applicationInfo.labelRes);
+            this.textApplicationName.setText(appName);
+        } catch (PackageManager.NameNotFoundException ex) {
+            // TODO: handle this (app probably uninstalled)
+            throw new RuntimeException(ex);
+        } catch (Resources.NotFoundException ex) {
+            // doesn't have a name specified?
+            this.textApplicationName.setText("<no-name>");
+        }
+
+        Drawable pkgIcon = this.packageInfo.applicationInfo.loadIcon(pm);
         this.imgPackageIcon.setImageDrawable(pkgIcon);
-        this.textPackageName.setText(pkgName);
-        this.textApkPath.setText(pkgApkPath);
 
+        String pkgName = this.packageInfo.applicationInfo.packageName;
+        this.textPackageName.setText(pkgName);
+
+        String pkgApkPath = this.packageInfo.applicationInfo.sourceDir;
     }
 }
