@@ -21,6 +21,16 @@ The project can be built with:
 
 Note that building the Android project, you will need to have the Android SDK installed and might also need to specify its location using the local.properties file (see local.properties.example).
 
+Those who have Gradle installed in their system can replace `./gradlew` with simple `gradle`.
+
+### Speeding up the build
+
+If you build the project frequently, you might want to consider running gradle as a daemon. 
+
+```
+./gradlew --daemon <args>
+```
+
 ## Running
 
 To execute Dexter as a command-line tool, build libdexter and then call:
@@ -43,4 +53,4 @@ Preferred IDE for developing Dexter is the Android Studio built on top of Intell
 
 ### Project Lombok
 
-Libdexter is written in Java but with the extension provided by [Project Lombok]{projectlombok.org}. Their website provides information how to install plugins for the IDE of your choice.
+Libdexter is written in Java but with the extension provided by [Project Lombok](projectlombok.org). Their website provides information how to install plugins for the IDE of your choice.
