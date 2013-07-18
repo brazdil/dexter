@@ -6,11 +6,6 @@ buildscript {
 }
 apply plugin: 'android'
 
-project(':libdexter:smali:dexlib') {
-	version = ''	
-
-}
-
 dependencies {
     compile project(':libdexter')
     compile files('libs/android-support-v4.jar')
