@@ -5,6 +5,8 @@ allprojects {
 }
 
 dependencies {
+    compile project(':libdexter:libcore:dex')
+    compile project(':libdexter:dalvik:dx')
     compile project(':libdexter:smali:dexlib')
     compile project(':libdexter:dexter_aux')
     

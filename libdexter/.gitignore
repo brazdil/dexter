@@ -1,6 +1,8 @@
 bin
 build
 smali
+libcore
+dalvik
 .classpath
 .project
 .settings

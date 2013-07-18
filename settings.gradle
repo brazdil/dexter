@@ -1,1 +1,1 @@
-include ':android-gui', ':libdexter:smali:dexlib', ':libdexter:dexter_aux'
+include ':android-gui', ':libdexter:smali:dexlib', ':libdexter:dexter_aux', ':libdexter:libcore:dex', ':libdexter:dalvik:dx'
