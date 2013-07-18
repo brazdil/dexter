@@ -18,21 +18,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
 }
 
-// jar {
-//     // create a "fat" jar (include dependencies in the jar)
-//     // TODO: includes lombok, which is needed only at compile time
-//     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-// }
-
 def resdir = sourceSets.main.output.resourcesDir
-
-task create_resdir {
-    enabled = !resdir.exists()
-    
-    doLast {
-        resdir.mkdirs()
-    }
-}
 
 task copy_dexter_aux (dependsOn: [ ':libdexter:dexter_aux:dex', ':libdexter:create_resdir' ]) {
     doLast {
