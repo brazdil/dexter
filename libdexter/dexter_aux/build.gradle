@@ -7,6 +7,10 @@ buildscript {
     }
 }
 
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
 ext.jarFile = new File(libsDir, project.name + ".jar")
 ext.dexFile = new File(libsDir, project.name + ".dex")
 
