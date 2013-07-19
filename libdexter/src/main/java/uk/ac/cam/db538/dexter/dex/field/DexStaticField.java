@@ -25,10 +25,10 @@ public class DexStaticField extends DexField {
 		this.fieldDef = fieldDef;
 	}
 	
-	public DexStaticField(DexClass parentClass, ClassDefItem classItem, EncodedField fieldItem, AnnotationDirectoryItem annoDir) {
+	public DexStaticField(DexClass parentClass, ClassDefItem classItem, EncodedField fieldItem, int fieldIndex, AnnotationDirectoryItem annoDir) {
 		super(parentClass, fieldItem, annoDir);
 		
-		this.initialValue = init_ParseInitialValue(classItem, fieldItem);
+		this.initialValue = init_ParseInitialValue(classItem, fieldIndex);
 		this.fieldDef = init_FindFieldDefinition(parentClass, fieldItem);
 	}
 	
@@ -43,28 +43,14 @@ public class DexStaticField extends DexField {
 		return classDef.getStaticField(fieldId);
 	}
 	
-	private static EncodedValue init_ParseInitialValue(ClassDefItem classItem, EncodedField fieldItem) {
+	private static EncodedValue init_ParseInitialValue(ClassDefItem classItem, int fieldIndex) {
 		// extract data
-		
-		if (classItem.getClassData() == null)
-			return null;
-		
 		val initValuesItem = classItem.getStaticFieldInitializers();
-		val staticFields = classItem.getClassData().getStaticFields();
-		
-		if (initValuesItem == null || staticFields == null)
-			return null;
-		
-		val initValues = initValuesItem.getEncodedArray().values;
-		
-		// find the field in the staticFields array
-		
-		val fieldIndex = staticFields.indexOf(fieldItem);
-		if (fieldIndex < 0 || fieldIndex >= initValues.length)
+		if (initValuesItem == null)
 			return null;
 		
 		// return the value
-		
+		val initValues = initValuesItem.getEncodedArray().values;
 		return initValues[fieldIndex];
 	}
 
