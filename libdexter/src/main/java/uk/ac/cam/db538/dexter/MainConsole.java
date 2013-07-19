@@ -6,7 +6,6 @@ import java.io.IOException;
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
-import org.jf.dexlib.DexFileFromMemory;
 
 import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
@@ -39,7 +38,7 @@ public class MainConsole {
     
     System.out.println("Scanning application");
     val fileApp = new DexFile(apkFile);
-    val fileAux = new DexFileFromMemory(ClassLoader.getSystemResourceAsStream("merge-classes.dex"));
+    val fileAux = new DexFile("dexter_aux/build/libs/dexter_aux.dex");
     
     System.out.println("Building hierarchy");
     val buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);

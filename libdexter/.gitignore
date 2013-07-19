@@ -3,4 +3,5 @@ build
 smali
 libcore
 dalvik
+framework
 .settings
