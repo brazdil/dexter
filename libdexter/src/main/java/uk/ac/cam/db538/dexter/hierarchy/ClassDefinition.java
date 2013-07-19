@@ -83,4 +83,27 @@ public class ClassDefinition extends BaseClassDefinition {
 				return null;
 		}
 	};
+
+	@Override
+	public StaticFieldDefinition getAccessedStaticField(DexFieldId fieldId) {
+		// Extend the implementation of method that explores parents
+		// of a class to find the definition of a static field
+		// to also explore its interfaces.
+		// Example: https://android.googlesource.com/platform/dalvik/+/master/tests/008-instanceof/src
+		
+		StaticFieldDefinition def = super.getAccessedStaticField(fieldId);
+		if (def != null)
+			return def;
+		
+		for (val iface : this.interfaces) {
+			def = iface.iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
+			if (def != null)
+				return def;
+		}
+		
+		return null;
+	}
+
+	
+	
 }

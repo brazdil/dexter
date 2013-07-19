@@ -229,7 +229,9 @@ public abstract class BaseClassDefinition implements Serializable {
 		// Application can access a static field on class X, but
 		// the field might actually be defined in one of X's parents
 		// This method will return the definition of the field 
-		// in itself or the closest parent
+		// in itself or the closest parent. 
+		
+		// Note: ClassDefinition overrides this to also explore implemented interfaces.
 
 		return iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
 	}
@@ -303,7 +305,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		}
 	};
 	
-	private static final Extractor<DexFieldId, StaticFieldDefinition> extractorStaticField = new Extractor<DexFieldId, StaticFieldDefinition>() {
+	protected static final Extractor<DexFieldId, StaticFieldDefinition> extractorStaticField = new Extractor<DexFieldId, StaticFieldDefinition>() {
 		@Override
 		public StaticFieldDefinition extract(BaseClassDefinition clazz, DexFieldId fieldId) {
 			return clazz.getStaticField(fieldId);
