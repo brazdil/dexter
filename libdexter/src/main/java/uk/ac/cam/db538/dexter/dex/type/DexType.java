@@ -87,4 +87,9 @@ public abstract class DexType implements Serializable {
 		DexType other = (DexType) obj;
 		return this.getDescriptor().equals(other.getDescriptor());
 	}
+
+	@Override
+	public String toString() {
+		return getDescriptor();
+	}
 }

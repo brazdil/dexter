@@ -55,18 +55,22 @@ public class DexInstruction_InstancePut extends DexInstruction {
     	  regFrom = parsingState.getSingleRegister(insnInstancePut.getRegisterA());
       val regObj = parsingState.getSingleRegister(insnInstancePut.getRegisterB());
       
+      val classType = DexClassType.parse(
+			  refItem.getContainingClass().getTypeDescriptor(),
+			  hierarchy.getTypeCache());
+      val fieldId = DexFieldId.parseFieldId(
+	    		refItem.getFieldName().getStringValue(),
+	    		DexRegisterType.parse(
+	    				refItem.getFieldType().getTypeDescriptor(),
+	    				hierarchy.getTypeCache()),
+	    		hierarchy.getTypeCache());
+      
       InstanceFieldDefinition fieldDef = hierarchy
-    		 .getClassDefinition(
-    		  	DexClassType.parse(
-    				  refItem.getContainingClass().getTypeDescriptor(),
-    				  hierarchy.getTypeCache()))
-    		 .getAccessedInstanceField(
-    		    DexFieldId.parseFieldId(
-		    		refItem.getFieldName().getStringValue(),
-		    		DexRegisterType.parse(
-		    				refItem.getFieldType().getTypeDescriptor(),
-		    				hierarchy.getTypeCache()),
-		    		hierarchy.getTypeCache()));
+    		 .getClassDefinition(classType)
+    		 .getAccessedInstanceField(fieldId);
+      
+      if (fieldDef == null)
+    	  throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
       
       return new DexInstruction_InstancePut(regFrom, regObj, fieldDef, opcode, hierarchy);
 

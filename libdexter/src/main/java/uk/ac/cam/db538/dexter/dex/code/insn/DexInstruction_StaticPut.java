@@ -51,18 +51,22 @@ public class DexInstruction_StaticPut extends DexInstruction {
       else
     	  regFrom = parsingState.getSingleRegister(insnStaticPut.getRegisterA());
       
+      val classType = DexClassType.parse(
+			  refItem.getContainingClass().getTypeDescriptor(),
+			  hierarchy.getTypeCache());
+      val fieldId = DexFieldId.parseFieldId(
+	    		refItem.getFieldName().getStringValue(),
+	    		DexRegisterType.parse(
+	    				refItem.getFieldType().getTypeDescriptor(),
+	    				hierarchy.getTypeCache()),
+	    		hierarchy.getTypeCache());
+      
       StaticFieldDefinition fieldDef = hierarchy
-    		 .getBaseClassDefinition(
-    		  	DexClassType.parse(
-    				  refItem.getContainingClass().getTypeDescriptor(),
-    				  hierarchy.getTypeCache()))
-    		 .getAccessedStaticField(
-    		    DexFieldId.parseFieldId(
-		    		refItem.getFieldName().getStringValue(),
-		    		DexRegisterType.parse(
-		    				refItem.getFieldType().getTypeDescriptor(),
-		    				hierarchy.getTypeCache()),
-		    		hierarchy.getTypeCache()));
+    		 .getBaseClassDefinition(classType)
+    		 .getAccessedStaticField(fieldId);
+      
+      if (fieldDef == null)
+    	  throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
       
       return new DexInstruction_StaticPut(regFrom, fieldDef, opcode, hierarchy);
 

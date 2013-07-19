@@ -49,4 +49,9 @@ public class DexFieldId implements Serializable {
 			this.name.equals(other.name) &&
 			this.type.equals(other.type);
 	}
+
+	@Override
+	public String toString() {
+		return name + ":" + type;
+	}
 }
