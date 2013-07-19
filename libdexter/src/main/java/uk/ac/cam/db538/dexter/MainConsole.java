@@ -7,6 +7,7 @@ import lombok.val;
 
 import org.jf.dexlib.DexFile;
 
+import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
@@ -51,6 +52,13 @@ public class MainConsole {
     
 //    System.out.println("Instrumenting application");
 //    dexApp.instrument(false);
+    
+    System.out.println("Recompiling application");
+    val newDex = dexApp.writeToFile();
+    
+    System.out.println("Generating new apk");
+    Apk.produceAPK(apkFile, new File(apkFile.getAbsolutePath() + "_new.apk"), null, newDex);
+    
     
     System.out.println("DONE");
   }

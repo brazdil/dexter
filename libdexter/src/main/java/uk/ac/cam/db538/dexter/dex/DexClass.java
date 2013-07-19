@@ -90,6 +90,8 @@ public class DexClass {
 			// methods
 			for (val methodItem : clsData.getDirectMethods())
 				this._methods.add(new DexMethod(this, methodItem, annotationDirectory));
+			for (val methodItem : clsData.getVirtualMethods())
+				this._methods.add(new DexMethod(this, methodItem, annotationDirectory));
 		}
 	}
 	
