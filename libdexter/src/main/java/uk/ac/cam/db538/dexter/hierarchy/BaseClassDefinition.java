@@ -5,9 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -28,14 +26,14 @@ public abstract class BaseClassDefinition implements Serializable {
 	@Getter private final boolean internal;
 
 	@Getter private BaseClassDefinition superclass;
-	private final Set<BaseClassDefinition> _children;
-	@Getter private final Set<BaseClassDefinition> children;
+	private final List<BaseClassDefinition> _children;
+	@Getter private final List<BaseClassDefinition> children;
 
-	private final Set<MethodDefinition> _methods;
-	@Getter private final Set<MethodDefinition> methods;
+	private final List<MethodDefinition> _methods;
+	@Getter private final List<MethodDefinition> methods;
 
-	private final Set<StaticFieldDefinition> _staticFields;
-	@Getter private final Set<StaticFieldDefinition> staticFields;
+	private final List<StaticFieldDefinition> _staticFields;
+	@Getter private final List<StaticFieldDefinition> staticFields;
 
 	BaseClassDefinition(DexClassType type, int accessFlags, boolean isInternal) {
 		this.type = type;
@@ -43,14 +41,14 @@ public abstract class BaseClassDefinition implements Serializable {
 		this.internal = isInternal;
 		
 		this.superclass = null;
-		this._children = new HashSet<BaseClassDefinition>();
-		this.children = Collections.unmodifiableSet(this._children);
+		this._children = new ArrayList<BaseClassDefinition>();
+		this.children = Collections.unmodifiableList(this._children);
 
-		this._methods = new HashSet<MethodDefinition>();
-		this.methods = Collections.unmodifiableSet(this._methods);
+		this._methods = new ArrayList<MethodDefinition>();
+		this.methods = Collections.unmodifiableList(this._methods);
 
-		this._staticFields = new HashSet<StaticFieldDefinition>();
-		this.staticFields = Collections.unmodifiableSet(this._staticFields);
+		this._staticFields = new ArrayList<StaticFieldDefinition>();
+		this.staticFields = Collections.unmodifiableList(this._staticFields);
 	}
 	
 	// only to be called by HierarchyBuilder

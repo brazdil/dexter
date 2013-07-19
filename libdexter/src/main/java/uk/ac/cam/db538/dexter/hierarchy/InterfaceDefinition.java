@@ -1,8 +1,8 @@
 package uk.ac.cam.db538.dexter.hierarchy;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import lombok.Getter;
 
@@ -14,8 +14,8 @@ public class InterfaceDefinition extends BaseClassDefinition {
 
 	private static final long serialVersionUID = 1L;
 	
-	final Set<ClassDefinition> _implementors;
-	@Getter private final Set<ClassDefinition> implementors;
+	final List<ClassDefinition> _implementors;
+	@Getter private final List<ClassDefinition> implementors;
 
 	public InterfaceDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
 		super(classType, accessFlags, isInternal);
@@ -23,8 +23,8 @@ public class InterfaceDefinition extends BaseClassDefinition {
 		if (!getAccessFlags().contains(AccessFlags.INTERFACE))
 			throw new HierarchyException("Class is not an interface");
 
-		this._implementors = new HashSet<ClassDefinition>();
-		this.implementors = Collections.unmodifiableSet(this._implementors);
+		this._implementors = new ArrayList<ClassDefinition>();
+		this.implementors = Collections.unmodifiableList(this._implementors);
 	}
 	
 	public boolean isAnnotation() {

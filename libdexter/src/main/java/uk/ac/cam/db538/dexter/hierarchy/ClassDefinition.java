@@ -1,8 +1,8 @@
 package uk.ac.cam.db538.dexter.hierarchy;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.val;
@@ -13,20 +13,20 @@ public class ClassDefinition extends BaseClassDefinition {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final Set<InterfaceDefinition> _interfaces;
-	@Getter private final Set<InterfaceDefinition> interfaces;
+	private final List<InterfaceDefinition> _interfaces;
+	@Getter private final List<InterfaceDefinition> interfaces;
 
-	private final Set<InstanceFieldDefinition> _instanceFields;
-	@Getter private final Set<InstanceFieldDefinition> instanceFields;
+	private final List<InstanceFieldDefinition> _instanceFields;
+	@Getter private final List<InstanceFieldDefinition> instanceFields;
 
 	public ClassDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
 		super(classType, accessFlags, isInternal);
 		
-		this._interfaces = new HashSet<InterfaceDefinition>();
-		this.interfaces = Collections.unmodifiableSet(this._interfaces);
+		this._interfaces = new ArrayList<InterfaceDefinition>();
+		this.interfaces = Collections.unmodifiableList(this._interfaces);
 
-		this._instanceFields = new HashSet<InstanceFieldDefinition>();
-		this.instanceFields = Collections.unmodifiableSet(this._instanceFields);
+		this._instanceFields = new ArrayList<InstanceFieldDefinition>();
+		this.instanceFields = Collections.unmodifiableList(this._instanceFields);
 	}
 	
 	public void addImplementedInterface(InterfaceDefinition iface) {
