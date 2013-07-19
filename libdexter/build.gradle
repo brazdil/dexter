@@ -31,9 +31,17 @@ task copy_dexter_aux (dependsOn: [ ':libdexter:dexter_aux:dex' ]) {
     }
 }
 
-task aggregate_libs(type: Copy) {
-     from configurations.runtime
-     into "$buildDir/libs"
+task aggregate_libs {
+    doLast {
+        copy {
+		    from configurations.runtime
+		    into "$buildDir/libs"
+		}
+        copy {
+		    from configurations.testRuntime
+		    into "$buildDir/libs"
+		}
+    }
 }
 
 classes.dependsOn copy_dexter_aux
