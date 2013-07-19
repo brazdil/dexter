@@ -4,8 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import lombok.val;
+import java.util.List;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
@@ -20,28 +19,28 @@ import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 public class Utils {
 
   private static InstructionList parse(Instruction[] insns, RuntimeHierarchy hierarchy) {
-	  val codeItem = CodeItem.internCodeItem(null, 16, 16, 16, null, Arrays.asList(insns), null, null);
-	  val parserCache = new CodeParserState(codeItem, hierarchy);
+	  CodeItem codeItem = CodeItem.internCodeItem(null, 16, 16, 16, null, Arrays.asList(insns), null, null);
+	  CodeParserState parserCache = new CodeParserState(codeItem, hierarchy);
 
-	  val insnsList = new ArrayList<DexCodeElement>();
-	  for (val insn : insns)
+	  List<DexCodeElement> insnsList = new ArrayList<DexCodeElement>();
+	  for (Instruction insn : insns)
 		  insnsList.add(CodeParser.parseInstruction(insn, parserCache));
 	  return new InstructionList(insnsList);
   }
 	
   public static DexCodeElement parseAndCompare(Instruction insn, String output, RuntimeHierarchy hierarchy) {
-    val insnList = parse(new Instruction[] { insn }, hierarchy);
+	  InstructionList insnList = parse(new Instruction[] { insn }, hierarchy);
 
     assertEquals(1, insnList.size());
 
-    val insnInsn = insnList.get(0);
+    DexCodeElement insnInsn = insnList.get(0);
     assertEquals(output, insnInsn.toString());
 
     return insnInsn;
   }
 
   public static void parseAndCompare(Instruction[] insns, String[] output, RuntimeHierarchy hierarchy) {
-    val insnList = parse(insns, hierarchy);
+    InstructionList insnList = parse(insns, hierarchy);
 
     assertEquals(output.length, insnList.size());
     for (int i = 0; i < output.length; ++i)
@@ -73,10 +72,10 @@ public class Utils {
   }
 
   public static FieldIdItem getFieldItem(String classTypeName, String fieldTypeName, String fieldName) {
-    val dexFile = new DexFile();
-    val classTypeItem = TypeIdItem.internTypeIdItem(dexFile, classTypeName);
-    val fieldTypeItem = TypeIdItem.internTypeIdItem(dexFile, fieldTypeName);
-    val fieldNameItem = StringIdItem.internStringIdItem(dexFile, fieldName);
+    DexFile dexFile = new DexFile();
+    TypeIdItem classTypeItem = TypeIdItem.internTypeIdItem(dexFile, classTypeName);
+    TypeIdItem fieldTypeItem = TypeIdItem.internTypeIdItem(dexFile, fieldTypeName);
+    StringIdItem fieldNameItem = StringIdItem.internStringIdItem(dexFile, fieldName);
     return FieldIdItem.internFieldIdItem(dexFile, classTypeItem, fieldTypeItem, fieldNameItem);
   }
 }

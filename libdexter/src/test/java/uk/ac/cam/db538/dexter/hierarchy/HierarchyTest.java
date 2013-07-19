@@ -1,7 +1,5 @@
 package uk.ac.cam.db538.dexter.hierarchy;
 
-import lombok.val;
-
 import org.junit.Before;
 
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -30,37 +28,37 @@ public class HierarchyTest {
 		hierarchy = HierarchyBuilder.deserialize(ClassLoader.getSystemResourceAsStream("hierarchy.dump")).build();
 		typeCache = hierarchy.getTypeCache();
 		
-		val typeObject = DexClassType.parse("Ljava/lang/Object;", typeCache);
+		DexClassType typeObject = DexClassType.parse("Ljava/lang/Object;", typeCache);
 		classObject = hierarchy.getClassDefinition(typeObject);
 
-		val typeInteger = DexClassType.parse("Ljava/lang/Integer;", typeCache);
+		DexClassType typeInteger = DexClassType.parse("Ljava/lang/Integer;", typeCache);
 		classInteger = hierarchy.getClassDefinition(typeInteger);
 
-		val typeLong = DexClassType.parse("Ljava/lang/Long;", typeCache);
+		DexClassType typeLong = DexClassType.parse("Ljava/lang/Long;", typeCache);
 		classLong = hierarchy.getClassDefinition(typeLong);
 		
-		val typeList = DexClassType.parse("Ljava/util/List;", typeCache);
+		DexClassType typeList = DexClassType.parse("Ljava/util/List;", typeCache);
 		classList = hierarchy.getInterfaceDefinition(typeList);
 
-		val typeArrayList = DexClassType.parse("Ljava/util/ArrayList;", typeCache);
+		DexClassType typeArrayList = DexClassType.parse("Ljava/util/ArrayList;", typeCache);
 		classArrayList = hierarchy.getClassDefinition(typeArrayList);
 
-		val typeLinkedList = DexClassType.parse("Ljava/util/LinkedList;", typeCache);
+		DexClassType typeLinkedList = DexClassType.parse("Ljava/util/LinkedList;", typeCache);
 		classLinkedList = hierarchy.getClassDefinition(typeLinkedList);
 
-		val typeMap = DexClassType.parse("Ljava/util/Map;", typeCache);
+		DexClassType typeMap = DexClassType.parse("Ljava/util/Map;", typeCache);
 		classMap = hierarchy.getInterfaceDefinition(typeMap);
 
-		val typeHashMap = DexClassType.parse("Ljava/util/HashMap;", typeCache);
+		DexClassType typeHashMap = DexClassType.parse("Ljava/util/HashMap;", typeCache);
 		classHashMap = hierarchy.getClassDefinition(typeHashMap);
 
-		val typeThrowable = DexClassType.parse("Ljava/lang/Throwable;", typeCache);
+		DexClassType typeThrowable = DexClassType.parse("Ljava/lang/Throwable;", typeCache);
 		classThrowable = hierarchy.getClassDefinition(typeThrowable);
 
-		val typeException = DexClassType.parse("Ljava/lang/Exception;", typeCache);
+		DexClassType typeException = DexClassType.parse("Ljava/lang/Exception;", typeCache);
 		classException = hierarchy.getClassDefinition(typeException);
 
-		val typeError = DexClassType.parse("Ljava/lang/Error;", typeCache);
+		DexClassType typeError = DexClassType.parse("Ljava/lang/Error;", typeCache);
 		classError = hierarchy.getClassDefinition(typeError);
 	}
 

@@ -1,13 +1,10 @@
 package uk.ac.cam.db538.dexter.utils;
 
 import java.io.Serializable;
-import lombok.NonNull;
 
 public class Pair<A, B> implements Serializable {
 	private static final long serialVersionUID = 1L;
-	@NonNull
 	private final A valA;
-	@NonNull
 	private final B valB;
 	
 	public Pair(A valA, B valB) {
@@ -41,13 +38,11 @@ public class Pair<A, B> implements Serializable {
 		return new Pair<X, Y>(a, b);
 	}
 	
-	@NonNull
 	@java.lang.SuppressWarnings("all")
 	public A getValA() {
 		return this.valA;
 	}
 	
-	@NonNull
 	@java.lang.SuppressWarnings("all")
 	public B getValB() {
 		return this.valB;

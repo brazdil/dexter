@@ -6,20 +6,20 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.List;
 
-import lombok.val;
-
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleOriginalRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 
 public class ControlFlowGraph_Test {
 
@@ -33,11 +33,11 @@ public class ControlFlowGraph_Test {
 	
   @Test
   public void testBlockRecognition_Empty() {
-    val cfg = new ControlFlowGraph(createCode());
-    val start = cfg.getStartBlock();
-    val exit = cfg.getExitBlock();
+    ControlFlowGraph cfg = new ControlFlowGraph(createCode());
+    CfgStartBlock start = cfg.getStartBlock();
+    CfgExitBlock exit = cfg.getExitBlock();
     
-    val basicBlocks = cfg.getBasicBlocks();
+    List<CfgBasicBlock> basicBlocks = cfg.getBasicBlocks();
     assertEquals(0, basicBlocks.size());
 
     assertEquals(1, start.getSuccessors().size());
@@ -48,21 +48,21 @@ public class ControlFlowGraph_Test {
 
   @Test
   public void testBlockRecognition_SingleInsn() {
-    val insnReturn = new DexInstruction_ReturnVoid(null);
-    val code = createCode(insnReturn);
+    DexCodeElement insnReturn = new DexInstruction_ReturnVoid(null);
+    DexCode code = createCode(insnReturn);
 
-    val cfg = new ControlFlowGraph(code);
-    val start = cfg.getStartBlock();
-    val exit = cfg.getExitBlock();
+    ControlFlowGraph cfg = new ControlFlowGraph(code);
+    CfgStartBlock start = cfg.getStartBlock();
+    CfgExitBlock exit = cfg.getExitBlock();
 
     // find successor of START
     assertEquals(1, start.getSuccessors().size());
-    val succ = start.getSuccessors().toArray()[0];
+    Object succ = start.getSuccessors().toArray()[0];
     assertTrue(succ instanceof CfgBasicBlock);
 
     // inspect block
-    val block = (CfgBasicBlock) succ;
-    val insns = block.getInstructions();
+    CfgBasicBlock block = (CfgBasicBlock) succ;
+    InstructionList insns = block.getInstructions();
     assertEquals(1, insns.size());
     assertTrue(insns.get(0).equals(insnReturn));
     
@@ -73,37 +73,37 @@ public class ControlFlowGraph_Test {
 
   @Test
   public void testBlockRecognition_MoreBlocks() {
-    val r0 = new DexSingleOriginalRegister(0);
-    val r1 = new DexSingleOriginalRegister(1);
-    val r2 = new DexSingleOriginalRegister(2);
+    DexSingleRegister r0 = new DexSingleOriginalRegister(0);
+    DexSingleRegister r1 = new DexSingleOriginalRegister(1);
+    DexSingleRegister r2 = new DexSingleOriginalRegister(2);
 
-    val i0 = new DexLabel(0);
-    val i1 = new DexInstruction_BinaryOp(r0, r1, r2, Opcode_BinaryOp.AddInt, null);
-    val i2 = new DexLabel(0);
-    val i3 = new DexInstruction_ReturnVoid(null);
-    val i4 = new DexInstruction_IfTest(r0, r1, i0, Opcode_IfTest.eq, null);
-    val i5 = new DexInstruction_BinaryOp(r0, r1, r2, Opcode_BinaryOp.AddInt, null);
-    val i6 = new DexInstruction_IfTest(r0, r1, i2, Opcode_IfTest.eq, null);
-    val i7 = new DexInstruction_BinaryOp(r0, r1, r2, Opcode_BinaryOp.AddInt, null);
-    val i8 = new DexInstruction_ReturnVoid(null);
+    DexLabel i0 = new DexLabel(0);
+    DexInstruction i1 = new DexInstruction_BinaryOp(r0, r1, r2, Opcode_BinaryOp.AddInt, null);
+    DexLabel i2 = new DexLabel(0);
+    DexInstruction i3 = new DexInstruction_ReturnVoid(null);
+    DexInstruction i4 = new DexInstruction_IfTest(r0, r1, i0, Opcode_IfTest.eq, null);
+    DexInstruction i5 = new DexInstruction_BinaryOp(r0, r1, r2, Opcode_BinaryOp.AddInt, null);
+    DexInstruction i6 = new DexInstruction_IfTest(r0, r1, i2, Opcode_IfTest.eq, null);
+    DexInstruction i7 = new DexInstruction_BinaryOp(r0, r1, r2, Opcode_BinaryOp.AddInt, null);
+    DexInstruction i8 = new DexInstruction_ReturnVoid(null);
     
-    val code = createCode(i0, i1, i2, i3, i4, i5, i6, i7, i8);
+    DexCode code = createCode(i0, i1, i2, i3, i4, i5, i6, i7, i8);
 
-    val cfg = new ControlFlowGraph(code);
-    val start = cfg.getStartBlock();
-    val exit = cfg.getExitBlock();
+    ControlFlowGraph cfg = new ControlFlowGraph(code);
+    CfgStartBlock start = cfg.getStartBlock();
+    CfgExitBlock exit = cfg.getExitBlock();
 
     assertEquals(5, cfg.getBasicBlocks().size());
-    val b1 = cfg.getBasicBlocks().get(0);
-    val b1Insns = b1.getInstructions();
-    val b2 = cfg.getBasicBlocks().get(1);
-    val b2Insns = b2.getInstructions();
-    val b3 = cfg.getBasicBlocks().get(2);
-    val b3Insns = b3.getInstructions();
-    val b4 = cfg.getBasicBlocks().get(3);
-    val b4Insns = b4.getInstructions();
-    val b5 = cfg.getBasicBlocks().get(4);
-    val b5Insns = b5.getInstructions();
+    CfgBasicBlock b1 = cfg.getBasicBlocks().get(0);
+    InstructionList b1Insns = b1.getInstructions();
+    CfgBasicBlock b2 = cfg.getBasicBlocks().get(1);
+    InstructionList b2Insns = b2.getInstructions();
+    CfgBasicBlock b3 = cfg.getBasicBlocks().get(2);
+    InstructionList b3Insns = b3.getInstructions();
+    CfgBasicBlock b4 = cfg.getBasicBlocks().get(3);
+    InstructionList b4Insns = b4.getInstructions();
+    CfgBasicBlock b5 = cfg.getBasicBlocks().get(4);
+    InstructionList b5Insns = b5.getInstructions();
 
     // find successor of START
     // check that it contains only DexCodeStart

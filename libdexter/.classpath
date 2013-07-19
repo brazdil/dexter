@@ -16,7 +16,6 @@
 	<classpathentry kind="lib" path="build/libs/dx.jar"/>
 	<classpathentry kind="lib" path="build/libs/guava-13.0.1.jar"/>
 	<classpathentry kind="lib" path="build/libs/jarsigner-dependency.jar"/>
-	<classpathentry kind="lib" path="build/libs/lombok-0.11.8.jar"/>
 	<classpathentry kind="lib" path="dalvik/build/libs/dalvik.jar"/>
 	<classpathentry kind="lib" path="smali/build/libs/smali.jar"/>
 	<classpathentry kind="lib" path="smali/gradle/wrapper/gradle-wrapper.jar"/>

@@ -2,8 +2,7 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Arrays;
 import java.util.LinkedList;
-
-import lombok.val;
+import java.util.List;
 
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
@@ -24,25 +23,26 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexWideOriginalRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
 public class DexInstruction_Invoke_Test extends HierarchyTest {
 
   @Test
   public void testParse_Invoke_Standard_RegisterParsing_Static() throws InstructionParseError {
-    val file = new DexFile();
-    val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
-    val returnType = TypeIdItem.internTypeIdItem(file, "V");
-    val intType = TypeIdItem.internTypeIdItem(file, "I");
-    val methodName = StringIdItem.internStringIdItem(file, "myMethod");
+    DexFile file = new DexFile();
+    TypeIdItem classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
+    TypeIdItem returnType = TypeIdItem.internTypeIdItem(file, "V");
+    TypeIdItem intType = TypeIdItem.internTypeIdItem(file, "I");
+    StringIdItem methodName = StringIdItem.internStringIdItem(file, "myMethod");
     for (int i = 0; i <= 5; ++i) {
-      val paramsList = new LinkedList<TypeIdItem>();
+      List<TypeIdItem> paramsList = new LinkedList<TypeIdItem>();
       for (int j = 0; j < i; ++j)
         paramsList.add(intType);
 
-      val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
-      val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
-      val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+      TypeListItem paramsItem = TypeListItem.internTypeListItem(file, paramsList);
+      ProtoIdItem protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
+      MethodIdItem methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
 
       Utils.parseAndCompare(
         new Instruction35c(Opcode.INVOKE_STATIC, (byte) i, (byte) 11, (byte) 12, (byte) 13, (byte) 14, (byte) 15, methodItem),
@@ -58,19 +58,19 @@ public class DexInstruction_Invoke_Test extends HierarchyTest {
 
   @Test
   public void testParse_Invoke_Standard_RegisterParsing_NonStatic() throws InstructionParseError {
-    val file = new DexFile();
-    val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
-    val returnType = TypeIdItem.internTypeIdItem(file, "V");
-    val intType = TypeIdItem.internTypeIdItem(file, "I");
-    val methodName = StringIdItem.internStringIdItem(file, "myMethod");
+    DexFile file = new DexFile();
+    TypeIdItem classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
+    TypeIdItem returnType = TypeIdItem.internTypeIdItem(file, "V");
+    TypeIdItem intType = TypeIdItem.internTypeIdItem(file, "I");
+    StringIdItem methodName = StringIdItem.internStringIdItem(file, "myMethod");
     for (int i = 0; i <= 4; ++i) {
-      val paramsList = new LinkedList<TypeIdItem>();
+      List<TypeIdItem> paramsList = new LinkedList<TypeIdItem>();
       for (int j = 0; j < i; ++j)
         paramsList.add(intType);
 
-      val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
-      val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
-      val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+      TypeListItem paramsItem = TypeListItem.internTypeListItem(file, paramsList);
+      ProtoIdItem protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
+      MethodIdItem methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
 
       Utils.parseAndCompare(
         new Instruction35c(Opcode.INVOKE_DIRECT, (byte) i + 1, (byte) 11, (byte) 12, (byte) 13, (byte) 14, (byte) 15, methodItem),
@@ -85,18 +85,18 @@ public class DexInstruction_Invoke_Test extends HierarchyTest {
 
   @Test
   public void testParse_Invoke_Standard_CallTypes() throws InstructionParseError {
-    val file = new DexFile();
-    val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
-    val returnType = TypeIdItem.internTypeIdItem(file, "V");
-    val intType = TypeIdItem.internTypeIdItem(file, "I");
-    val methodName = StringIdItem.internStringIdItem(file, "myMethod");
+    DexFile file = new DexFile();
+    TypeIdItem classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
+    TypeIdItem returnType = TypeIdItem.internTypeIdItem(file, "V");
+    TypeIdItem intType = TypeIdItem.internTypeIdItem(file, "I");
+    StringIdItem methodName = StringIdItem.internStringIdItem(file, "myMethod");
 
-    val paramsList = new LinkedList<TypeIdItem>();
+    List<TypeIdItem> paramsList = new LinkedList<TypeIdItem>();
     paramsList.add(intType);
 
-    val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
-    val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
-    val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+    TypeListItem paramsItem = TypeListItem.internTypeListItem(file, paramsList);
+    ProtoIdItem protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
+    MethodIdItem methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
 
     Utils.parseAndCompare(
       new Instruction[] {
@@ -116,19 +116,19 @@ public class DexInstruction_Invoke_Test extends HierarchyTest {
 
   @Test
   public void testParse_Invoke_Range() throws InstructionParseError {
-    val file = new DexFile();
-    val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
-    val returnType = TypeIdItem.internTypeIdItem(file, "V");
-    val intType = TypeIdItem.internTypeIdItem(file, "I");
-    val methodName = StringIdItem.internStringIdItem(file, "myMethod");
+    DexFile file = new DexFile();
+    TypeIdItem classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
+    TypeIdItem returnType = TypeIdItem.internTypeIdItem(file, "V");
+    TypeIdItem intType = TypeIdItem.internTypeIdItem(file, "I");
+    StringIdItem methodName = StringIdItem.internStringIdItem(file, "myMethod");
 
-    val paramsList = new LinkedList<TypeIdItem>();
+    List<TypeIdItem> paramsList = new LinkedList<TypeIdItem>();
     for (int j = 0; j < 10; ++j)
       paramsList.add(intType);
 
-    val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
-    val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
-    val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+    TypeListItem paramsItem = TypeListItem.internTypeListItem(file, paramsList);
+    ProtoIdItem protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
+    MethodIdItem methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
 
     Utils.parseAndCompare(
       new Instruction[] {
@@ -148,11 +148,11 @@ public class DexInstruction_Invoke_Test extends HierarchyTest {
 
   @Test
   public void testCheckArguments_Static_Correct() {
-    val cache = this.hierarchy.getTypeCache();
-    val params = Arrays.asList(new DexRegisterType[] {
+    DexTypeCache cache = this.hierarchy.getTypeCache();
+    List<DexRegisterType> params = Arrays.asList(new DexRegisterType[] {
                                  DexRegisterType.parse("J", cache)
                                });
-    val regs = Arrays.asList(new DexStandardRegister[] {
+    List<DexStandardRegister> regs = Arrays.asList(new DexStandardRegister[] {
                                new DexWideOriginalRegister(1)
                              });
 
@@ -168,11 +168,11 @@ public class DexInstruction_Invoke_Test extends HierarchyTest {
 
   @Test(expected=Error.class)
   public void testCheckArguments_Static_Incorrect() {
-	    val cache = this.hierarchy.getTypeCache();
-	    val params = Arrays.asList(new DexRegisterType[] {
+	    DexTypeCache cache = this.hierarchy.getTypeCache();
+	    List<DexRegisterType> params = Arrays.asList(new DexRegisterType[] {
 	                                 DexRegisterType.parse("J", cache)
 	                               });
-	    val regs = Arrays.asList(new DexStandardRegister[] {
+	    List<DexStandardRegister> regs = Arrays.asList(new DexStandardRegister[] {
 	                               new DexSingleOriginalRegister(1)
 	                             });
 

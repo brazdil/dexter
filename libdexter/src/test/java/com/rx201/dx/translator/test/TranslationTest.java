@@ -8,20 +8,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
-import lombok.val;
-
 import org.jf.dexlib.DexFile;
-import org.jf.dexlib.DexFileFromMemory;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.rx201.dx.translator.DexCodeGeneration;
 import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.utils.Pair;
+
+import com.rx201.dx.translator.DexCodeGeneration;
 
 @RunWith(Parameterized.class)
 public class TranslationTest {
@@ -75,13 +76,13 @@ public class TranslationTest {
 	public void test() throws IOException{
 
 		System.out.println("Scanning application");
-	    val fileApp = new DexFile(file);
-	    val fileAux = new DexFile("dexter_aux/build/libs/dexter_aux.dex");
+	    DexFile fileApp = new DexFile(file);
+	    DexFile fileAux = new DexFile("dexter_aux/build/libs/dexter_aux.dex");
 	    
 	    System.out.println("Building hierarchy");
-	    val buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);
-	    val hierarchy = buildData.getValA();
-	    val renamerAux = buildData.getValB();
+	    Pair<RuntimeHierarchy, ClassRenamer> buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);
+	    RuntimeHierarchy hierarchy = buildData.getValA();
+	    ClassRenamer renamerAux = buildData.getValB();
 	    
 	    System.out.println("Parsing application");
 	    AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
