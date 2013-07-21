@@ -9,6 +9,7 @@
         android:targetSdkVersion="16" />
 
     <application
+        android:largeHeap="true"
         android:name=".DexterApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
