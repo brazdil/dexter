@@ -7,6 +7,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.apache.commons.io.FileUtils;
@@ -16,7 +18,10 @@ import org.jf.dexlib.DexFileFromMemory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
@@ -37,6 +42,7 @@ public class InstrumentActivity extends Activity {
 
     private TextView textStatus;
     private ProgressCircleView progressCircle;
+    private ProgressBar memoryBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +56,7 @@ public class InstrumentActivity extends Activity {
 
         textStatus = (TextView) findViewById(R.id.textStatus);
         progressCircle = (ProgressCircleView) findViewById(R.id.progressCircle);
+        memoryBar = (ProgressBar) findViewById(R.id.memoryBar);
 
         // load fonts
         ttfRobotoLight = Typeface.createFromAsset(getAssets(), "Roboto-Light.ttf");
@@ -87,6 +94,32 @@ public class InstrumentActivity extends Activity {
         new Thread(workerInstrumentation).start();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        System.out.println("SCHEDULED!!!!");
+        memoryTimer.schedule(memoryUpdateTask, 0, 500);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        memoryUpdateTask.cancel();
+        System.out.println("PAUSED!!!!");
+    }
+
+    private ProgressCallback callbackProgressUpdate = new ProgressCallback() {
+        @Override
+        public void update(final int finished, final int outOf) {
+            InstrumentActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressCircle.setValue(100 * finished / outOf);
+                }
+            });
+        }
+    };
+
     private Runnable workerInstrumentation = new Runnable() {
         @Override
         public void run() {
@@ -113,7 +146,11 @@ public class InstrumentActivity extends Activity {
                 ClassRenamer renamerAux = buildData.getValB();
 
                 setStatus("Analyzing");
-                Dex dexApp = new Dex(fileApp, hierarchy, new AuxiliaryDex(fileAux, hierarchy, renamerAux));
+                Dex dexApp = new Dex(
+                    fileApp,
+                    hierarchy,
+                    new AuxiliaryDex(fileAux, hierarchy, renamerAux),
+                    callbackProgressUpdate);
 
                 buildData = null;
                 fileApp = null;
@@ -145,6 +182,24 @@ public class InstrumentActivity extends Activity {
                 @Override
                 public void run() {
                     textStatus.setText(status + "...");
+                }
+            });
+        }
+    };
+
+    private final Timer memoryTimer = new Timer();
+    private final TimerTask memoryUpdateTask = new TimerTask() {
+        @Override
+        public void run() {
+            InstrumentActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Runtime rt = Runtime.getRuntime();
+                    long max = rt.maxMemory();
+                    long allocated = rt.totalMemory();
+                    long free = rt.freeMemory();
+
+                    memoryBar.setProgress((int) (100L * (allocated - free) / max));
                 }
             });
         }

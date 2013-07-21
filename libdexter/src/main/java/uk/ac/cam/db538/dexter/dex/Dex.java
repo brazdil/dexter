@@ -13,6 +13,7 @@ import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
+import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -25,15 +26,18 @@ public class Dex {
   private final Set<DexClass> _classes;
   @Getter private final Set<DexClass> classes;
 
+  private final ProgressCallback progressCallback;
+
 //  @Getter private DexClass externalStaticFieldTaint_Class;
 //  @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
 
   /*
    * Creates an empty Dex
    */
-  public Dex(RuntimeHierarchy hierarchy, AuxiliaryDex dexAux) {
+  public Dex(RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, ProgressCallback progressCallback) {
     this.hierarchy = hierarchy;
     this.auxiliaryDex = dexAux;
+    this.progressCallback = progressCallback;
     
     this._classes = new HashSet<DexClass>();
     this.classes = Collections.unmodifiableSet(this._classes);
@@ -42,18 +46,33 @@ public class Dex {
   /*
    * Creates a new Dex and parses all classes inside the given DexFile
    */
+  public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, ProgressCallback progressCallback) {
+	this(hierarchy, dexAux, progressCallback);
+
+    val dexClsInfos = dex.ClassDefsSection.getItems();
+    int clsCount = dexClsInfos.size();
+    int i = 0;
+    progressUpdate(0, clsCount);
+    for (val dexClsInfo : dexClsInfos) {
+        this._classes.add(new DexClass(this, dexClsInfo));
+        progressUpdate(++i, clsCount);
+    }
+  }
+
   public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux) {
-	this(hierarchy, dexAux);
-	
-    this._classes.addAll(parseAllClasses(dex));
+    this(dex, hierarchy, dexAux, (ProgressCallback) null);
   }
 
   /*
    * This constructor applies a descriptor renamer on the classes parsed from given DexFile
    */
-  public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, ClassRenamer renamer) {
-	  this(dex, setRenamer(hierarchy, renamer), dexAux);
+  public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, ClassRenamer renamer, ProgressCallback progressCallback) {
+	  this(dex, setRenamer(hierarchy, renamer), dexAux, progressCallback);
 	  unsetRenamer(hierarchy);
+  }
+
+  public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, ClassRenamer renamer) {
+      this(dex, hierarchy, dexAux, renamer, null);
   }
   
   private static RuntimeHierarchy setRenamer(RuntimeHierarchy hierarchy, ClassRenamer renamer) {
@@ -69,14 +88,9 @@ public class Dex {
     return hierarchy.getTypeCache();
   }
 
-  private List<DexClass> parseAllClasses(DexFile file) {
-    val dexClsInfos = file.ClassDefsSection.getItems();
-    val classList = new ArrayList<DexClass>(dexClsInfos.size());
-
-    for (val dexClsInfo : dexClsInfos)
-      classList.add(new DexClass(this, dexClsInfo));
-
-    return classList;
+  private void progressUpdate(int finished, int outOf) {
+      if (this.progressCallback != null)
+          this.progressCallback.update(finished, outOf);
   }
 
 //  private List<DexClass> generateExtraClasses() {
@@ -126,9 +140,14 @@ public class Dex {
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();
 
+    int i = 0;
+    int count = _classes.size();
+    progressUpdate(0, count);
     val asmCache = new DexAssemblingCache(outFile, hierarchy);
-    for (val cls : classes)
+    for (val cls : _classes) {
       cls.writeToFile(outFile, asmCache);
+      progressUpdate(++i, count);
+    }
 
     // Apply jumbo-instruction fix requires ReferencedItem being 
     // placed first, after which the code needs to be placed again
