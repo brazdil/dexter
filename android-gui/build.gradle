@@ -27,7 +27,7 @@ android {
 
 android.applicationVariants.each { variant ->
     def varname = variant.name
-    task "copy_dexter_aux_$varname" (dependsOn: ':libdexter:dexter_aux:dex') {
+    task "copy_dexter_aux_$varname" (dependsOn: [':libdexter:dexter_aux:dex', ':android-gui:mergeDebugAssets'] ) {
         doLast {
             copy {
                 from project(':libdexter:dexter_aux').dexFile
