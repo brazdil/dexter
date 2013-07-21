@@ -23,7 +23,7 @@
 
     <fragment
         android:id="@+id/package_list"
-        android:name="uk.ac.cam.db538.dexter.PackageListFragment"
+        android:name="uk.ac.cam.db538.dexter.android.PackageListFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"

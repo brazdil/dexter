@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/android-gui/android-gui.iml" filepath="$PROJECT_DIR$/android-gui/android-gui.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android-guiProject.iml" filepath="$PROJECT_DIR$/android-guiProject.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libdexter/libcore/dex/dex.iml" filepath="$PROJECT_DIR$/libdexter/libcore/dex/dex.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libdexter/smali/dexlib/dexlib.iml" filepath="$PROJECT_DIR$/libdexter/smali/dexlib/dexlib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/dexter.iml" filepath="$PROJECT_DIR$/dexter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libdexter/dexter_aux/dexter_aux.iml" filepath="$PROJECT_DIR$/libdexter/dexter_aux/dexter_aux.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libdexter/dalvik/dx/dx.iml" filepath="$PROJECT_DIR$/libdexter/dalvik/dx/dx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libdexter/libdexter.iml" filepath="$PROJECT_DIR$/libdexter/libdexter.iml" />
+    </modules>
+  </component>
+</project>
+
