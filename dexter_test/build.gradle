@@ -11,20 +11,15 @@ apply plugin: 'java'
 sourceCompatibility = targetCompatibility = 1.6
 
 ext.jarFile = new File(libsDir, project.name + ".jar")
-ext.dexFile = new File(libsDir, "classes.dex")
+// ext.dexFile = new File(libsDir, "classes.dex")
 ext.apkFile = new File(libsDir, project.name + "_apk.jar")
 
-task dex (dependsOn: jar) {
+task apk (dependsOn: jar) {
 
     inputs.file project.ext.jarFile
-    outputs.file project.ext.dexFile
+    outputs.file project.ext.apkFile
 
     doLast {
-        Main.main([ "--output", dexFile.getPath(), jarFile.getPath() ] as String[])
+        Main.main([ "--output", apkFile.getPath(), jarFile.getPath() ] as String[])
     }
-}
-
-task apk (type: Jar, dependsOn: dex) {
-    baseName = project.name + "_apk"
-    from dexFile
 }
