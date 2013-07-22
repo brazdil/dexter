@@ -128,9 +128,10 @@ public class InstrumentActivity extends Activity {
                 DexterApplication thisApp = (DexterApplication) getApplication();
 
                 setStatus("Loading files");
+                setWaiting();
 
                 /*
-                 * We could load the DexFiles while framework is being loade, but that might
+                 * We could load the DexFiles while framework is being loaded, but that might
                  * use too much memory. This way, only one .dex file is being loaded at
                  * any point of time.
                  */
@@ -168,6 +169,7 @@ public class InstrumentActivity extends Activity {
                 byte[] fileApp_New = dexApp.writeToFile();
 
                 setStatus("Signing");
+                setWaiting();
                 // Apk.produceAPK(localFile, localFile, null, fileApp_New);
 
                 setStatus("DONE");
@@ -182,6 +184,15 @@ public class InstrumentActivity extends Activity {
                 @Override
                 public void run() {
                     textStatus.setText(status + "...");
+                }
+            });
+        }
+
+        private void setWaiting() {
+            InstrumentActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressCircle.setWaiting();
                 }
             });
         }

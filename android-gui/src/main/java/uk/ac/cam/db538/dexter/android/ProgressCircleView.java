@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.android;
 
+import android.animation.TimeInterpolator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -13,6 +15,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 /**
  * Created by db538 on 7/19/13.
@@ -39,12 +42,18 @@ public class ProgressCircleView extends View {
     private float radiusText;
     private float sizeText;
 
+    private float arcWaiting = 80.0f;
+    private long durationWaiting = 1000;
+    private ValueAnimator animatorWaiting = null;
+
     private PointF posCenter;
     private RectF rectOuterCircle;
     private RectF rectOuterCircle_extended;
     private RectF rectInnerCircle;
     private PointF posText_Value;
     private PointF posText_Percent;
+
+    private boolean waitingMode = false;
 
     public ProgressCircleView(Context context) {
         super(context);
@@ -98,6 +107,12 @@ public class ProgressCircleView extends View {
     }
 
     public void setValue(int value) {
+        this.waitingMode = false;
+        if (this.animatorWaiting != null) {
+            this.animatorWaiting.cancel();
+            this.animatorWaiting = null;
+        }
+
         this.value = value;
         computeTextPosition();
 
@@ -202,11 +217,39 @@ public class ProgressCircleView extends View {
         canvas.rotate(90, posCenter.x, posCenter.y);
     }
 
+    private void drawWaitingCircle(Canvas canvas) {
+        canvas.rotate(-90, posCenter.x, posCenter.y);
+        canvas.drawCircle(posCenter.x, posCenter.y, radiusOuter, paintOuterCircle);
+        canvas.drawCircle(posCenter.x, posCenter.y, radiusInner, paintInnerCircle);
+        canvas.drawArc(rectOuterCircle_extended, (Float) animatorWaiting.getAnimatedValue(), -360f + arcWaiting, true, paintInnerCircle);
+        canvas.rotate(90, posCenter.x, posCenter.y);
+    }
+
+    public void setWaiting() {
+        animatorWaiting = ValueAnimator.ofFloat(0.0f, 360.0f);
+        animatorWaiting.setInterpolator(new LinearInterpolator());
+        animatorWaiting.setRepeatCount(ValueAnimator.INFINITE);
+        animatorWaiting.setDuration(durationWaiting);
+        animatorWaiting.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                ProgressCircleView.this.invalidate();
+            }
+        });
+
+        this.waitingMode = true;
+        animatorWaiting.start();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        drawProgressCircle(canvas);
-        drawValueText(canvas);
+        if (this.waitingMode) {
+            drawWaitingCircle(canvas);
+        } else {
+            drawProgressCircle(canvas);
+            drawValueText(canvas);
+        }
     }
 }
