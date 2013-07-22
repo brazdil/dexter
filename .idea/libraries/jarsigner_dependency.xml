@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jarsigner-dependency">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libdexter/libs/jarsigner-dependency.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
