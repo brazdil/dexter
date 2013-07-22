@@ -7,14 +7,20 @@ import lombok.val;
 
 import org.jf.dexlib.DexFile;
 
+import com.rx201.dx.translator.DexCodeGeneration;
+
 import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.transform.DexterTransform;
 
 public class MainConsole {
   
   public static void main(String[] args) throws IOException {
+	DexCodeGeneration.DEBUG = false;
+	DexCodeGeneration.INFO = false;
+	
     if (args.length != 2) {
       System.err.println("usage: dexter <framework-dir> <apk-file>");
       System.exit(1);
@@ -50,8 +56,9 @@ public class MainConsole {
     AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
     Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
     
-//    System.out.println("Instrumenting application");
-//    dexApp.instrument(false);
+    System.out.println("Instrumenting application");
+    DexterTransform transform = new DexterTransform();
+    transform.apply(dexApp);
     
     System.out.println("Recompiling application");
     val newDex = dexApp.writeToFile();
