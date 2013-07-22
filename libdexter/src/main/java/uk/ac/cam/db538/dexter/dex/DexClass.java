@@ -81,7 +81,7 @@ public class DexClass {
 			// static fields
 			int sfieldIndex = 0;
 			for (val sfieldItem : clsData.getStaticFields())
-				this._staticFields.add(new DexStaticField(this, clsItem, sfieldItem, sfieldIndex, annotationDirectory));
+				this._staticFields.add(new DexStaticField(this, clsItem, sfieldItem, sfieldIndex++, annotationDirectory));
 
 			// instance fields
 			for (val ifieldItem : clsData.getInstanceFields())
