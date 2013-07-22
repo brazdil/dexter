@@ -51,6 +51,9 @@ public class DexterApplication extends Application {
 
             System.out.println(
             testLoader.loadClass("uk.ac.cam.db538.dexter.tests.TaintChecker").getName());
+
+            // TODO: design a simple API just with primitives
+            // getTestCount, execTest(index) = bool, getTestName(index) = String, etc.
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException(ex);
