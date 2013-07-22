@@ -60,6 +60,10 @@ public class DexMethod {
 		this.paramAnnotations = init_ParseParamAnnotations(getParentFile(), methodInfo, annoDir);
 	}
 	
+	public DexMethod(DexMethod toClone, DexCode newMethodBody) {
+		this(toClone.parentClass, toClone.methodDef, newMethodBody);
+	}
+	
 	private static MethodDefinition init_FindMethodDefinition(DexClass parentClass, EncodedMethod methodItem) {
 		val hierarchy = parentClass.getParentFile().getHierarchy();
 		val classDef = parentClass.getClassDef();

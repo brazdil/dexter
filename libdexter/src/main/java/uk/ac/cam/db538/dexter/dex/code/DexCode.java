@@ -26,6 +26,10 @@ public class DexCode {
 	  this.hierarchy = hierarchy;
   }
 
+  public DexCode(DexCode toClone, InstructionList newInstructionList) {
+	  this(newInstructionList, toClone.parameters, toClone.hierarchy);
+  }
+
   public Set<DexRegister> getUsedRegisters() {
 	    val set = new HashSet<DexRegister>();
 	    for (val elem : instructionList)
