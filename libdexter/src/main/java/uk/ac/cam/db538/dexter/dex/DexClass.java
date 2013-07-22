@@ -28,42 +28,29 @@ import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
+import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexClass {
 
 	@Getter private final Dex parentFile;
 	@Getter private final BaseClassDefinition classDef;
   
-	private final List<DexMethod> _methods;
-	@Getter private final List<DexMethod> methods;
-  
-	private final List<DexInstanceField> _instanceFields;
-	@Getter private final List<DexInstanceField> instanceFields;
-
-	private final List<DexStaticField> _staticFields;
-	@Getter private final List<DexStaticField> staticFields;
-	
-	private final List<DexAnnotation> _annotations;
-	@Getter private final List<DexAnnotation> annotations;
+	@Getter private List<DexMethod> methods;
+    @Getter private List<DexInstanceField> instanceFields;
+	@Getter private List<DexStaticField> staticFields;
+	@Getter private List<DexAnnotation> annotations;
   
 	@Getter private final String sourceFile;
   
 	public DexClass(Dex parent, BaseClassDefinition classDef, String sourceFile) {
 		this.parentFile = parent;
 		this.classDef = classDef;
-    
-		this._methods = new ArrayList<DexMethod>();
-    	this.methods = Collections.unmodifiableList(this._methods);
-    
-    	this._instanceFields = new ArrayList<DexInstanceField>();
-    	this.instanceFields = Collections.unmodifiableList(this._instanceFields);
 
-    	this._staticFields = new ArrayList<DexStaticField>();
-    	this.staticFields = Collections.unmodifiableList(this._staticFields);
-    	
-    	this._annotations = new ArrayList<DexAnnotation>();
-    	this.annotations = Collections.unmodifiableList(this._annotations);
-    
+		replaceMethods(new ArrayList<DexMethod>());
+		replaceInstanceFields(new ArrayList<DexInstanceField>());
+		replaceStaticFields(new ArrayList<DexStaticField>());
+		replaceAnnotations(new ArrayList<DexAnnotation>());
+        
     	this.sourceFile = sourceFile;
 	}
   
@@ -73,25 +60,31 @@ public class DexClass {
 		     DexUtils.parseString(clsItem.getSourceFile()));
 
 		val annotationDirectory = clsItem.getAnnotations();
-		this._annotations.addAll(init_ParseAnnotations(parent, annotationDirectory));
+		replaceAnnotations(init_ParseAnnotations(parent, annotationDirectory));
 		
 		val clsData = clsItem.getClassData();
 		if (clsData != null) {
 			
 			// static fields
+			List<DexStaticField> sfields = new ArrayList<DexStaticField>(clsData.getStaticFieldCount()); 
 			int sfieldIndex = 0;
 			for (val sfieldItem : clsData.getStaticFields())
-				this._staticFields.add(new DexStaticField(this, clsItem, sfieldItem, sfieldIndex++, annotationDirectory));
+				sfields.add(new DexStaticField(this, clsItem, sfieldItem, sfieldIndex++, annotationDirectory));
+			replaceStaticFields(sfields);
 
 			// instance fields
+			List<DexInstanceField> ifields = new ArrayList<DexInstanceField>(clsData.getInstanceFieldCount()); 
 			for (val ifieldItem : clsData.getInstanceFields())
-				this._instanceFields.add(new DexInstanceField(this, ifieldItem, annotationDirectory));
+				ifields.add(new DexInstanceField(this, ifieldItem, annotationDirectory));
+			replaceInstanceFields(ifields);
 			
 			// methods
+			List<DexMethod> methods = new ArrayList<DexMethod>(clsData.getDirectMethodCount() + clsData.getStaticFieldCount());
 			for (val methodItem : clsData.getDirectMethods())
-				this._methods.add(new DexMethod(this, methodItem, annotationDirectory));
+				methods.add(new DexMethod(this, methodItem, annotationDirectory));
 			for (val methodItem : clsData.getVirtualMethods())
-				this._methods.add(new DexMethod(this, methodItem, annotationDirectory));
+				methods.add(new DexMethod(this, methodItem, annotationDirectory));
+			replaceMethods(methods);
 		}
 	}
 	
@@ -123,10 +116,6 @@ public class DexClass {
 			return Collections.emptyList();
 	}
 
-	public void addAnnotation(DexAnnotation anno) {
-		this._annotations.add(anno);
-	}
-
 	public void instrument(DexInstrumentationCache cache) {
 //		System.out.println("Instrumenting class " + this.classDef.getType().getPrettyName());
 //	  
@@ -153,27 +142,27 @@ public class DexClass {
 		for (val anno : classAnnotations)
 			asmClassAnnotations.add(anno.writeToFile(outFile, cache));
 
-		val asmMethodAnnotations = new ArrayList<MethodAnnotation>(_methods.size());
-		for (val method : _methods) {
+		val asmMethodAnnotations = new ArrayList<MethodAnnotation>(methods.size());
+		for (val method : methods) {
 			val methodAnno = method.assembleAnnotations(outFile, cache);
 			if (methodAnno != null)
 				asmMethodAnnotations.add(methodAnno);
 		}
 
-		val asmFieldAnnotations = new ArrayList<FieldAnnotation>(_instanceFields.size() + _staticFields.size());
-		for (val field : _instanceFields) {
+		val asmFieldAnnotations = new ArrayList<FieldAnnotation>(instanceFields.size() + staticFields.size());
+		for (val field : instanceFields) {
 			val fieldAnno = field.assembleAnnotations(outFile, cache);
 			if (fieldAnno != null)
 				asmFieldAnnotations.add(fieldAnno);
 		}
-		for (val field : _staticFields) {
+		for (val field : staticFields) {
 			val fieldAnno = field.assembleAnnotations(outFile, cache);
 			if (fieldAnno != null)
 				asmFieldAnnotations.add(fieldAnno);
 		}
 
-		val asmParamAnnotations = new ArrayList<ParameterAnnotation>(_methods.size());
-		for (val method : _methods) {
+		val asmParamAnnotations = new ArrayList<ParameterAnnotation>(methods.size());
+		for (val method : methods) {
 			val paramAnno = method.assembleParameterAnnotations(outFile, cache);
 			if (paramAnno != null)
 				asmParamAnnotations.add(paramAnno);
@@ -202,7 +191,7 @@ public class DexClass {
 		val asmVirtualMethods = new LinkedList<EncodedMethod>();
 		val staticFieldInitializers = new LinkedList<StaticFieldInitializer>();
 
-		for (val field : _staticFields) {
+		for (val field : staticFields) {
 			EncodedField outField = field.writeToFile(outFile, cache);  
 			asmStaticFields.add(outField);
         
@@ -212,10 +201,10 @@ public class DexClass {
 			staticFieldInitializers.add(new StaticFieldInitializer(initialValue, outField));
 		}
     
-		for (val field : _instanceFields)
+		for (val field : instanceFields)
 			asmInstanceFields.add(field.writeToFile(outFile, cache));
 
-		for (val method : _methods) {
+		for (val method : methods) {
 			if (method.getMethodDef().isVirtual())
 				asmVirtualMethods.add(method.writeToFile(outFile, cache));
 			else
@@ -233,5 +222,21 @@ public class DexClass {
 				outFile, asmClassType, asmAccessFlags, asmSuperType,
 				asmInterfaces, asmSourceFile, asmAnnotations,
 				classData, staticFieldInitializers);
+	}
+	
+	public void replaceMethods(List<DexMethod> newMethods) {
+		this.methods = Utils.finalList(newMethods);
+	}
+
+	public void replaceStaticFields(List<DexStaticField> newStaticFields) {
+		this.staticFields = Utils.finalList(newStaticFields);
+	}
+
+	public void replaceInstanceFields(List<DexInstanceField> newInstanceFields) {
+		this.instanceFields = Utils.finalList(newInstanceFields);
+	}
+
+	public void replaceAnnotations(List<DexAnnotation> newAnnotations) {
+		this.annotations = Utils.finalList(newAnnotations);
 	}
 }
