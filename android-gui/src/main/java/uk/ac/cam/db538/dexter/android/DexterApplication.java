@@ -3,6 +3,8 @@ package uk.ac.cam.db538.dexter.android;
 import android.app.Application;
 import android.util.Log;
 
+import com.rx201.dx.translator.DexCodeGeneration;
+
 import org.jf.dexlib.DexFile;
 
 import java.io.File;
@@ -28,6 +30,10 @@ public class DexterApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // disable debug
+        DexCodeGeneration.DEBUG = false;
+        DexCodeGeneration.INFO = false;
 
         // create file/dir constants
         frameworkCache = new File(this.getFilesDir(), "framework.cache");
