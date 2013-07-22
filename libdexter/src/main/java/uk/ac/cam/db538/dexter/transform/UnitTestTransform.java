@@ -14,8 +14,13 @@ public class UnitTestTransform extends DexterTransform {
 
 	@Override
 	public DexMethod doFirst(DexMethod method) {
-		if (isTaintCheckMethod(method))
-			System.out.println("FOUND IT!!!");
+		if (isTaintCheckMethod(method)) {
+			method.getMethodBody().getInstructionList().dump();
+			
+//			val oldMethodBody = method.getMethodBody();
+//			val regArg = oldMethodBody.getParameters().get(0).getRegister();
+//			val regArgTaint = regArg.getTaintRegister();
+		}
 		
 		return super.doFirst(method);
 	}
@@ -29,8 +34,7 @@ public class UnitTestTransform extends DexterTransform {
 				method.getParentClass().getClassDef().getType().getDescriptor().equals(TAINTCHECK_CLASS) &&
 				method.getMethodDef().getMethodId().getName().equals(TAINTCHECK_METHOD) &&
 				method.getMethodDef().getMethodId().getPrototype().getDescriptor().equals(TAINTCHECK_PROTOTYPE) &&
-				method.getMethodDef().isStatic();
+				method.getMethodDef().isStatic() &&
+				method.getMethodBody() != null;
 	}
-
-	
 }
