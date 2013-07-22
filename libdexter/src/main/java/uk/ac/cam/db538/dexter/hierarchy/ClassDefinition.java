@@ -13,27 +13,16 @@ public class ClassDefinition extends BaseClassDefinition {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final List<InterfaceDefinition> _interfaces;
-	@Getter private final List<InterfaceDefinition> interfaces;
-
 	private final List<InstanceFieldDefinition> _instanceFields;
 	@Getter private final List<InstanceFieldDefinition> instanceFields;
 
 	public ClassDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
 		super(classType, accessFlags, isInternal);
-		
-		this._interfaces = new ArrayList<InterfaceDefinition>();
-		this.interfaces = Collections.unmodifiableList(this._interfaces);
 
 		this._instanceFields = new ArrayList<InstanceFieldDefinition>();
 		this.instanceFields = Collections.unmodifiableList(this._instanceFields);
 	}
 	
-	public void addImplementedInterface(InterfaceDefinition iface) {
-		this._interfaces.add(iface);
-		iface._implementors.add(this);
-	}
-
 	public void addDeclaredInstanceField(InstanceFieldDefinition field) {
 		assert !field.isStatic();
 		assert field.getParentClass() == this;
@@ -83,27 +72,4 @@ public class ClassDefinition extends BaseClassDefinition {
 				return null;
 		}
 	};
-
-	@Override
-	public StaticFieldDefinition getAccessedStaticField(DexFieldId fieldId) {
-		// Extend the implementation of method that explores parents
-		// of a class to find the definition of a static field
-		// to also explore its interfaces.
-		// Example: https://android.googlesource.com/platform/dalvik/+/master/tests/008-instanceof/src
-		
-		StaticFieldDefinition def = super.getAccessedStaticField(fieldId);
-		if (def != null)
-			return def;
-		
-		for (val iface : this.interfaces) {
-			def = iface.iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
-			if (def != null)
-				return def;
-		}
-		
-		return null;
-	}
-
-	
-	
 }

@@ -89,12 +89,11 @@ public class HierarchyBuilder implements Serializable {
 			
 			scanInstanceFields(clsScanner, clsDef);
 			scanSuperclass(clsScanner, clsDef, baseclsData, isInternal);
-
-			baseclsData.interfaces = clsScanner.getInterfaces();
 		}
 		
 		scanMethods(clsScanner, baseclsData.classDef);
 		scanStaticFields(clsScanner, baseclsData.classDef);
+		baseclsData.interfaces = clsScanner.getInterfaces();
 		
 		// store data
 		ClassVariants clsVariants = definedClasses.get(clsType);
@@ -168,20 +167,15 @@ public class HierarchyBuilder implements Serializable {
 					baseCls.setSuperclassLink(sclsVariants.getClassData().classDef);
 			}
 
-			// proper classes only (not interfaces)
-			if (baseCls instanceof ClassDefinition) {
-				val properCls = (ClassDefinition) baseCls;
-				
-				// connect to interfaces
-				val ifaces = clsData.interfaces;
-				if (ifaces != null) {
-					for (val ifaceType : ifaces) {
-						val ifaceInfo_Pair = definedClasses.get(ifaceType);
-						if (ifaceInfo_Pair == null || !(ifaceInfo_Pair.getClassData().classDef instanceof InterfaceDefinition))
-							throw new HierarchyException("Class " + baseCls.getType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
-						else
-							properCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getClassData().classDef);
-					}
+			// connect to interfaces
+			val ifaces = clsData.interfaces;
+			if (ifaces != null) {
+				for (val ifaceType : ifaces) {
+					val ifaceInfo_Pair = definedClasses.get(ifaceType);
+					if (ifaceInfo_Pair == null || !(ifaceInfo_Pair.getClassData().classDef instanceof InterfaceDefinition))
+						throw new HierarchyException("Class " + baseCls.getType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
+					else
+						baseCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getClassData().classDef);
 				}
 			}
 			

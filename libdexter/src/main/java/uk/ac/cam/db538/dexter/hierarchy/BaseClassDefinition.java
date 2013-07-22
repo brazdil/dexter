@@ -35,6 +35,9 @@ public abstract class BaseClassDefinition implements Serializable {
 	private final List<StaticFieldDefinition> _staticFields;
 	@Getter private final List<StaticFieldDefinition> staticFields;
 
+	private final List<InterfaceDefinition> _interfaces;
+	@Getter private final List<InterfaceDefinition> interfaces;
+
 	BaseClassDefinition(DexClassType type, int accessFlags, boolean isInternal) {
 		this.type = type;
 		this.accessFlags = accessFlags;
@@ -49,6 +52,9 @@ public abstract class BaseClassDefinition implements Serializable {
 
 		this._staticFields = new ArrayList<StaticFieldDefinition>();
 		this.staticFields = Collections.unmodifiableList(this._staticFields);
+		
+		this._interfaces = new ArrayList<InterfaceDefinition>();
+		this.interfaces = Collections.unmodifiableList(this._interfaces);
 	}
 	
 	// only to be called by HierarchyBuilder
@@ -70,6 +76,11 @@ public abstract class BaseClassDefinition implements Serializable {
 		this._staticFields.add(field);
 	}
 
+	public void addImplementedInterface(InterfaceDefinition iface) {
+		this._interfaces.add(iface);
+		iface._implementors.add(this);
+	}
+	
 	public EnumSet<AccessFlags> getAccessFlags() {
 		AccessFlags[] flags = AccessFlags.getAccessFlagsForClass(accessFlags);
 		if (flags.length == 0)
@@ -233,7 +244,17 @@ public abstract class BaseClassDefinition implements Serializable {
 		
 		// Note: ClassDefinition overrides this to also explore implemented interfaces.
 
-		return iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
+		StaticFieldDefinition def = iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
+		if (def != null)
+			return def;
+		
+		for (val iface : this.interfaces) {
+			def = iface.iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
+			if (def != null)
+				return def;
+		}
+		
+		return null;
 	}
 	
 	public BaseClassDefinition getCommonParent(BaseClassDefinition otherClass) {

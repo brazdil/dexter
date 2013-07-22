@@ -103,17 +103,14 @@ public class DexClass {
 	}
 	
 	public List<DexClassType> getInterfaceTypes() {
-		if (classDef instanceof ClassDefinition) {
-			val ifaceDefs = ((ClassDefinition) classDef).getInterfaces();
-			if (ifaceDefs.isEmpty())
-				return Collections.emptyList();
-
-			val list = new ArrayList<DexClassType>(ifaceDefs.size());
-			for (val ifaceDef : ifaceDefs)
-				list.add(ifaceDef.getType());
-			return list;
-		} else
+		val ifaceDefs = classDef.getInterfaces();
+		if (ifaceDefs.isEmpty())
 			return Collections.emptyList();
+
+		val list = new ArrayList<DexClassType>(ifaceDefs.size());
+		for (val ifaceDef : ifaceDefs)
+			list.add(ifaceDef.getType());
+		return list;
 	}
 
 	public void instrument(DexInstrumentationCache cache) {

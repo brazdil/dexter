@@ -14,8 +14,8 @@ public class InterfaceDefinition extends BaseClassDefinition {
 
 	private static final long serialVersionUID = 1L;
 	
-	final List<ClassDefinition> _implementors;
-	@Getter private final List<ClassDefinition> implementors;
+	final List<BaseClassDefinition> _implementors;
+	@Getter private final List<BaseClassDefinition> implementors;
 
 	public InterfaceDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
 		super(classType, accessFlags, isInternal);
@@ -23,7 +23,7 @@ public class InterfaceDefinition extends BaseClassDefinition {
 		if (!getAccessFlags().contains(AccessFlags.INTERFACE))
 			throw new HierarchyException("Class is not an interface");
 
-		this._implementors = new ArrayList<ClassDefinition>();
+		this._implementors = new ArrayList<BaseClassDefinition>();
 		this.implementors = Collections.unmodifiableList(this._implementors);
 	}
 	
