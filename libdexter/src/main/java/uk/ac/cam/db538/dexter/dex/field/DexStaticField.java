@@ -51,7 +51,10 @@ public class DexStaticField extends DexField {
 		
 		// return the value
 		val initValues = initValuesItem.getEncodedArray().values;
-		return initValues[fieldIndex];
+		if (fieldIndex < initValues.length)
+			return initValues[fieldIndex];
+		else
+			return null;
 	}
 
 	@Override
