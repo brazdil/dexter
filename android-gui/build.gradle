@@ -36,5 +36,15 @@ android.applicationVariants.each { variant ->
         }
     }
 
+    task "copy_dexter_test_$varname" (dependsOn: [':libdexter:dexter_test:dex', ':android-gui:mergeDebugAssets'] ) {
+        doLast {
+            copy {
+                from project(':libdexter:dexter_test').dexFile
+                into "$project.buildDir/assets/$variant.dirName"
+            }
+        }
+    }
+
     variant.packageApplication.dependsOn "copy_dexter_aux_$varname"
+    variant.packageApplication.dependsOn "copy_dexter_test_$varname"
 }
