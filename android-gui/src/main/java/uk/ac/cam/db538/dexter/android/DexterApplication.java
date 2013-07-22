@@ -5,12 +5,16 @@ import android.util.Log;
 
 import com.rx201.dx.translator.DexCodeGeneration;
 
+import org.apache.commons.io.IOUtils;
 import org.jf.dexlib.DexFile;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.Semaphore;
 
+import dalvik.system.DexClassLoader;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
@@ -27,9 +31,30 @@ public class DexterApplication extends Application {
     private HierarchyBuilder hierarchyBuilder;
     private Semaphore hierarchyAvailable;
 
+    private String DEXTER_TEST_APK_JAR = "dexter_test_apk.jar";
+
     @Override
     public void onCreate() {
         super.onCreate();
+
+        try {
+            File testApk = new File(this.getFilesDir(), DEXTER_TEST_APK_JAR);
+            InputStream is = this.getAssets().open(DEXTER_TEST_APK_JAR);
+            FileOutputStream os = new FileOutputStream(testApk);
+
+            IOUtils.copy(is, os);
+            DexClassLoader testLoader = new DexClassLoader(
+                    testApk.getAbsolutePath(),
+                    this.getDir("dex", 0).getAbsolutePath(),
+                    null,
+                    getClass().getClassLoader());
+
+            System.out.println(
+            testLoader.loadClass("uk.ac.cam.db538.dexter.tests.TaintChecker").getName());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
 
         // disable debug
         DexCodeGeneration.DEBUG = false;
