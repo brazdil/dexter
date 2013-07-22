@@ -7,15 +7,14 @@ import lombok.val;
 
 import org.jf.dexlib.DexFile;
 
-import com.rx201.dx.translator.DexCodeGeneration;
-
 import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
-import uk.ac.cam.db538.dexter.transform.DexterTransform;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.UnitTestTransform;
+
+import com.rx201.dx.translator.DexCodeGeneration;
 
 public class MainConsole {
   
