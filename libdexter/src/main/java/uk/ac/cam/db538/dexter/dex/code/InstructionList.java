@@ -12,6 +12,7 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
+import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class InstructionList implements Collection<DexCodeElement> {
@@ -19,6 +20,8 @@ public class InstructionList implements Collection<DexCodeElement> {
   private final List<DexCodeElement> instructionList;
 
   public InstructionList(List<DexCodeElement> insns) {
+	  insns = expandMacros(insns);
+	  
 	  // check instruction list for duplicates
 	  // (often need to find the index of an instruction,
 	  //  so having duplicates could result in finding
@@ -31,6 +34,27 @@ public class InstructionList implements Collection<DexCodeElement> {
 			  visited.add(insn);
 	  
 	  this.instructionList = Utils.finalList(insns); 
+  }
+  
+  private static List<DexCodeElement> expandMacros(List<DexCodeElement> insns) {
+	  if (!hasMacros(insns))
+		  return insns;
+	  
+	  val expandedInsns = new ArrayList<DexCodeElement>();
+	  for (val insn : insns) {
+		  if (insn instanceof DexMacro)
+			  expandedInsns.addAll(expandMacros(((DexMacro) insn).getInstructions().instructionList));
+		  else
+			  expandedInsns.add(insn);
+	  }
+	  return expandedInsns;
+  }
+  
+  private static boolean hasMacros(List<DexCodeElement> insns) {
+	  for (val insn : insns)
+		  if (insn instanceof DexMacro)
+			  return true;
+	  return false;
   }
 
   public DexCodeElement peekFirst() {
@@ -157,5 +181,10 @@ public class InstructionList implements Collection<DexCodeElement> {
       if (elem instanceof DexTryEnd)
         set.add((DexTryStart) elem);
     return set;
+  }
+
+  public void dump() {
+	for (val insn : instructionList)
+		System.err.println(insn.toString());
   }
 }

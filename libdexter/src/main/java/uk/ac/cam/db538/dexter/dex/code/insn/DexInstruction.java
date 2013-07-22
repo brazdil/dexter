@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -14,7 +15,7 @@ import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public abstract class DexInstruction extends DexCodeElement {
 
-	protected final RuntimeHierarchy hierarchy; 
+	@Getter protected final RuntimeHierarchy hierarchy; 
 	
 	protected DexInstruction(RuntimeHierarchy hierarchy) {
 		this.hierarchy = hierarchy;
