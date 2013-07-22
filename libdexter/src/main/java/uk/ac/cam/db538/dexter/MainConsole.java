@@ -14,6 +14,8 @@ import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.transform.DexterTransform;
+import uk.ac.cam.db538.dexter.transform.Transform;
+import uk.ac.cam.db538.dexter.transform.UnitTestTransform;
 
 public class MainConsole {
   
@@ -57,7 +59,7 @@ public class MainConsole {
     Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
     
     System.out.println("Instrumenting application");
-    DexterTransform transform = new DexterTransform();
+    Transform transform = new UnitTestTransform();
     transform.apply(dexApp);
     
     System.out.println("Recompiling application");

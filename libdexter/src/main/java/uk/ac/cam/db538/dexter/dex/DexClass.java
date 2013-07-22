@@ -128,8 +128,6 @@ public class DexClass {
 	}
 
 	public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
-		System.out.println("Assembling class " + this.classDef.getType().getPrettyName());
-    
 		val classAnnotations = this.getAnnotations();
 
 		val asmClassType = cache.getType(classDef.getType());
