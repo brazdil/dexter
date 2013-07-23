@@ -166,9 +166,8 @@ public abstract class BaseClassDefinition implements Serializable {
 		case Super:
 			return callableMethodImplementations_Super(methodId);
 		case Virtual:
-			return callableMethodImplementations_Virtual(methodId);
 		case Interface:
-			return callableMethodImplementations_Interface(methodId);
+			return callableMethodImplementations_VirtualInterface(methodId);
 		default:
 			throw new Error("Unknown opcode");
 		}
@@ -212,11 +211,11 @@ public abstract class BaseClassDefinition implements Serializable {
 			throw new HierarchyException("Invalid method call (super call destination not found)");
 	}
 	
-	private List<MethodDefinition> callableMethodImplementations_Virtual(DexMethodId methodId) {
-		// Virtual calls invoke a non-private, non-static method
-		// in the class itself, in the closest parent or in any of the children
-
+	private List<MethodDefinition> callableMethodImplementations_VirtualInterface(DexMethodId methodId) {
 		if (this instanceof ClassDefinition) {
+			// Virtual calls invoke a non-private, non-static method
+			// in the class itself, in the closest parent or in any of the children
+
 			List<MethodDefinition> fromChildren = iterateThroughChildren(methodId, extractorMethod, acceptorVirtualCall);
 			MethodDefinition fromParents = iterateThroughParents(methodId, extractorMethod, acceptorVirtualCall, true); // no need to scan this class twice
 
@@ -224,22 +223,17 @@ public abstract class BaseClassDefinition implements Serializable {
 				fromChildren.add(fromParents);
 			
 			return fromChildren;
-		} else
-			throw new HierarchyException("Invalid method call (virtual call made on non-class)");
-	}
-	
-	private List<MethodDefinition> callableMethodImplementations_Interface(DexMethodId methodId) {
-		// Interface calls invoke a non-private, non-static method
-		// in one of the classes that implement the given interface,
-		// or any of its children
-		
-		if (this instanceof InterfaceDefinition) {
+		} else if (this instanceof InterfaceDefinition) {
+			// Interface calls invoke a non-private, non-static method
+			// in one of the classes that implement the given interface,
+			// or any of its children
+			
 			val list = new ArrayList<MethodDefinition>();
 			for (val implementor : ((InterfaceDefinition) this).getImplementors())
 				list.addAll(implementor.iterateThroughChildren(methodId, extractorMethod, acceptorVirtualCall));
 			return list;
 		} else
-			throw new HierarchyException("Invalid method call (interface method call on non-class)");
+			throw new HierarchyException("Invalid method call");
 	}
 	
 	public StaticFieldDefinition getAccessedStaticField(DexFieldId fieldId) {
@@ -260,6 +254,9 @@ public abstract class BaseClassDefinition implements Serializable {
 	}
 	
 	protected <Id, T> T iterateThroughParents(Id id, Extractor<Id, T> extractor, Acceptor<? super T> acceptor, boolean skipFirst) {
+		if (this.isRoot() && skipFirst)
+			return null;
+		
 		BaseClassDefinition inspectedClass = skipFirst ? this.getSuperclass() : this;
 		
 		while (true) {
@@ -279,7 +276,8 @@ public abstract class BaseClassDefinition implements Serializable {
 	protected <Id, T> T iterateThroughParentsAndInterfaces(Id id, Extractor<Id, T> extractor, Acceptor<? super T> acceptor, boolean skipFirst) {
 		Queue<BaseClassDefinition> queue = new LinkedList<BaseClassDefinition>();
 		if (skipFirst) {
-			queue.add(this.superclass);
+			if (!this.isRoot())
+				queue.add(this.superclass);
 			queue.addAll(this.interfaces);
 		} else
 			queue.add(this);
@@ -292,10 +290,9 @@ public abstract class BaseClassDefinition implements Serializable {
 					return def;
 			}
 			
-			if (!inspectedClass.isRoot()) {
+			if (!inspectedClass.isRoot())
 				queue.add(inspectedClass.superclass);
-				queue.addAll(inspectedClass.interfaces);
-			}
+			queue.addAll(inspectedClass.interfaces);
 		}
 		
 		return null;
