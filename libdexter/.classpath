@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="dalvik/dx/src"/>
-	<classpathentry kind="src" path="dexter_test/src/main/java"/>
 	<classpathentry kind="src" path="dexter_aux/src/main/java"/>
 	<classpathentry kind="src" path="dexter_aux/src/test/java"/>
 	<classpathentry kind="src" path="libcore/dex/src/main/java"/>
