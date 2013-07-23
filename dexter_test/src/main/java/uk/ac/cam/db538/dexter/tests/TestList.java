@@ -1,15 +1,26 @@
 package uk.ac.cam.db538.dexter.tests;
 
-/**
- * Created by db538 on 7/22/13.
- */
 public class TestList {
     private TestList() { }
 
+    private final static TestExerciser[] tests = new TestExerciser[] {
+        new SourceTestExerciser(new Test_Const()),
+        new PropagationTestExerciser(new Test_BinaryOp())
+    };
+    
     public static TestExerciser[] getTestList() {
-        return new TestExerciser[] {
-            new SourceTestExerciser(new Test_Const()),
-            new PropagationTestExerciser(new Test_BinaryOp())
-        };
+        return tests;
+    }
+    
+    public static int getTestCount() {
+    	return tests.length;
+    }
+    
+    public static boolean runTest(int index) {
+    	return tests[index].run();
+    }
+    
+    public static String getTestName(int index) {
+    	return tests[index].getName();
     }
 }
