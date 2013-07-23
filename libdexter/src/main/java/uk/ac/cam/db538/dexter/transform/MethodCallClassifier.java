@@ -46,6 +46,14 @@ public class MethodCallClassifier {
 				
 				val calledClassDef = code.getHierarchy().getBaseClassDefinition(calledClassType);
 				val destType = calledClassDef.getMethodDestinationType(invokeInsn.getMethodId(), calledOpcode);
+				
+				if (destType == CallDestinationType.Undecidable) {
+					// TODO: replace instruction with a macro that will
+					// check the destination type dynamically
+					// and add the invoke in each branch as external/internal
+					throw new UnsupportedOperationException("Undecidable calls need to be handled!!!");
+				}
+				
 				classification.put(invokeInsn, destType);
 			}
 		}
