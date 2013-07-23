@@ -1,9 +1,39 @@
 package uk.ac.cam.db538.dexter.android;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.Window;
+
+import org.apache.commons.io.IOUtils;
+import org.jf.dexlib.DexFile;
+import org.jf.dexlib.DexFileFromMemory;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
+
+import dalvik.system.DexClassLoader;
+import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.transform.Transform;
+import uk.ac.cam.db538.dexter.transform.UnitTestTransform;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 
 /**
@@ -75,5 +105,106 @@ public class PackageListActivity extends FragmentActivity implements PackageList
             detailIntent.putExtra(PackageDetailFragment.PACKAGE_NAME, pkg.packageName);
             startActivity(detailIntent);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inf = getMenuInflater();
+        inf.inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        if (item.getItemId() == R.id.action_runTests)
+            onMenu_RunTests();
+        return true;
+    }
+
+    private final static String DEXTER_TEST_APK = "dexter_test.apk";
+    private final static String DEXTER_TEST_DEX = "dexter_test.dex";
+
+    private void onMenu_RunTests() {
+        final ProgressDialog dialog = ProgressDialog.show(this, "Preparing tests", "", true, false);
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    DexterApplication thisApp = (DexterApplication) getApplication();
+
+                    setMessage("Loading files...");
+
+                    DexFile fileTestApp = new DexFileFromMemory(
+                        PackageListActivity.this.getAssets().open(DEXTER_TEST_DEX));
+                    DexFile fileAux = new DexFileFromMemory(
+                        PackageListActivity.this.getAssets().open("dexter_aux.dex"));
+
+                    setMessage("Building hierarchy...");
+
+                    Pair<RuntimeHierarchy, ClassRenamer> buildData =
+                        thisApp.getRuntimeHierarchy(fileTestApp, fileAux);
+                    RuntimeHierarchy hierarchy = buildData.getValA();
+                    ClassRenamer renamerAux = buildData.getValB();
+
+                    setMessage("Parsing...");
+
+                    Dex dexTestApp = new Dex(
+                            fileTestApp,
+                            hierarchy,
+                            new AuxiliaryDex(fileAux, hierarchy, renamerAux));
+
+                    setMessage("Instrumenting...");
+
+                    Transform transform = new UnitTestTransform();
+                    transform.apply(dexTestApp);
+
+                    setMessage("Saving...");
+
+                    byte[] dexInstrumented = dexTestApp.writeToFile();
+                    File fileApk = new File(PackageListActivity.this.getFilesDir(), DEXTER_TEST_APK);
+                    Manifest manifest = new Manifest();
+                    manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+                    JarOutputStream jos = new JarOutputStream(new FileOutputStream(fileApk), manifest);
+                    JarEntry entryClassesDex = new JarEntry("classes.dex");
+                    jos.putNextEntry(entryClassesDex);
+                    jos.write(dexInstrumented);
+                    jos.closeEntry();
+                    jos.close();
+
+                    dismissProgressDialog();
+
+                    DexClassLoader testLoader = new DexClassLoader(
+                            fileApk.getAbsolutePath(),
+                            PackageListActivity.this.getDir("dex", 0).getAbsolutePath(),
+                            null,
+                            getClass().getClassLoader());
+
+                    System.out.println(
+                            testLoader.loadClass("uk.ac.cam.db538.dexter.tests.TaintChecker").getName());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    throw new RuntimeException(ex);
+                }
+            }
+
+            private void setMessage(final String msg) {
+                PackageListActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.setMessage(msg);
+                    }
+                });
+            }
+
+            private void dismissProgressDialog() {
+                PackageListActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                    }
+                });
+            }
+        };
+        t.start();
     }
 }

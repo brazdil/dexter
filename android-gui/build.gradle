@@ -36,10 +36,10 @@ android.applicationVariants.each { variant ->
         }
     }
 
-    task "copy_dexter_test_$varname" (dependsOn: [':dexter_test:apk', ':android-gui:mergeDebugAssets'] ) {
+    task "copy_dexter_test_$varname" (dependsOn: [':dexter_test:dex', ':android-gui:mergeDebugAssets'] ) {
         doLast {
             copy {
-                from project(':dexter_test').apkFile
+                from project(':dexter_test').dexFile
                 into "$project.buildDir/assets/$variant.dirName"
             }
         }

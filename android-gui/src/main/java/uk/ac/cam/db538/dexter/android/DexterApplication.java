@@ -31,33 +31,9 @@ public class DexterApplication extends Application {
     private HierarchyBuilder hierarchyBuilder;
     private Semaphore hierarchyAvailable;
 
-    private String DEXTER_TEST_APK_JAR = "dexter_test_apk.jar";
-
     @Override
     public void onCreate() {
         super.onCreate();
-
-        try {
-            File testApk = new File(this.getFilesDir(), DEXTER_TEST_APK_JAR);
-            InputStream is = this.getAssets().open(DEXTER_TEST_APK_JAR);
-            FileOutputStream os = new FileOutputStream(testApk);
-
-            IOUtils.copy(is, os);
-            DexClassLoader testLoader = new DexClassLoader(
-                    testApk.getAbsolutePath(),
-                    this.getDir("dex", 0).getAbsolutePath(),
-                    null,
-                    getClass().getClassLoader());
-
-            System.out.println(
-            testLoader.loadClass("uk.ac.cam.db538.dexter.tests.TaintChecker").getName());
-
-            // TODO: design a simple API just with primitives
-            // getTestCount, execTest(index) = bool, getTestName(index) = String, etc.
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
 
         // disable debug
         DexCodeGeneration.DEBUG = false;
