@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -127,7 +128,7 @@ public class InstrumentActivity extends Activity {
                 File localFile = new File(InstrumentActivity.this.getFilesDir(), "app.apk");
                 DexterApplication thisApp = (DexterApplication) getApplication();
 
-                setStatus("Loading files");
+                setStatus("Loading files...");
                 setWaiting();
 
                 /*
@@ -146,7 +147,7 @@ public class InstrumentActivity extends Activity {
                 RuntimeHierarchy hierarchy = buildData.getValA();
                 ClassRenamer renamerAux = buildData.getValB();
 
-                setStatus("Analyzing");
+                setStatus("Analyzing...");
                 Dex dexApp = new Dex(
                     fileApp,
                     hierarchy,
@@ -159,20 +160,21 @@ public class InstrumentActivity extends Activity {
                 renamerAux = null;
                 System.gc();
 
-                setStatus("Modifying");
+                setStatus("Modifying...");
 
 //                terminalMessage("Instrumenting application");
 //                dex.instrument(false);
 //                terminalDone();
 
-                setStatus("Assembling");
+                setStatus("Assembling...");
                 byte[] fileApp_New = dexApp.writeToFile();
 
-                setStatus("Signing");
+                setStatus("Signing...");
                 setWaiting();
-                // Apk.produceAPK(localFile, localFile, null, fileApp_New);
+                Apk.produceAPK(localFile, localFile, null, fileApp_New);
 
                 setStatus("DONE");
+                hideProgressCircle();
 
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
@@ -183,7 +185,7 @@ public class InstrumentActivity extends Activity {
             InstrumentActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    textStatus.setText(status + "...");
+                    textStatus.setText(status);
                 }
             });
         }
@@ -193,6 +195,15 @@ public class InstrumentActivity extends Activity {
                 @Override
                 public void run() {
                     progressCircle.setWaiting();
+                }
+            });
+        }
+
+        private void hideProgressCircle() {
+            InstrumentActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressCircle.setVisibility(View.INVISIBLE);
                 }
             });
         }
