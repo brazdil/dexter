@@ -1,20 +1,28 @@
 package uk.ac.cam.db538.dexter.transform;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import lombok.val;
+
 import uk.ac.cam.db538.dexter.ProgressCallback;
+import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleAuxiliaryRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
 import uk.ac.cam.db538.dexter.transform.macros.MethodCallMacros;
 
@@ -26,8 +34,17 @@ public class DexterTransform extends Transform {
 		super(progressCallback);
 	}
 
-	private int auxiliaryRegisterId = 0;
-	private Map<DexInstruction_Invoke, CallDestinationType> methodCallClassification = null;
+	private MethodCallMacros macrosMethodCall;
+
+	@Override
+	public void doFirst(Dex dex) {
+		super.doFirst(dex);
+		
+		macrosMethodCall = new MethodCallMacros(dex.getAuxiliaryDex());
+	}
+
+	private int auxiliaryRegisterId;
+	private Map<DexInstruction_Invoke, CallDestinationType> methodCallClassification;
 	
 	@Override
 	public DexCode doFirst(DexCode code) {
@@ -55,11 +72,11 @@ public class DexterTransform extends Transform {
 			if (!(nextElement instanceof DexInstruction_MoveResult))
 				nextElement = null;
 			
-			val type = methodCallClassification.get(element);
+			CallDestinationType type = methodCallClassification.get(element);
 			if (type == CallDestinationType.Internal)
-				return instrument_Invoke_Internal((DexInstruction_Invoke) element, (DexInstruction_MoveResult) nextElement, code);
+				return instrument_Invoke_Internal((DexInstruction_Invoke) element, (DexInstruction_MoveResult) nextElement);
 			else if (type == CallDestinationType.External)
-				return instrument_Invoke_External((DexInstruction_Invoke) element, (DexInstruction_MoveResult) nextElement, code);
+				return instrument_Invoke_External((DexInstruction_Invoke) element, (DexInstruction_MoveResult) nextElement);
 			else
 				throw new Error("Calls should never be classified as undecidable by this point");
 			
@@ -67,6 +84,10 @@ public class DexterTransform extends Transform {
 		
 		if (element instanceof DexInstruction_MoveResult) {
 			return DexMacro.empty(); // handled by Invoke and FillArray
+		}
+
+		if (element instanceof DexInstruction_Return) {
+			return instrument_Return((DexInstruction_Return) element);
 		}
 		
 		return element;
@@ -87,51 +108,60 @@ public class DexterTransform extends Transform {
 				insn);
 	}
 
-	private DexCodeElement instrument_Invoke_Internal(DexInstruction_Invoke invoke, DexInstruction_MoveResult moveResult, DexCode code) {
-		val prototype = invoke.getMethodId().getPrototype();
+	private DexCodeElement instrument_Invoke_Internal(DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult) {
+		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
 		
-		DexMacro macroStorePrimitiveArgumentTaint;
-		DexMacro macroRetrievePrimitiveResultTaint;
+		DexMacro macroSetParamTaints;
+		DexMacro macroGetResultTaint;
 		
 		// need to store taints in the ThreadLocal ARGS array?
+		
 		if (prototype.hasPrimitiveArgument()) {
 			
-			val isStatic = invoke.getCallType() == Opcode_Invoke.Static;
-			val paramCount = prototype.getParameterCount(isStatic);
-			val taintRegs = new ArrayList<DexTaintRegister>(paramCount);
+			boolean isStatic = insnInvoke.getCallType() == Opcode_Invoke.Static;
+			int paramCount = prototype.getParameterCount(isStatic);
+			List<DexTaintRegister> taintRegs = new ArrayList<DexTaintRegister>(paramCount);
 			
 			for (int i = 0; i < paramCount; i++) {
-				val paramType = prototype.getParameterType(i, isStatic, invoke.getClassType());
+				DexRegisterType paramType = prototype.getParameterType(i, isStatic, insnInvoke.getClassType());
 				if (paramType instanceof DexPrimitiveType)
-					taintRegs.add(invoke.getArgumentRegisters().get(i).getTaintRegister());
+					taintRegs.add(insnInvoke.getArgumentRegisters().get(i).getTaintRegister());
 			}
 			
-			macroStorePrimitiveArgumentTaint = MethodCallMacros.setParamTaints(
-					getAuxiliaryDex(),
-					genAuxiliaryRegister(), 
-					genAuxiliaryRegister(), 
-					taintRegs); 
+			macroSetParamTaints = macrosMethodCall.setParamTaints(auxReg(), auxReg(), taintRegs);
+			
 		} else
-			macroStorePrimitiveArgumentTaint = DexMacro.empty();
+			macroSetParamTaints = DexMacro.empty();
 		
 		// need to retrieve taint from the ThreadLocal RES field?
-		if (moveResult != null && prototype.getReturnType() instanceof DexPrimitiveType)
-			macroRetrievePrimitiveResultTaint = MethodCallMacros.getResultTaint(
-					getAuxiliaryDex(),
-					genAuxiliaryRegister(), 
-					moveResult.getRegTo().getTaintRegister()); 
+		
+		if (insnMoveResult != null && prototype.getReturnType() instanceof DexPrimitiveType)
+			macroGetResultTaint = macrosMethodCall.getResultTaint(auxReg(), insnMoveResult.getRegTo().getTaintRegister()); 
 		else
-			macroRetrievePrimitiveResultTaint = DexMacro.empty();
+			macroGetResultTaint = DexMacro.empty();
+		
+		// generate instrumentation
 		
 		return new DexMacro(
-				macroStorePrimitiveArgumentTaint,
-				generateInvoke(invoke, moveResult),
-				macroRetrievePrimitiveResultTaint);
+				macroSetParamTaints,
+				generateInvoke(insnInvoke, insnMoveResult),
+				macroGetResultTaint);
 	}
 
-	private DexCodeElement instrument_Invoke_External(DexInstruction_Invoke invoke, DexInstruction_MoveResult moveResult, DexCode code) {
-		return generateInvoke(invoke, moveResult);
+	private DexCodeElement instrument_Invoke_External(DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult) {
+		return generateInvoke(insnInvoke, insnMoveResult);
 	}
+	
+	private DexCodeElement instrument_Return(DexInstruction_Return insnReturn) {
+		if (insnReturn.getOpcode() == RegisterType.REFERENCE)
+			return insnReturn;
+		else
+			return new DexMacro(
+				macrosMethodCall.setResultTaint(auxReg(), auxReg(), insnReturn.getRegFrom().getTaintRegister()),
+				insnReturn);
+	}
+
+	// UTILS
 	
 	private static DexCodeElement generateInvoke(DexInstruction_Invoke invoke, DexInstruction_MoveResult moveResult) {
 		if (moveResult == null)
@@ -140,7 +170,7 @@ public class DexterTransform extends Transform {
 			return new DexMacro(invoke, moveResult);
 	}
 
-	private DexSingleAuxiliaryRegister genAuxiliaryRegister() {
+	private DexSingleAuxiliaryRegister auxReg() {
 		return new DexSingleAuxiliaryRegister(auxiliaryRegisterId++);
 	}
 }

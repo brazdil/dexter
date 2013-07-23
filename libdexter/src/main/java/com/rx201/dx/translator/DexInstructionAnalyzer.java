@@ -378,7 +378,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	@Override
 	public void visit(DexInstruction_Invoke instruction) {
-		List<DexStandardRegister> arguments = instruction.getArgumentRegisters();
+		List<DexRegister> arguments = instruction.getArgumentRegisters();
 		DexPrototype prototype = instruction.getMethodId().getPrototype();
 		
 		boolean isStatic = instruction.getCallType().isStatic();

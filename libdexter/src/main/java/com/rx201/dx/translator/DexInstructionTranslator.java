@@ -908,7 +908,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_Invoke instruction) {
 		Rop opcode = null;
-		List<DexStandardRegister> arguments = instruction.getArgumentRegisters();
+		List<DexRegister> arguments = instruction.getArgumentRegisters();
 
 		DexRegister[] operands_array = arguments.toArray(new DexRegister[arguments.size()]);
 		RegisterSpecList operands = makeOperands(operands_array);

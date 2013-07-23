@@ -20,11 +20,11 @@ public class DexPrototype implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	@Getter private final DexType returnType;
-	private final List<DexRegisterType> parameterTypes;
+	private final List<? extends DexRegisterType> parameterTypes;
   
 	private final int hashcode;
 
-	public DexPrototype(DexType returnType, List<DexRegisterType> argTypes) {
+	public DexPrototype(DexType returnType, List<? extends DexRegisterType> argTypes) {
 		this.returnType = returnType;
 		this.parameterTypes = Utils.finalList(argTypes);
     
@@ -34,7 +34,7 @@ public class DexPrototype implements Serializable {
 		this.hashcode = result;
 	}
 
-	public static DexPrototype parse(DexType returnType, List<DexRegisterType> argumentTypes, DexTypeCache cache) {
+	public static DexPrototype parse(DexType returnType, List<? extends DexRegisterType> argumentTypes, DexTypeCache cache) {
 		val proto = new DexPrototype(returnType, argumentTypes);
 		return cache.getCachedPrototype(proto); // will return 'proto' if not cached
 	}

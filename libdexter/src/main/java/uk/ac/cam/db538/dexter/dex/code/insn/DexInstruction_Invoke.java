@@ -16,30 +16,30 @@ import org.jf.dexlib.Code.Format.Instruction3rc;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleAuxiliaryRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexInstruction_Invoke extends DexInstruction {
 
   @Getter private final DexReferenceType classType;
   @Getter private final DexMethodId methodId;
-  @Getter private final List<DexStandardRegister> argumentRegisters;
+  @Getter private final List<DexRegister> argumentRegisters;
   @Getter private final Opcode_Invoke callType;
 
-  public DexInstruction_Invoke(DexReferenceType classType, DexMethodId methodId, List<? extends DexStandardRegister> argumentRegisters, Opcode_Invoke callType, RuntimeHierarchy hierarchy) {
+  public DexInstruction_Invoke(DexReferenceType classType, DexMethodId methodId, List<? extends DexRegister> argumentRegisters, Opcode_Invoke callType, RuntimeHierarchy hierarchy) {
     super(hierarchy);
 
     this.classType = classType;
     this.methodId = methodId;
-    if (argumentRegisters == null)
-    	this.argumentRegisters = Collections.emptyList();
-    else
-    	this.argumentRegisters = Collections.unmodifiableList(new ArrayList<DexStandardRegister>(argumentRegisters));
+    this.argumentRegisters = Utils.finalList(argumentRegisters);
     this.callType = callType;
 
     checkArguments();
@@ -66,11 +66,7 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
   
   public DexInstruction_Invoke(DexMethod method, List<DexStandardRegister> argumentRegisters, RuntimeHierarchy hierarchy) {
-    this(method.getParentClass().getClassDef().getType(),
-         method.getMethodDef().getMethodId(),
-         argumentRegisters,
-         getCallType(method),
-         hierarchy);
+    this(method.getMethodDef(), argumentRegisters, hierarchy);
   }
   
   public DexInstruction_Invoke(DexInstruction_Invoke toClone) {
@@ -81,15 +77,23 @@ public class DexInstruction_Invoke extends DexInstruction {
          toClone.hierarchy);
   }
 
-  private static Opcode_Invoke getCallType(DexMethod method) {
+  public DexInstruction_Invoke(MethodDefinition methodDef, List<? extends DexRegister> argumentRegisters, RuntimeHierarchy hierarchy) {
+	  this(methodDef.getParentClass().getType(),
+	       methodDef.getMethodId(),
+	       argumentRegisters,
+	       getCallType(methodDef),
+	       hierarchy);
+  }
+
+  private static Opcode_Invoke getCallType(MethodDefinition methodDef) {
 	  /*
 	   * IGNORES SUPER CALLS
 	   */
-	  if (method.getMethodDef().isStatic())
+	  if (methodDef.isStatic())
 		  return Opcode_Invoke.Static;
-	  else if (method.getMethodDef().isDirect())
+	  else if (methodDef.isDirect())
 		  return Opcode_Invoke.Direct;
-	  else if (method.getParentClass().getClassDef().isInterface())
+	  else if (methodDef.getParentClass().isInterface())
 		  return Opcode_Invoke.Interface;
 	  else
 		  return Opcode_Invoke.Virtual;
