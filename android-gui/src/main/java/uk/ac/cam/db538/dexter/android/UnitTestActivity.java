@@ -80,6 +80,9 @@ public class UnitTestActivity extends Activity {
     }
 
     private void generateTestViews() {
+        if (viewTestCases != null)
+            return;
+
         int testCount = getTestCount();
         viewTestCases = new View[testCount];
 
