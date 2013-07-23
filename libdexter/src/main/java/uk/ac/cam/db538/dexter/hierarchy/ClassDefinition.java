@@ -30,23 +30,6 @@ public class ClassDefinition extends BaseClassDefinition {
 		this._instanceFields.add(field);
 	}
 	
-	public boolean implementsInterface(InterfaceDefinition iface) {
-		BaseClassDefinition inspected = this;
-		
-		while (true) {
-			if (inspected instanceof ClassDefinition) {
-				for (val ifaceDef : ((ClassDefinition) inspected).getInterfaces()) 
-					if (ifaceDef.equals(iface))
-						return true;
-			}
-			
-			if (inspected.isRoot())
-				return false;
-			else
-				inspected = inspected.getSuperclass();
-		}  
-	}
-	
 	public InstanceFieldDefinition getInstanceField(DexFieldId fieldId) {
 		for (val fieldDef : this.instanceFields)
 			if (fieldDef.getFieldId().equals(fieldId))

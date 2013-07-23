@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import lombok.Getter;
 import lombok.val;
@@ -111,6 +113,10 @@ public abstract class BaseClassDefinition implements Serializable {
 			else 
 				inspected = inspected.getSuperclass();
 		}
+	}
+	
+	public boolean implementsInterface(InterfaceDefinition iface) {
+		return null != iterateThroughParentsAndInterfaces(iface, extractorImplementedInterface, acceptorAlwaysTrue, false);
 	}
 	
 	public MethodDefinition getMethod(DexMethodId methodId) {
@@ -240,21 +246,9 @@ public abstract class BaseClassDefinition implements Serializable {
 		// Application can access a static field on class X, but
 		// the field might actually be defined in one of X's parents
 		// This method will return the definition of the field 
-		// in itself or the closest parent. 
-		
-		// Note: ClassDefinition overrides this to also explore implemented interfaces.
+		// in itself or the closest parent or implemented interface. 
 
-		StaticFieldDefinition def = iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
-		if (def != null)
-			return def;
-		
-		for (val iface : this.interfaces) {
-			def = iface.iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
-			if (def != null)
-				return def;
-		}
-		
-		return null;
+		return iterateThroughParentsAndInterfaces(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
 	}
 	
 	public BaseClassDefinition getCommonParent(BaseClassDefinition otherClass) {
@@ -282,8 +276,33 @@ public abstract class BaseClassDefinition implements Serializable {
 		}
 	}
 	
+	protected <Id, T> T iterateThroughParentsAndInterfaces(Id id, Extractor<Id, T> extractor, Acceptor<? super T> acceptor, boolean skipFirst) {
+		Queue<BaseClassDefinition> queue = new LinkedList<BaseClassDefinition>();
+		if (skipFirst) {
+			queue.add(this.superclass);
+			queue.addAll(this.interfaces);
+		} else
+			queue.add(this);
+		
+		while (!queue.isEmpty()) {
+			BaseClassDefinition inspectedClass = queue.remove();
+			T def = extractor.extract(inspectedClass, id);
+			if (def != null) {
+				if (acceptor.accept(def))
+					return def;
+			}
+			
+			if (!inspectedClass.isRoot()) {
+				queue.add(inspectedClass.superclass);
+				queue.addAll(inspectedClass.interfaces);
+			}
+		}
+		
+		return null;
+	}
+
 	protected <Id, T> List<T> iterateThroughChildren(Id id, Extractor<Id, T> extractor, Acceptor<? super T> acceptor) {
-		val list = new ArrayList<T>();
+		List<T> list = new ArrayList<T>();
 
 		T def = extractor.extract(this, id);
 		if (def != null) {
@@ -333,6 +352,16 @@ public abstract class BaseClassDefinition implements Serializable {
 		}
 	};
 	
+	protected static final Extractor<InterfaceDefinition, InterfaceDefinition> extractorImplementedInterface = new Extractor<InterfaceDefinition, InterfaceDefinition>() {
+		@Override
+		public InterfaceDefinition extract(BaseClassDefinition clazz, InterfaceDefinition ifaceSought) {
+			for (InterfaceDefinition iface : clazz.getInterfaces())
+				if (iface.equals(ifaceSought))
+					return iface;
+			return null;
+		}
+	};
+
 	protected static final Acceptor<Object> acceptorAlwaysTrue = new Acceptor<Object>() {
 		@Override
 		public boolean accept(Object item) {
