@@ -10,7 +10,9 @@
     <string name="instrument">Instrument</string>
     <string name="title_activity_instrument">Securing...</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string><string name="analyzing">Analyzing:</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="analyzing">Analyzing:</string>
     <string name="action_run_tests">Run tests</string>
+    <string name="title_activity_unit_test">Dexter Tests</string>
 
 </resources>

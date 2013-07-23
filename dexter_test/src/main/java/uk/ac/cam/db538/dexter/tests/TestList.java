@@ -23,4 +23,8 @@ public class TestList {
     public static String getTestName(int index) {
     	return tests[index].getName();
     }
+
+    public static String getTestDescription(int index) {
+        return "Fuck this shit #" + index;
+    }
 }
