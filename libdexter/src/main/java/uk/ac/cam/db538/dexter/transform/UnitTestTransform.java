@@ -17,9 +17,12 @@ public class UnitTestTransform extends DexterTransform {
 	}
 
 	@Override
-	public DexMethod doFirst(DexMethod method) {
+	public DexMethod doLast(DexMethod method) {
 		if (isTaintCheckMethod(method)) {
 			method.getMethodBody().getInstructionList().dump();
+			
+			// TODO: replace the register in Return with its taint register
+			// will need initialization of taint registers after method call
 			
 //			val oldMethodBody = method.getMethodBody();
 //			val regArg = oldMethodBody.getParameters().get(0).getRegister();
