@@ -118,7 +118,7 @@ public class DexInstruction_Switch extends DexInstruction {
   @Override
   public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
 	  val set = new HashSet<DexCodeElement>();
-	  set.add(code.getFollower(this));
+	  set.add(code.getNextInstruction(this));
 	  for (val entry : switchTable)
 		  set.add(entry.getValB());
 	  return set;

@@ -5,17 +5,17 @@ import lombok.val;
 
 import org.jf.dexlib.DexFile;
 
+import uk.ac.cam.db538.dexter.aux.InternalClassAnnotation;
+import uk.ac.cam.db538.dexter.aux.InternalMethodAnnotation;
+import uk.ac.cam.db538.dexter.aux.MethodCallHelper;
+import uk.ac.cam.db538.dexter.aux.ObjectTaintStorage;
+import uk.ac.cam.db538.dexter.aux.TaintConstants;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
-import uk.ac.cam.db538.dexter.aux.InternalClassAnnotation;
-import uk.ac.cam.db538.dexter.aux.InternalMethodAnnotation;
-import uk.ac.cam.db538.dexter.aux.MethodCallHelper;
-import uk.ac.cam.db538.dexter.aux.ObjectTaintStorage;
-import uk.ac.cam.db538.dexter.aux.TaintConstants;
 
 public class AuxiliaryDex extends Dex {
 
@@ -27,8 +27,6 @@ public class AuxiliaryDex extends Dex {
 	
 	@Getter private final DexStaticField field_CallParamTaint;
 	@Getter private final DexStaticField field_CallResultTaint;
-	@Getter private final DexStaticField field_CallParamSemaphore;
-	@Getter private final DexStaticField field_CallResultSemaphore;
 	
 	@Getter private final InterfaceDefinition anno_InternalClass;
 	@Getter private final InterfaceDefinition anno_InternalMethod;
@@ -51,10 +49,8 @@ public class AuxiliaryDex extends Dex {
 		// MethodCallHelper class
 		val clsMethodCallHelper = getDexClass(hierarchy, renamer, CLASS_METHODCALLHELPER);
 		
-		this.field_CallParamTaint = findStaticFieldByName(clsMethodCallHelper, "ARG");
+		this.field_CallParamTaint = findStaticFieldByName(clsMethodCallHelper, "ARGS");
 		this.field_CallResultTaint = findStaticFieldByName(clsMethodCallHelper, "RES");
-		this.field_CallParamSemaphore = findStaticFieldByName(clsMethodCallHelper, "S_ARG");
-		this.field_CallResultSemaphore = findStaticFieldByName(clsMethodCallHelper, "S_RES");
 		
 		// Annotations
 		this.anno_InternalClass = getAnnoDef(hierarchy, renamer, CLASS_INTERNALCLASS);

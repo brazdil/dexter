@@ -31,7 +31,7 @@ public abstract class DexCodeElement {
   }
 
   protected Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
-	return Sets.newHashSet(code.getFollower(this));
+	return Sets.newHashSet(code.getNextInstruction(this));
   }
 
   public Set<DexCodeElement> cfgGetSuccessors(InstructionList code) {

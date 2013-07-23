@@ -6,3 +6,5 @@ dalvik
 framework
 .settings
 *.apk
+out
+classes.dex

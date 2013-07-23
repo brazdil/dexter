@@ -31,7 +31,7 @@ public class DexInstruction_Invoke extends DexInstruction {
   @Getter private final List<DexStandardRegister> argumentRegisters;
   @Getter private final Opcode_Invoke callType;
 
-  public DexInstruction_Invoke(DexReferenceType classType, DexMethodId methodId, List<DexStandardRegister> argumentRegisters, Opcode_Invoke callType, RuntimeHierarchy hierarchy) {
+  public DexInstruction_Invoke(DexReferenceType classType, DexMethodId methodId, List<? extends DexStandardRegister> argumentRegisters, Opcode_Invoke callType, RuntimeHierarchy hierarchy) {
     super(hierarchy);
 
     this.classType = classType;
@@ -205,7 +205,7 @@ public class DexInstruction_Invoke extends DexInstruction {
     str.append("invoke-");
     str.append(callType.name().toLowerCase());
     str.append(" ");
-    str.append(classType.getPrettyName());
+    str.append(classType.toString());
     str.append("->");
     str.append(methodId.getName());
     str.append(methodId.getPrototype().toString());

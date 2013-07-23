@@ -12,6 +12,7 @@ import org.jf.dexlib.Code.Format.Instruction11x;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -35,6 +36,13 @@ public class DexInstruction_MoveResult extends DexInstruction {
 	
     this.regTo = regTo;
     this.type = RegisterType.WIDE_PRIMITIVE;
+  }
+
+  public DexInstruction_MoveResult(DexTaintRegister regTo, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
+	
+    this.regTo = regTo;
+    this.type = RegisterType.SINGLE_PRIMITIVE;
   }
 
   public DexInstruction_MoveResult(DexInstruction_MoveResult toClone) {

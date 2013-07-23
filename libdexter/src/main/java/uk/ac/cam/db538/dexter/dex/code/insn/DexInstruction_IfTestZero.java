@@ -58,7 +58,7 @@ public class DexInstruction_IfTestZero extends DexInstruction {
 
   @Override
   public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
-	return Sets.newHashSet(target, code.getFollower(this));
+	return Sets.newHashSet(target, code.getNextInstruction(this));
   }
   @Override
   public Set<? extends DexRegister> lvaReferencedRegisters() {

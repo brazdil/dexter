@@ -19,12 +19,12 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_ArrayPut extends DexInstruction {
 
-  @Getter private final DexStandardRegister regFrom;
+  @Getter private final DexRegister regFrom;
   @Getter private final DexSingleRegister regArray;
   @Getter private final DexSingleRegister regIndex;
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_ArrayPut(DexStandardRegister from, DexSingleRegister array, DexSingleRegister index, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
+  public DexInstruction_ArrayPut(DexRegister from, DexSingleRegister array, DexSingleRegister index, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
     super(hierarchy);
 
     this.regFrom = from;

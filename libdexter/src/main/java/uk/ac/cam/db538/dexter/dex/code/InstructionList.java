@@ -19,7 +19,7 @@ public class InstructionList implements Collection<DexCodeElement> {
 
   private final List<DexCodeElement> instructionList;
 
-  public InstructionList(List<DexCodeElement> insns) {
+  public InstructionList(List<? extends DexCodeElement> insns) {
 	  insns = expandMacros(insns);
 	  
 	  // check instruction list for duplicates
@@ -36,7 +36,7 @@ public class InstructionList implements Collection<DexCodeElement> {
 	  this.instructionList = Utils.finalList(insns); 
   }
   
-  private static List<DexCodeElement> expandMacros(List<DexCodeElement> insns) {
+  private static List<? extends DexCodeElement> expandMacros(List<? extends DexCodeElement> insns) {
 	  if (!hasMacros(insns))
 		  return insns;
 	  
@@ -50,7 +50,7 @@ public class InstructionList implements Collection<DexCodeElement> {
 	  return expandedInsns;
   }
   
-  private static boolean hasMacros(List<DexCodeElement> insns) {
+  private static boolean hasMacros(List<? extends DexCodeElement> insns) {
 	  for (val insn : insns)
 		  if (insn instanceof DexMacro)
 			  return true;
@@ -148,7 +148,11 @@ public class InstructionList implements Collection<DexCodeElement> {
 			return index;
 	}
 
-	public DexCodeElement getFollower(DexCodeElement elem) {
+	public DexCodeElement getPreviousInstruction(DexCodeElement elem) {
+		return instructionList.get(getIndex(elem) - 1);
+	}
+
+	public DexCodeElement getNextInstruction(DexCodeElement elem) {
 		return instructionList.get(getIndex(elem) + 1);
 	}
 	

@@ -404,7 +404,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		if (instruction instanceof DexInstruction_Throw) {
 			primarySuccessor = null;
 		} else {
-			primarySuccessor = analyzer.reverseLookup(instructionList.getFollower(instruction));
+			primarySuccessor = analyzer.reverseLookup(instructionList.getNextInstruction(instruction));
 		}
 		result.setPrimarySuccessor(primarySuccessor);
 		
@@ -726,7 +726,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			targetList.add(pair.getValB());
 		}
 		
-		AnalyzedDexInstruction defaultSuccessor = analyzer.reverseLookup(instructionList.getFollower(instruction));
+		AnalyzedDexInstruction defaultSuccessor = analyzer.reverseLookup(instructionList.getNextInstruction(instruction));
 
 		// Overwrite result.successor here, according to the requirement of Rops.SWITCH
 		result.successors.clear();

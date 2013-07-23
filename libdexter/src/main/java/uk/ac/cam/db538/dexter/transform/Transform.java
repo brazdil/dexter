@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.cam.db538.dexter.ProgressCallback;
+import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -23,7 +24,11 @@ public abstract class Transform {
 		this.progressCallback = progressCallback;
 	}
 	
+	private Dex dex;
+	
 	public final void apply(Dex dex) {
+		this.dex = dex;
+		
 		progressUpdate(0, 1);
 		
 		doFirst(dex);
@@ -66,7 +71,7 @@ public abstract class Transform {
 				InstructionList oldInstructions = newMethodBody.getInstructionList();
 				List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>(oldInstructions.size());
 				for (DexCodeElement oldInsn : oldInstructions) {
-					DexCodeElement newInsn = doLast(doFirst(oldInsn));
+					DexCodeElement newInsn = doLast(doFirst(oldInsn, newMethodBody), newMethodBody);
 					newInstructions.add(newInsn);
 					instructionsChanged |= (newInsn != oldInsn);
 				}
@@ -76,7 +81,7 @@ public abstract class Transform {
 				newMethodBody = doLast(newMethodBody);
 			}
 			if (oldMethodBody != newMethodBody)
-				method = new DexMethod(method, oldMethodBody);
+				method = new DexMethod(method, newMethodBody);
 			
 			method = doLast(method);
 			
@@ -89,16 +94,20 @@ public abstract class Transform {
 	public void doFirst(DexClass clazz) { }
 	public DexMethod doFirst(DexMethod method) { return method; }
 	public DexCode doFirst(DexCode code) { return code; }
-	public DexCodeElement doFirst(DexCodeElement element) { return element; }
+	public DexCodeElement doFirst(DexCodeElement element, DexCode code) { return element; }
 	
 	public void doLast(Dex dex) { }
 	public void doLast(DexClass clazz) { }
 	public DexMethod doLast(DexMethod method) { return method; }
 	public DexCode doLast(DexCode code) { return code; }
-	public DexCodeElement doLast(DexCodeElement element) { return element; }
+	public DexCodeElement doLast(DexCodeElement element, DexCode code) { return element; }
 	
 	private void progressUpdate(int finished, int outOf) {
 		if (this.progressCallback != null)
 			this.progressCallback.update(finished, outOf);
+	}
+	
+	protected AuxiliaryDex getAuxiliaryDex() {
+		return this.dex.getAuxiliaryDex();
 	}
 }
