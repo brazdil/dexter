@@ -13,10 +13,15 @@ public class DexSingleOriginalRegister extends DexSingleRegister {
 	}
 
 	@Override
-	String getPlainId() {
+	String getAsmId() {
 		return Integer.toString(id);
 	}
 
+	@Override
+	String getAsmPrefix() {
+		return "v";
+	}
+	
 	@Override
 	public DexTaintRegister getTaintRegister() {
 		return this.taintRegister;

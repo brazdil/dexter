@@ -13,10 +13,15 @@ public class DexWideOriginalRegister extends DexWideRegister {
 	}
 
 	@Override
-	String getPlainId() {
+	String getAsmId() {
 		return Integer.toString(id) + "|" + Integer.toString(id + 1);
 	}
 
+	@Override
+	String getAsmPrefix() {
+		return "v";
+	}
+	
 	@Override
 	public DexTaintRegister getTaintRegister() {
 		return this.taintRegister;

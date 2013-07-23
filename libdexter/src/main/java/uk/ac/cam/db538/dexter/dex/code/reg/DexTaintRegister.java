@@ -15,7 +15,7 @@ public class DexTaintRegister extends DexRegister {
 
 	@Override
 	public String toString() {
-		return "t" + originalRegister.getPlainId();
+		return "t" + originalRegister.getAsmId();
 	}
 
 	@Override
