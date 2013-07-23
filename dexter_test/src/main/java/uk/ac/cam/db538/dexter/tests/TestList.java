@@ -4,19 +4,18 @@ public class TestList {
     private TestList() { }
 
     private final static TestExerciser[] tests = new TestExerciser[] {
-        new SourceTestExerciser(new Test_Const()),
-        new PropagationTestExerciser(new Test_BinaryOp())
+        new SourceTestExerciser(new Test_Const())
     };
     
     public static TestExerciser[] getTestList() {
         return tests;
     }
     
-    public static int getTestCount() {
+    public static Integer getTestCount() {
     	return tests.length;
     }
     
-    public static boolean runTest(int index) {
+    public static Boolean runTest(int index) {
     	return tests[index].run();
     }
     

@@ -18,13 +18,14 @@ public class PropagationTestExerciser extends TestExerciser {
 
     @Override
     public boolean run() {
-        int argNormal = 1;
-        int resNormal = test.propagate(argNormal);
-
-        int argTainted = 0xDEC0DED;
-        int resTainted = test.propagate(argTainted);
-
-        return !TaintChecker.isTainted(resNormal) && TaintChecker.isTainted(resTainted);
+//        int argNormal = 1;
+//        int resNormal = test.propagate(argNormal);
+//
+//        int argTainted = 0xDEC0DED;
+//        int resTainted = test.propagate(argTainted);
+//
+//        return !TaintChecker.isTainted(resNormal) && TaintChecker.isTainted(resTainted);
+    	return false;
     }
 }
 
