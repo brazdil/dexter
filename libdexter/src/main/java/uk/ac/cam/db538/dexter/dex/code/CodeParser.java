@@ -56,6 +56,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Pair;
@@ -75,8 +76,13 @@ public abstract class CodeParser {
 		
 		val instructionList = finalizeCode(parsedInstructions, parsedTryStarts, parsedTryEnds, parsedLabels, parsedCatches, parsedCatchAlls);
 		val params = parseParameters(methodDef, codeItem, parserCache);
+		val returnType = parseReturnType(methodDef);
 		
-		return new DexCode(instructionList, params, hierarchy);
+		return new DexCode(instructionList, params, returnType, hierarchy);
+	}
+	
+	private static DexType parseReturnType(MethodDefinition methodDef) {
+		return methodDef.getMethodId().getPrototype().getReturnType();
 	}
 	
 	private static List<Parameter> parseParameters(MethodDefinition methodDef, CodeItem codeItem, CodeParserState parserCache) {

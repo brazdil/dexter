@@ -20,7 +20,6 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexCodeAnalyzer {
 	private DexCode code;
-	private DexMethod method;
 
     private HashMap<DexCodeElement, AnalyzedDexInstruction> instructionMap;
     private ArrayList<AnalyzedDexInstruction> instructions;
@@ -47,9 +46,8 @@ public class DexCodeAnalyzer {
 	private final HashMap<DexRegister, Integer> registerIndexer;
 
     
-    public DexCodeAnalyzer(DexMethod method) {
-        this.method = method;
-        this.code = method.getMethodBody();
+    public DexCodeAnalyzer(DexCode code) {
+        this.code = code;
         basicBlocks = new ArrayList<AnalyzedBasicBlock>();
         maxInstructionIndex = 0;
         buildInstructionList();
@@ -64,7 +62,7 @@ public class DexCodeAnalyzer {
     }
 
     private void analyzeParameters() {
-    	for(Parameter param : method.getMethodBody().getParameters()) {
+    	for(Parameter param : code.getParameters()) {
     		RopType regType = RopType.getRopType(param.getType());
     		startOfMethod.defineRegister(param.getRegister(), regType, true);
     	}
@@ -96,7 +94,7 @@ public class DexCodeAnalyzer {
 
 
 	private void buildUseDefSets() {
-		DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(method);
+		DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(code);
 		
 		// First collect use/def information
 		for (AnalyzedDexInstruction inst : instructions) {

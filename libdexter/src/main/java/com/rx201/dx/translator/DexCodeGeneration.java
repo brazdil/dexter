@@ -89,7 +89,7 @@ public class DexCodeGeneration {
 		isStatic = methodDef.isStatic();
 		
 		long analysisTime = System.currentTimeMillis();
-	    this.analyzer = new DexCodeAnalyzer(method);
+	    this.analyzer = new DexCodeAnalyzer(method.getMethodBody());
 	    this.analyzer.analyze();
 	    analysisTime = System.currentTimeMillis() - analysisTime;
 	    

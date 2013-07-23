@@ -11,6 +11,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Utils;
 
@@ -19,15 +20,17 @@ public class DexCode {
   @Getter private final RuntimeHierarchy hierarchy;
   @Getter private final InstructionList instructionList;
   @Getter private final List<Parameter> parameters;
+  @Getter private final DexType returnType;
   
-  public DexCode(InstructionList instructionList, List<Parameter> parameters, RuntimeHierarchy hierarchy) {
+  public DexCode(InstructionList instructionList, List<Parameter> parameters, DexType returnType, RuntimeHierarchy hierarchy) {
 	  this.instructionList = instructionList;
 	  this.parameters = Utils.finalList(parameters);
+	  this.returnType = returnType;
 	  this.hierarchy = hierarchy;
   }
 
   public DexCode(DexCode toClone, InstructionList newInstructionList) {
-	  this(newInstructionList, toClone.parameters, toClone.hierarchy);
+	  this(newInstructionList, toClone.parameters, toClone.returnType, toClone.hierarchy);
   }
 
   public Set<DexRegister> getUsedRegisters() {

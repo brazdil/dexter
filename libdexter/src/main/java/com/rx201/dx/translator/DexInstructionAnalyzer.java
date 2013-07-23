@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jf.dexlib.Code.Analysis.ValidationException;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -46,7 +47,6 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
-import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
@@ -62,9 +62,9 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	private DexTypeCache typeCache;
 	private DexType methodReturnType;
 
-	public DexInstructionAnalyzer(DexMethod method) {
-		this.typeCache = method.getParentFile().getTypeCache();
-		this.methodReturnType = method.getMethodDef().getMethodId().getPrototype().getReturnType();
+	public DexInstructionAnalyzer(DexCode code) {
+		this.typeCache = code.getHierarchy().getTypeCache();
+		this.methodReturnType = code.getReturnType();
 	}
 
 	public void setAnalyzedInstruction(AnalyzedDexInstruction i) {
