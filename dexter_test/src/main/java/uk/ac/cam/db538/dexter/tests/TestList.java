@@ -6,7 +6,8 @@ public class TestList {
     private final static TestExerciser[] tests = new TestExerciser[] {
         new SourceTestExerciser(new Test_Const()),
         new PropagationTestExerciser(new Test_BinaryOp_Arg1()),
-        new PropagationTestExerciser(new Test_BinaryOp_Arg2())
+        new PropagationTestExerciser(new Test_BinaryOp_Arg2()),
+        new PropagationTestExerciser(new Test_BinaryOpLiteral()),
     };
     
     public static TestExerciser[] getTestList() {
