@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.transform.macros;
+package uk.ac.cam.db538.dexter.transform.taint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,7 +13,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleAuxiliaryRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
@@ -27,7 +26,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
-public final class MethodCallMacros {
+public final class Macros {
 
 	private final AuxiliaryDex dexAux;
 	private final RuntimeHierarchy hierarchy;
@@ -43,7 +42,7 @@ public final class MethodCallMacros {
 	private final MethodDefinition method_Integer_intValue;
 	private final MethodDefinition method_Integer_valueOf;
 	
-	public MethodCallMacros(AuxiliaryDex dexAux) {
+	public Macros(AuxiliaryDex dexAux) {
 		this.dexAux = dexAux;
 
 		this.hierarchy = dexAux.getHierarchy();

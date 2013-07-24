@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.transform;
+package uk.ac.cam.db538.dexter.transform.taint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
-import uk.ac.cam.db538.dexter.transform.macros.MethodCallMacros;
+import uk.ac.cam.db538.dexter.transform.Transform;
 
 public class DexterTransform extends Transform {
 
@@ -38,18 +38,18 @@ public class DexterTransform extends Transform {
 	}
 
 	private AuxiliaryDex dexAux;
-	private MethodCallMacros macrosMethodCall;
+	private Macros macros;
 
 	@Override
 	public void doFirst(Dex dex) {
 		super.doFirst(dex);
 		
 		dexAux = dex.getAuxiliaryDex();
-		macrosMethodCall = new MethodCallMacros(dexAux);
+		macros = new Macros(dexAux);
 	}
 
 	private int auxiliaryRegisterId;
-	private Map<DexInstruction_Invoke, CallDestinationType> methodCallClassification;
+	private Map<DexInstruction_Invoke, CallDestinationType> invokeClassification;
 	
 	@Override
 	public DexCode doFirst(DexCode code) {
@@ -57,8 +57,8 @@ public class DexterTransform extends Transform {
 		
 		auxiliaryRegisterId = 0;
 		
-		val classification = MethodCallClassifier.classifyMethodCalls(code);
-		methodCallClassification = classification.getValB();
+		val classification = InvokeClassifier.classifyMethodCalls(code);
+		invokeClassification = classification.getValB();
 		code = classification.getValA();
 		
 		return code;
@@ -77,7 +77,7 @@ public class DexterTransform extends Transform {
 			if (!(nextElement instanceof DexInstruction_MoveResult))
 				nextElement = null;
 			
-			CallDestinationType type = methodCallClassification.get(element);
+			CallDestinationType type = invokeClassification.get(element);
 			if (type == CallDestinationType.Internal)
 				return instrument_Invoke_Internal((DexInstruction_Invoke) element, (DexInstruction_MoveResult) nextElement);
 			else if (type == CallDestinationType.External)
@@ -101,7 +101,7 @@ public class DexterTransform extends Transform {
 		
 		
 		
-		methodCallClassification = null;
+		invokeClassification = null;
 		return super.doLast(code);
 	}
 	
@@ -147,7 +147,7 @@ public class DexterTransform extends Transform {
 					taintRegs.add(insnInvoke.getArgumentRegisters().get(i).getTaintRegister());
 			}
 			
-			macroSetParamTaints = macrosMethodCall.setParamTaints(auxReg(), auxReg(), taintRegs);
+			macroSetParamTaints = macros.setParamTaints(auxReg(), auxReg(), taintRegs);
 			
 		} else
 			macroSetParamTaints = DexMacro.empty();
@@ -155,7 +155,7 @@ public class DexterTransform extends Transform {
 		// need to retrieve taint from the ThreadLocal RES field?
 		
 		if (insnMoveResult != null && prototype.getReturnType() instanceof DexPrimitiveType)
-			macroGetResultTaint = macrosMethodCall.getResultTaint(auxReg(), insnMoveResult.getRegTo().getTaintRegister()); 
+			macroGetResultTaint = macros.getResultTaint(auxReg(), insnMoveResult.getRegTo().getTaintRegister()); 
 		else
 			macroGetResultTaint = DexMacro.empty();
 		
@@ -176,7 +176,7 @@ public class DexterTransform extends Transform {
 			return insnReturn;
 		else
 			return new DexMacro(
-				macrosMethodCall.setResultTaint(auxReg(), auxReg(), insnReturn.getRegFrom().getTaintRegister()),
+				macros.setResultTaint(auxReg(), auxReg(), insnReturn.getRegFrom().getTaintRegister()),
 				insnReturn);
 	}
 

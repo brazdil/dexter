@@ -12,7 +12,7 @@ import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.transform.Transform;
-import uk.ac.cam.db538.dexter.transform.UnitTestTransform;
+import uk.ac.cam.db538.dexter.transform.taint.UnitTestTransform;
 
 import com.rx201.dx.translator.DexCodeGeneration;
 

@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.transform;
+package uk.ac.cam.db538.dexter.transform.taint;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,9 +14,9 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 import com.rx201.dx.translator.DexCodeAnalyzer;
 import com.rx201.dx.translator.RopType.Category;
 
-public class MethodCallClassifier {
+public class InvokeClassifier {
 
-	private MethodCallClassifier() { }
+	private InvokeClassifier() { }
 	
 	public static Pair<DexCode, ? extends Map<DexInstruction_Invoke, CallDestinationType>> classifyMethodCalls(DexCode code) {
 		DexCodeAnalyzer analyzedCode = new DexCodeAnalyzer(code);
