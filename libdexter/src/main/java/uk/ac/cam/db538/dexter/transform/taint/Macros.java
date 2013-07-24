@@ -53,19 +53,19 @@ public final class Macros {
 		this.typeThreadLocal = DexClassType.parse("Ljava/lang/ThreadLocal;", cache);
 		this.typeIntArray = DexArrayType.parse("[I", cache);
 	
-		DexPrototype prototype_Void_to_Object = DexPrototype.parse(typeObject, null, cache);
-		DexPrototype prototype_Object_to_Void = DexPrototype.parse(cache.getCachedType_Void(), Arrays.asList(typeObject), cache);
-		DexPrototype prototype_Void_to_int = DexPrototype.parse(cache.getCachedType_Integer(), null, cache);
+		DexPrototype prototype_void_to_Object = DexPrototype.parse(typeObject, null, cache);
+		DexPrototype prototype_Object_to_void = DexPrototype.parse(cache.getCachedType_Void(), Arrays.asList(typeObject), cache);
+		DexPrototype prototype_void_to_int = DexPrototype.parse(cache.getCachedType_Integer(), null, cache);
 		DexPrototype prototype_int_to_Integer = DexPrototype.parse(typeInteger, Arrays.asList(cache.getCachedType_Integer()), cache);
 		
-		DexMethodId methodId_get_Void_to_Object = DexMethodId.parseMethodId("get", prototype_Void_to_Object, cache);
-		DexMethodId methodId_set_Object_to_Void = DexMethodId.parseMethodId("set", prototype_Object_to_Void, cache);
-		DexMethodId methodId_intValue_Void_to_int = DexMethodId.parseMethodId("intValue", prototype_Void_to_int, cache);
+		DexMethodId methodId_get_void_to_Object = DexMethodId.parseMethodId("get", prototype_void_to_Object, cache);
+		DexMethodId methodId_set_Object_to_void = DexMethodId.parseMethodId("set", prototype_Object_to_void, cache);
+		DexMethodId methodId_intValue_void_to_int = DexMethodId.parseMethodId("intValue", prototype_void_to_int, cache);
 		DexMethodId methodId_valueOf_int_to_Integer = DexMethodId.parseMethodId("valueOf", prototype_int_to_Integer, cache);
 		
-		this.method_ThreadLocal_Get = lookupMethod(typeThreadLocal, methodId_get_Void_to_Object);
-		this.method_ThreadLocal_Set = lookupMethod(typeThreadLocal, methodId_set_Object_to_Void);
-		this.method_Integer_intValue = lookupMethod(typeInteger, methodId_intValue_Void_to_int);
+		this.method_ThreadLocal_Get = lookupMethod(typeThreadLocal, methodId_get_void_to_Object);
+		this.method_ThreadLocal_Set = lookupMethod(typeThreadLocal, methodId_set_Object_to_void);
+		this.method_Integer_intValue = lookupMethod(typeInteger, methodId_intValue_void_to_int);
 		this.method_Integer_valueOf = lookupMethod(typeInteger, methodId_valueOf_int_to_Integer);
 	}
 	
