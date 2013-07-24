@@ -1,4 +1,4 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_BinaryOp_Arg1;
+.class public Luk/ac/cam/db538/dexter/tests/Test_BinOp_Arg1;
 .super Ljava/lang/Object;
 
 # interfaces
@@ -19,7 +19,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "BinaryOp: Arg1"
+    const-string v0, "BinOp: arg1"
     return-object v0
     
 .end method
@@ -27,7 +27,7 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "\'add-int rX, <-->, rConst\'"
+    const-string v0, "add-int rX, [+], rConst"
     return-object v0
     
 .end method

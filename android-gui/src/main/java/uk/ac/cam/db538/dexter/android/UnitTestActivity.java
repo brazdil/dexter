@@ -233,7 +233,7 @@ public class UnitTestActivity extends Activity {
 
                     setMessage("Instrumenting...");
 
-                    Transform transform = new UnitTestTransform();
+                    UnitTestTransform transform = new UnitTestTransform();
                     transform.apply(dexTestApp);
 
                     setMessage("Saving...");

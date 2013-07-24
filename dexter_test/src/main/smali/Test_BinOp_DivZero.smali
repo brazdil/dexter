@@ -1,4 +1,4 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_BinaryOpLiteral;
+.class public Luk/ac/cam/db538/dexter/tests/Test_BinOp_DivZero;
 .super Ljava/lang/Object;
 
 # interfaces
@@ -19,7 +19,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "BinaryOpLiteral"
+    const-string v0, "BinOp: div zero"
     return-object v0
     
 .end method
@@ -27,7 +27,7 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "\'add-int/lit rX, <-->, #1234\'"
+    const-string v0, "div-int rX, [+], rZero"
     return-object v0
     
 .end method
@@ -35,7 +35,17 @@
 .method public propagate(I)I
     .registers 3
 
-    add-int/lit16 v0, p1, 0x4d2
+    :try_start
+        const v1, 0x0
+        div-int v0, p1, v1
+        return v0
+    :try_end
+    .catch Ljava/lang/ArithmeticException; {:try_start .. :try_end} :handler
+
+    :handler
+    move-exception v0
+    invoke-virtual {v0}, Ljava/lang/Object;->hashCode()I
+    move-result v0
     return v0
     
 .end method

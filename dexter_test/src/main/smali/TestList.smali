@@ -11,58 +11,50 @@
 .method static constructor <clinit>()V
     .registers 4
 
-    .prologue
-    .line 6
-    const/4 v0, 0x4
-
+    # create array
+    const/4 v0, 0x6
     new-array v0, v0, [Luk/ac/cam/db538/dexter/tests/TestExerciser;
 
     const/4 v1, 0x0
-
     new-instance v2, Luk/ac/cam/db538/dexter/tests/SourceTestExerciser;
-
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_Const;
-
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_Const;-><init>()V
-
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/SourceTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/SourceTest;)V
-
     aput-object v2, v0, v1
 
     const/4 v1, 0x1
-
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
-
-    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_BinaryOp_Arg1;
-
-    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_BinaryOp_Arg1;-><init>()V
-
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_BinOp_Arg1;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_BinOp_Arg1;-><init>()V
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
-
     aput-object v2, v0, v1
 
     const/4 v1, 0x2
-
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
-
-    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_BinaryOp_Arg2;
-
-    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_BinaryOp_Arg2;-><init>()V
-
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_BinOp_Arg2;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_BinOp_Arg2;-><init>()V
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
-
     aput-object v2, v0, v1
 
     const/4 v1, 0x3
-
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
-
-    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_BinaryOpLiteral;
-
-    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_BinaryOpLiteral;-><init>()V
-
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_BinOp_DivZero;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_BinOp_DivZero;-><init>()V
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
 
+    const/4 v1, 0x4
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_BinOpLit_Standard;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_BinOpLit_Standard;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    const/4 v1, 0x5
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_BinOpLit_DivZero;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_BinOpLit_DivZero;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     sput-object v0, Luk/ac/cam/db538/dexter/tests/TestList;->tests:[Luk/ac/cam/db538/dexter/tests/TestExerciser;

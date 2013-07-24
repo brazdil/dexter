@@ -1,4 +1,4 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_BinaryOp_Arg2;
+.class public Luk/ac/cam/db538/dexter/tests/Test_BinOpLit_Standard;
 .super Ljava/lang/Object;
 
 # interfaces
@@ -19,7 +19,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "BinaryOp: Arg2"
+    const-string v0, "BinOpLit: standard"
     return-object v0
     
 .end method
@@ -27,7 +27,7 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "\'add-int rX, <-->, rConst\'"
+    const-string v0, "add-int/lit rX, [+], #1234"
     return-object v0
     
 .end method
@@ -35,8 +35,7 @@
 .method public propagate(I)I
     .registers 3
 
-    const v1, 0xDEADBEEF
-    add-int v0, v1, p1
+    add-int/lit16 v0, p1, 0x4d2
     return v0
     
 .end method
