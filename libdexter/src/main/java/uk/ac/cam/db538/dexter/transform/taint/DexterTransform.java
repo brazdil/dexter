@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import lombok.val;
+
 import org.jf.dexlib.AnnotationVisibility;
 
-import lombok.val;
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
@@ -20,7 +21,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleAuxiliaryRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
@@ -48,14 +48,13 @@ public class DexterTransform extends Transform {
 		macros = new Macros(dexAux);
 	}
 
-	private int auxiliaryRegisterId;
 	private Map<DexInstruction_Invoke, CallDestinationType> invokeClassification;
 	
 	@Override
 	public DexCode doFirst(DexCode code) {
 		code = super.doFirst(code);
-		
-		auxiliaryRegisterId = 0;
+
+		macros.resetAuxRegId(); // purely for esthetic reasons (each method will start with a0)
 		
 		val classification = InvokeClassifier.classifyMethodCalls(code);
 		invokeClassification = classification.getValB();
@@ -147,7 +146,7 @@ public class DexterTransform extends Transform {
 					taintRegs.add(insnInvoke.getArgumentRegisters().get(i).getTaintRegister());
 			}
 			
-			macroSetParamTaints = macros.setParamTaints(auxReg(), auxReg(), taintRegs);
+			macroSetParamTaints = macros.setParamTaints(taintRegs);
 			
 		} else
 			macroSetParamTaints = DexMacro.empty();
@@ -155,7 +154,7 @@ public class DexterTransform extends Transform {
 		// need to retrieve taint from the ThreadLocal RES field?
 		
 		if (insnMoveResult != null && prototype.getReturnType() instanceof DexPrimitiveType)
-			macroGetResultTaint = macros.getResultTaint(auxReg(), insnMoveResult.getRegTo().getTaintRegister()); 
+			macroGetResultTaint = macros.getResultTaint(insnMoveResult.getRegTo().getTaintRegister()); 
 		else
 			macroGetResultTaint = DexMacro.empty();
 		
@@ -176,7 +175,7 @@ public class DexterTransform extends Transform {
 			return insnReturn;
 		else
 			return new DexMacro(
-				macros.setResultTaint(auxReg(), auxReg(), insnReturn.getRegFrom().getTaintRegister()),
+				macros.setResultTaint(insnReturn.getRegFrom().getTaintRegister()),
 				insnReturn);
 	}
 
@@ -187,9 +186,5 @@ public class DexterTransform extends Transform {
 			return invoke;
 		else
 			return new DexMacro(invoke, moveResult);
-	}
-
-	private DexSingleAuxiliaryRegister auxReg() {
-		return new DexSingleAuxiliaryRegister(auxiliaryRegisterId++);
 	}
 }

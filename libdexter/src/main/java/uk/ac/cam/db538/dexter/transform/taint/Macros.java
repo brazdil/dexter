@@ -42,6 +42,8 @@ public final class Macros {
 	private final MethodDefinition method_Integer_intValue;
 	private final MethodDefinition method_Integer_valueOf;
 	
+	private int regAuxId;
+	
 	public Macros(AuxiliaryDex dexAux) {
 		this.dexAux = dexAux;
 
@@ -72,54 +74,68 @@ public final class Macros {
 	private MethodDefinition lookupMethod(DexReferenceType classType, DexMethodId methodId) {
 		return hierarchy.getClassDefinition(classType).getMethod(methodId);
 	}
+	
+	public void resetAuxRegId() {
+		regAuxId = 0;
+	}
+	
+	private DexSingleAuxiliaryRegister auxReg() {
+		return new DexSingleAuxiliaryRegister(regAuxId++);
+	}
 
-	public DexMacro setParamTaints(DexSingleAuxiliaryRegister auxReg1, DexSingleAuxiliaryRegister auxReg2, List<DexTaintRegister> taintRegs) {
-		assert(!auxReg1.equals(auxReg2));
+	public DexMacro setParamTaints(List<DexTaintRegister> taintRegs) {
+		DexSingleAuxiliaryRegister auxReg = auxReg();
 		
 		return new DexMacro(
 			// retrieve ThreadLocal<int[]> ARGS => auxReg1
-			new DexInstruction_StaticGet(auxReg1, dexAux.getField_CallParamTaint().getFieldDef(), Opcode_GetPut.Object, hierarchy),
+			new DexInstruction_StaticGet(auxReg, dexAux.getField_CallParamTaint().getFieldDef(), Opcode_GetPut.Object, hierarchy),
 			
 			// call auxReg1.get(); automatically initializes the array
-			new DexInstruction_Invoke(method_ThreadLocal_Get, Arrays.asList(auxReg1), hierarchy),
-			new DexInstruction_MoveResult(auxReg1, true, hierarchy),
+			new DexInstruction_Invoke(method_ThreadLocal_Get, Arrays.asList(auxReg), hierarchy),
+			new DexInstruction_MoveResult(auxReg, true, hierarchy),
 			
 			// cast auxReg1 to int[]
-			new DexInstruction_CheckCast(auxReg1, typeIntArray, hierarchy),
+			new DexInstruction_CheckCast(auxReg, typeIntArray, hierarchy),
 			
 			// store the taints inside the auxReg1 array
-			storeIntsInArray(auxReg1, auxReg2, taintRegs));
+			storeIntsInArray(auxReg, taintRegs));
 	}
 	
-	private DexMacro storeIntsInArray(DexSingleRegister array, DexSingleAuxiliaryRegister auxReg1, List<DexTaintRegister> taints) {
+	private DexMacro storeIntsInArray(DexSingleRegister array, List<DexTaintRegister> taints) {
+		DexSingleAuxiliaryRegister auxReg = auxReg();
+		
 		List<DexInstruction> insns = new ArrayList<DexInstruction>(taints.size() * 2);
 		
 		for (int i = 0; i < taints.size(); i++) {
-			insns.add(new DexInstruction_Const(auxReg1, i, hierarchy));
-			insns.add(new DexInstruction_ArrayPut(taints.get(i), array, auxReg1, Opcode_GetPut.IntFloat, hierarchy));
+			insns.add(new DexInstruction_Const(auxReg, i, hierarchy));
+			insns.add(new DexInstruction_ArrayPut(taints.get(i), array, auxReg, Opcode_GetPut.IntFloat, hierarchy));
 		}
 		
 		return new DexMacro(insns);
 	}
 	
-	public DexMacro getResultTaint(DexSingleAuxiliaryRegister auxReg1, DexTaintRegister regTo) {
+	public DexMacro getResultTaint(DexTaintRegister regTo) {
+		DexSingleAuxiliaryRegister auxReg = auxReg(); 
+		
 		return new DexMacro(
 			// retrieve ThreadLocal<Integer> RES => auxReg1
-			new DexInstruction_StaticGet(auxReg1, dexAux.getField_CallResultTaint().getFieldDef(), Opcode_GetPut.Object, hierarchy),
+			new DexInstruction_StaticGet(auxReg, dexAux.getField_CallResultTaint().getFieldDef(), Opcode_GetPut.Object, hierarchy),
 			
 			// virtual call auxReg1.get() => auxReg1
-			new DexInstruction_Invoke(method_ThreadLocal_Get, Arrays.asList(auxReg1), hierarchy),
-			new DexInstruction_MoveResult(auxReg1, true, hierarchy),
+			new DexInstruction_Invoke(method_ThreadLocal_Get, Arrays.asList(auxReg), hierarchy),
+			new DexInstruction_MoveResult(auxReg, true, hierarchy),
 			
 			// cast auxReg1 to Integer
-			new DexInstruction_CheckCast(auxReg1, typeInteger, hierarchy),
+			new DexInstruction_CheckCast(auxReg, typeInteger, hierarchy),
 			
 			// virtual call auxReg1.intValue()
-			new DexInstruction_Invoke(method_Integer_intValue, Arrays.asList(auxReg1), hierarchy),
+			new DexInstruction_Invoke(method_Integer_intValue, Arrays.asList(auxReg), hierarchy),
 			new DexInstruction_MoveResult(regTo, hierarchy));
 	}
 
-	public DexMacro setResultTaint(DexSingleAuxiliaryRegister auxReg1, DexSingleAuxiliaryRegister auxReg2, DexTaintRegister regFrom) {
+	public DexMacro setResultTaint(DexTaintRegister regFrom) {
+		DexSingleAuxiliaryRegister auxReg1 = auxReg(), auxReg2 = auxReg();
+		
 		return new DexMacro(
 			// static call Integer.valueOf(regFrom) => auxReg1
 			new DexInstruction_Invoke(method_Integer_valueOf, Arrays.asList(regFrom), hierarchy),
