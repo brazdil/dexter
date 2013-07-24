@@ -6,7 +6,6 @@ import static com.android.dx.rop.type.Type.BT_INT;
 import static com.android.dx.rop.type.Type.BT_SHORT;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
@@ -51,7 +50,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
@@ -1101,10 +1099,10 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			break;
 		}
 		if (opcode.getBranchingness() == Rop.BRANCH_NONE) {
-			doPlainInsn(opcode, getDestRegSpec(instruction.getRegTarget()), instruction.getRegSourceA(), instruction.getRegSourceB());
+			doPlainInsn(opcode, getDestRegSpec(instruction.getRegTo()), instruction.getRegArgA(), instruction.getRegArgB());
 		} else { // Integer division/reminder will throw exception
-			doThrowingInsn(opcode, instruction.getRegSourceA(), instruction.getRegSourceB());
-			doPseudoMoveResult(instruction.getRegTarget());
+			doThrowingInsn(opcode, instruction.getRegArgA(), instruction.getRegArgB());
+			doPseudoMoveResult(instruction.getRegTo());
 		}
 	}
 

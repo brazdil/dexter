@@ -4,7 +4,9 @@ public class TestList {
     private TestList() { }
 
     private final static TestExerciser[] tests = new TestExerciser[] {
-        new SourceTestExerciser(new Test_Const())
+        new SourceTestExerciser(new Test_Const()),
+        new PropagationTestExerciser(new Test_BinaryOp_Arg1()),
+        new PropagationTestExerciser(new Test_BinaryOp_Arg2())
     };
     
     public static TestExerciser[] getTestList() {
@@ -20,10 +22,10 @@ public class TestList {
     }
     
     public static String getTestName(int index) {
-    	return tests[index].getName();
+    	return tests[index].getTest().getName();
     }
 
     public static String getTestDescription(int index) {
-        return "Fuck this shit #" + index;
+    	return tests[index].getTest().getDescription();
     }
 }

@@ -11,6 +11,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
@@ -18,9 +19,11 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
@@ -278,6 +281,38 @@ public final class CommonCodeGenerator {
 			new DexInstruction_Invoke(method_Class_getAnnotation, Arrays.asList(auxInspectedClass, auxAnnoClass), hierarchy),
 			new DexInstruction_MoveResult(regTo, true, hierarchy)
 			);
+	}
+	
+	/*
+	 * Combines taint of all the given registers. Does not matter if the given registers
+	 * are taint registers or not, because it automatically converts all of them to taint registers.
+	 */
+	public DexCodeElement combineTaint(DexRegister output, DexRegister ... inputs) {
+		DexTaintRegister outputTaint = taint(output);
+		
+		if (inputs.length == 0)
+			return setZero(outputTaint);
+		else if (inputs.length == 1)
+			return new DexInstruction_Move(outputTaint, taint(inputs[0]), hierarchy);
+		else if (inputs.length == 2)
+			return new DexInstruction_BinaryOp(outputTaint, taint(inputs[0]), taint(inputs[1]), Opcode_BinaryOp.OrInt, hierarchy);
+		else {
+			int count = inputs.length;
+			List<DexCodeElement> insns = new ArrayList<DexCodeElement>(count - 1);
+			
+			insns.add(new DexInstruction_BinaryOp(outputTaint, taint(inputs[0]), taint(inputs[1]), Opcode_BinaryOp.OrInt, hierarchy));
+			for (int i = 2; i < count; i++)
+				insns.add(new DexInstruction_BinaryOp(outputTaint, outputTaint, taint(inputs[i]), Opcode_BinaryOp.OrInt, hierarchy));
+			
+			return new DexMacro(insns);
+		}
+	}
+	
+	private static DexTaintRegister taint(DexRegister reg) {
+		if (reg instanceof DexTaintRegister)
+			return (DexTaintRegister) reg;
+		else
+			return reg.getTaintRegister();
 	}
 	
 	public DexMacro setAllTo(List<? extends DexRegister> regs, long constant) {

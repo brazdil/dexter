@@ -44,7 +44,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -548,23 +547,23 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 			throw new ValidationException("Unknown opcode for DexInstruction_BinaryOp");
 		}
 		if (freezed) {
-			useFreezedRegister(instruction.getRegSourceA(), type);
+			useFreezedRegister(instruction.getRegArgA(), type);
 			
 			if (!isShiftOperator)
-				useFreezedRegister(instruction.getRegSourceB(), type);
+				useFreezedRegister(instruction.getRegArgB(), type);
 			else
-				useFreezedRegister(instruction.getRegSourceB(), RopType.Integer);
+				useFreezedRegister(instruction.getRegArgB(), RopType.Integer);
 			
-			defineFreezedRegister(instruction.getRegTarget(), type);
+			defineFreezedRegister(instruction.getRegTo(), type);
 		} else {
-			useRegister(instruction.getRegSourceA(), type);
+			useRegister(instruction.getRegArgA(), type);
 			
 			if (!isShiftOperator)
-				useRegister(instruction.getRegSourceB(), type);
+				useRegister(instruction.getRegArgB(), type);
 			else
-				useRegister(instruction.getRegSourceB(), RopType.Integer);
+				useRegister(instruction.getRegArgB(), RopType.Integer);
 			
-			defineRegister(instruction.getRegTarget(), type);
+			defineRegister(instruction.getRegTo(), type);
 		}
 	}
     		

@@ -19,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
@@ -95,7 +96,10 @@ public class DexterTransform extends Transform {
 
 		if (element instanceof DexInstruction_Return)
 			return instrument_Return((DexInstruction_Return) element);
-		
+
+		if (element instanceof DexInstruction_BinaryOp)
+			return instrument_BinaryOp((DexInstruction_BinaryOp) element);
+
 		return element;
 	}
 
@@ -175,7 +179,17 @@ public class DexterTransform extends Transform {
 	}
 
 	private DexCodeElement instrument_Invoke_External(DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult) {
-		return generateInvoke(insnInvoke, insnMoveResult);
+		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
+		
+		// NEED TO FINISH THIS!!! ASSIGNS ZERO TAINT TO RESULT!!!
+		
+		DexCodeElement macroGetResultTaint;
+		if (insnMoveResult != null && prototype.getReturnType() instanceof DexPrimitiveType)
+			macroGetResultTaint = codeGen.setZero(insnMoveResult.getRegTo().getTaintRegister()); 
+		else
+			macroGetResultTaint = codeGen.empty();
+		
+		return new DexMacro(generateInvoke(insnInvoke, insnMoveResult), macroGetResultTaint);
 	}
 	
 	private DexCodeElement instrument_Return(DexInstruction_Return insnReturn) {
@@ -187,6 +201,12 @@ public class DexterTransform extends Transform {
 				insnReturn);
 	}
 
+	private DexCodeElement instrument_BinaryOp(DexInstruction_BinaryOp insn) {
+		return new DexMacro(
+				codeGen.combineTaint(insn.getRegTo(), insn.getRegArgA(), insn.getRegArgB()),
+				insn);
+	}
+	
 	// UTILS
 	
 	private static DexCodeElement generateInvoke(DexInstruction_Invoke invoke, DexInstruction_MoveResult moveResult) {

@@ -28,17 +28,17 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   // registers are equal; for commutative instructions,
   // check the second as well
 
-  @Getter private final DexRegister regTarget;
-  @Getter private final DexRegister regSourceA;
-  @Getter private final DexRegister regSourceB;
+  @Getter private final DexRegister regTo;
+  @Getter private final DexRegister regArgA;
+  @Getter private final DexRegister regArgB;
   @Getter private final Opcode_BinaryOp insnOpcode;
   
   private DexInstruction_BinaryOp(DexRegister target, DexRegister sourceA, DexRegister sourceB, Opcode_BinaryOp opcode, RuntimeHierarchy hierarchy) {
 	super(hierarchy);
 	
-    regTarget = target;
-    regSourceA = sourceA;
-    regSourceB = sourceB;
+    regTo = target;
+    regArgA = sourceA;
+    regArgB = sourceB;
     insnOpcode = opcode;
     
     // checks that the opcode is allowed as well
@@ -104,7 +104,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
 
   @Override
   public String toString() {
-    return insnOpcode.getAssemblyName() + " " + regTarget.toString() + ", " + regSourceA.toString() + ", " + regSourceB.toString();
+    return insnOpcode.getAssemblyName() + " " + regTo.toString() + ", " + regArgA.toString() + ", " + regArgB.toString();
   }
 
   @Override
@@ -126,12 +126,12 @@ public class DexInstruction_BinaryOp extends DexInstruction {
 
   @Override
   public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTarget);
+    return Sets.newHashSet(regTo);
   }
 
   @Override
   public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regSourceA, regSourceB);
+    return Sets.newHashSet(regArgA, regArgB);
   }
 
   @Override

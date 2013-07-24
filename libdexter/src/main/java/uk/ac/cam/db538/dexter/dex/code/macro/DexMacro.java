@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 
 public class DexMacro extends DexCodeElement {
 
@@ -21,7 +20,7 @@ public class DexMacro extends DexCodeElement {
 		this(new InstructionList(Arrays.asList(insns)));
 	}
 
-	public DexMacro(List<DexInstruction> insns) {
+	public DexMacro(List<? extends DexCodeElement> insns) {
 		this(new InstructionList(insns));
 	}
 	

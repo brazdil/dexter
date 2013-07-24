@@ -12,8 +12,8 @@ public class SourceTestExerciser extends TestExerciser {
     }
 
     @Override
-    public String getName() {
-        return test.getClass().getSimpleName();
+    public Test getTest() {
+        return test;
     }
 
     @Override

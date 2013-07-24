@@ -5,7 +5,7 @@ package uk.ac.cam.db538.dexter.tests;
  */
 public abstract class TestExerciser {
 
-    public abstract String getName();
+    public abstract Test getTest();
     public abstract boolean run();
 
 }
