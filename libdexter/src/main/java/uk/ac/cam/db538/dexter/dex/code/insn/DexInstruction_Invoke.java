@@ -1,7 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,7 +15,6 @@ import org.jf.dexlib.Code.Format.Instruction3rc;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleAuxiliaryRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;

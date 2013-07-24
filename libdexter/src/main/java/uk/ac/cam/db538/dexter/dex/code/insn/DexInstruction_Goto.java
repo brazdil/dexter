@@ -46,7 +46,7 @@ public class DexInstruction_Goto extends DexInstruction {
 
   @Override
   public String toString() {
-    return "goto L" + target.toString();
+    return "goto " + target.toString();
   }
 
   @Override

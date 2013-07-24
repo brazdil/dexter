@@ -218,19 +218,19 @@ public class DexClass {
 				classData, staticFieldInitializers);
 	}
 	
-	public void replaceMethods(List<DexMethod> newMethods) {
+	public void replaceMethods(List<? extends DexMethod> newMethods) {
 		this.methods = Utils.finalList(newMethods);
 	}
 
-	public void replaceStaticFields(List<DexStaticField> newStaticFields) {
+	public void replaceStaticFields(List<? extends DexStaticField> newStaticFields) {
 		this.staticFields = Utils.finalList(newStaticFields);
 	}
 
-	public void replaceInstanceFields(List<DexInstanceField> newInstanceFields) {
+	public void replaceInstanceFields(List<? extends DexInstanceField> newInstanceFields) {
 		this.instanceFields = Utils.finalList(newInstanceFields);
 	}
 
-	public void replaceAnnotations(List<DexAnnotation> newAnnotations) {
+	public void replaceAnnotations(List<? extends DexAnnotation> newAnnotations) {
 		this.annotations = Utils.finalList(newAnnotations);
 	}
 }

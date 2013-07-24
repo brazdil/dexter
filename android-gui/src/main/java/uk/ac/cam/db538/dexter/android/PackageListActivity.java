@@ -31,8 +31,6 @@ import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
-import uk.ac.cam.db538.dexter.transform.Transform;
-import uk.ac.cam.db538.dexter.transform.UnitTestTransform;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 

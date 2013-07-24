@@ -49,4 +49,9 @@ public class DexMethodId implements Serializable {
 			this.name.equals(other.name) &&
 			this.prototype.equals(other.prototype);
 	}
+	
+	@Override
+	public String toString() {
+		return name + prototype;
+	}
 }
