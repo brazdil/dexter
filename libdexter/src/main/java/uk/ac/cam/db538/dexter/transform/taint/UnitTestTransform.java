@@ -1,10 +1,16 @@
 package uk.ac.cam.db538.dexter.transform.taint;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 
 public class UnitTestTransform extends DexterTransform {
@@ -19,14 +25,20 @@ public class UnitTestTransform extends DexterTransform {
 	@Override
 	public DexMethod doLast(DexMethod method) {
 		if (isTaintCheckMethod(method)) {
-			method.getMethodBody().getInstructionList().dump();
+			DexCode oldCode = method.getMethodBody(); 
+			DexRegister paramReg = oldCode.getParameters().get(0).getRegister(); 
 			
-			// TODO: replace the register in Return with its taint register
-			// will need initialization of taint registers after method call
+			oldCode.getInstructionList().dump();
+					
+			List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
+			for (DexCodeElement insn : oldCode.getInstructionList())
+				if (insn instanceof DexInstruction_Return)
+					newInstructions.add(new DexInstruction_Return(paramReg.getTaintRegister(), oldCode.getHierarchy()));
+				else
+					newInstructions.add(insn);
 			
-//			val oldMethodBody = method.getMethodBody();
-//			val regArg = oldMethodBody.getParameters().get(0).getRegister();
-//			val regArgTaint = regArg.getTaintRegister();
+			DexCode newCode = new DexCode(oldCode, new InstructionList(newInstructions));
+			method = new DexMethod(method, newCode);
 		}
 		
 		return super.doFirst(method);
@@ -38,10 +50,7 @@ public class UnitTestTransform extends DexterTransform {
 			DexInstruction_Const insnConst = (DexInstruction_Const) element;
 			if (insnConst.getValue() == 0xDEC0DEDL)
 				return new DexMacro(
-					new DexInstruction_Const(
-						insnConst.getRegTo().getTaintRegister(), 
-						1L, 
-						insnConst.getHierarchy()),
+					new DexInstruction_Const(insnConst.getRegTo().getTaintRegister(), 1L, code.getHierarchy()),
 					insnConst);
 		}
 		
@@ -54,10 +63,10 @@ public class UnitTestTransform extends DexterTransform {
 
 	private boolean isTaintCheckMethod(DexMethod method) {
 		return
-				method.getParentClass().getClassDef().getType().getDescriptor().equals(TAINTCHECK_CLASS) &&
-				method.getMethodDef().getMethodId().getName().equals(TAINTCHECK_METHOD) &&
-				method.getMethodDef().getMethodId().getPrototype().getDescriptor().equals(TAINTCHECK_PROTOTYPE) &&
-				method.getMethodDef().isStatic() &&
-				method.getMethodBody() != null;
+			method.getParentClass().getClassDef().getType().getDescriptor().equals(TAINTCHECK_CLASS) &&
+			method.getMethodDef().getMethodId().getName().equals(TAINTCHECK_METHOD) &&
+			method.getMethodDef().getMethodId().getPrototype().getDescriptor().equals(TAINTCHECK_PROTOTYPE) &&
+			method.getMethodDef().isStatic() &&
+			method.getMethodBody() != null;
 	}
 }
