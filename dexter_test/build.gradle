@@ -1,24 +1,28 @@
-import com.android.dx.command.dexer.Main
+import org.jf.smali.main
 
 buildscript {
     repositories { mavenCentral() }
     dependencies {
-        classpath 'com.google.android.tools:dx:1.7'
+        classpath files('libs/smali-1.4.2.jar')
     }
 }
 
-apply plugin: 'java'
-sourceCompatibility = targetCompatibility = 1.6
+def buildDir = file("build")
+def dexFolder = new File(buildDir, "dex")
+def smaliFolder = new File(new File(file("src"), "main"), "smali")
+ext.dexFile = new File(dexFolder, project.name + ".dex")
 
-ext.jarFile = new File(libsDir, project.name + ".jar")
-ext.dexFile = new File(libsDir, project.name + ".dex")
+task clean << {
+    delete buildDir
+}
 
-task dex (dependsOn: jar) {
+task dex {
 
-    inputs.file project.ext.jarFile
+    inputs.dir smaliFolder
     outputs.file project.ext.dexFile
 
     doLast {
-        Main.main([ "--output", dexFile.getPath(), jarFile.getPath() ] as String[])
+        dexFolder.mkdirs()
+        main.main([ "-o", dexFile.getAbsolutePath(), smaliFolder.getAbsolutePath() ] as String[])
     }
 }
