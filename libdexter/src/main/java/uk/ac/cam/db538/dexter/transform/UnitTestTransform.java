@@ -48,7 +48,7 @@ public class UnitTestTransform extends DexterTransform {
 		return super.doFirst(element, code);
 	}
 
-	private static final String TAINTCHECK_CLASS = "Lcom/dextertest/tests/TaintChecker;";
+	private static final String TAINTCHECK_CLASS = "Luk/ac/cam/db538/dexter/tests/TaintChecker;";
 	private static final String TAINTCHECK_METHOD = "isTainted";
 	private static final String TAINTCHECK_PROTOTYPE = "(I)Z";
 
