@@ -569,8 +569,8 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
     		
 	@Override
 	public void visit(DexInstruction_BinaryOpLiteral instruction) {
-		useRegister(instruction.getRegSource(), RopType.Integer);
-		defineRegister(instruction.getRegTarget(), RopType.Integer);
+		useRegister(instruction.getRegArgA(), RopType.Integer);
+		defineRegister(instruction.getRegTo(), RopType.Integer);
 	}
 
 	@Override

@@ -28,8 +28,6 @@ public class UnitTestTransform extends DexterTransform {
 			DexCode oldCode = method.getMethodBody(); 
 			DexRegister paramReg = oldCode.getParameters().get(0).getRegister(); 
 			
-			oldCode.getInstructionList().dump();
-					
 			List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
 			for (DexCodeElement insn : oldCode.getInstructionList())
 				if (insn instanceof DexInstruction_Return)

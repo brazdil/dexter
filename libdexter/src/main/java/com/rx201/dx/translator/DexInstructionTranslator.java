@@ -1148,11 +1148,11 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		
 		if (opcode.getBranchingness() == Rop.BRANCH_NONE) {
 			
-			doPlainCstInsn(opcode, getDestRegSpec(instruction.getRegTarget()), makeCstInteger((int)instruction.getLiteral()), instruction.getRegSource());
+			doPlainCstInsn(opcode, getDestRegSpec(instruction.getRegTo()), makeCstInteger((int)instruction.getArgB()), instruction.getRegArgA());
 			
 		} else { // Integer division/reminder will throw exception
-			doThrowingCstInsn(opcode, makeCstInteger((int)instruction.getLiteral()), instruction.getRegSource());
-			doPseudoMoveResult(instruction.getRegTarget());
+			doThrowingCstInsn(opcode, makeCstInteger((int)instruction.getArgB()), instruction.getRegArgA());
+			doPseudoMoveResult(instruction.getRegTo());
 		}
 	}
 

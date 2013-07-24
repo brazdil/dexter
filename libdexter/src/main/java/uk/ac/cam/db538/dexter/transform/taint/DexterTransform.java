@@ -20,6 +20,7 @@ import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
@@ -99,6 +100,9 @@ public class DexterTransform extends Transform {
 
 		if (element instanceof DexInstruction_BinaryOp)
 			return instrument_BinaryOp((DexInstruction_BinaryOp) element);
+
+		if (element instanceof DexInstruction_BinaryOpLiteral)
+			return instrument_BinaryOpLiteral((DexInstruction_BinaryOpLiteral) element);
 
 		return element;
 	}
@@ -207,6 +211,12 @@ public class DexterTransform extends Transform {
 				insn);
 	}
 	
+	private DexCodeElement instrument_BinaryOpLiteral(DexInstruction_BinaryOpLiteral insn) {
+		return new DexMacro(
+				codeGen.combineTaint(insn.getRegTo(), insn.getRegArgA()),
+				insn);
+	}
+
 	// UTILS
 	
 	private static DexCodeElement generateInvoke(DexInstruction_Invoke invoke, DexInstruction_MoveResult moveResult) {

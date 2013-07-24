@@ -19,8 +19,8 @@ import com.rx201.dx.translator.DexCodeGeneration;
 public class MainConsole {
   
   public static void main(String[] args) throws IOException {
-	DexCodeGeneration.DEBUG = false;
-	DexCodeGeneration.INFO = false;
+	DexCodeGeneration.DEBUG = true;
+	DexCodeGeneration.INFO = true;
 	
     if (args.length != 2) {
       System.err.println("usage: dexter <framework-dir> <apk-file>");

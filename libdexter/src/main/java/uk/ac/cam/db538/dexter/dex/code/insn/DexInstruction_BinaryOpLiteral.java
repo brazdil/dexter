@@ -19,17 +19,17 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_BinaryOpLiteral extends DexInstruction {
 
-  @Getter private final DexSingleRegister regTarget;
-  @Getter private final DexSingleRegister regSource;
-  @Getter private final long literal;
+  @Getter private final DexSingleRegister regTo;
+  @Getter private final DexSingleRegister regArgA;
+  @Getter private final long argB;
   @Getter private final Opcode_BinaryOpLiteral insnOpcode;
   
   public DexInstruction_BinaryOpLiteral(DexSingleRegister target, DexSingleRegister source, long literal, Opcode_BinaryOpLiteral opcode, RuntimeHierarchy hierarchy) {
     super(hierarchy);
 
-    this.regTarget = target;
-    this.regSource = source;
-    this.literal = literal;
+    this.regTo = target;
+    this.regArgA = source;
+    this.argB = literal;
     this.insnOpcode = opcode;
   }
 
@@ -65,18 +65,18 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
 
   @Override
   public String toString() {
-    return insnOpcode.name().toLowerCase() + "-int/lit " + regTarget.toString() +
-           ", " + regSource.toString() + ", #" + literal;
+    return insnOpcode.name().toLowerCase() + "-int/lit " + regTo.toString() +
+           ", " + regArgA.toString() + ", #" + argB;
   }
 
   @Override
   public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTarget);
+    return Sets.newHashSet(regTo);
   }
 
   @Override
   public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regSource);
+    return Sets.newHashSet(regArgA);
   }
 
   @Override
