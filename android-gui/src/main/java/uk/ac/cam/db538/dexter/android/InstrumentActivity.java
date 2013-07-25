@@ -162,9 +162,7 @@ public class InstrumentActivity extends Activity {
 
                 setStatus("Modifying...");
 
-//                terminalMessage("Instrumenting application");
-//                dex.instrument(false);
-//                terminalDone();
+//                 dex.instrument(false);
 
                 setStatus("Assembling...");
                 byte[] fileApp_New = dexApp.writeToFile();

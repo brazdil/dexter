@@ -17,9 +17,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import java.util.zip.ZipFile;
 
 import sun.misc.BASE64Encoder;
@@ -30,6 +27,8 @@ import sun.security.x509.CertificateIssuerName;
 import sun.security.x509.X500Name;
 import sun.security.x509.X509CertInfo;
 
+import com.rx201.jarsigner.manifest.Attributes;
+import com.rx201.jarsigner.manifest.Manifest;
 import com.sun.jarsigner.ContentSigner;
 import com.sun.jarsigner.ContentSignerParameters;
 
@@ -49,7 +48,6 @@ public class SignatureFile {
 
     {
         this.baseName = baseName;
-
         String version = System.getProperty("java.version");
         String javaVendor = System.getProperty("java.vendor");
 

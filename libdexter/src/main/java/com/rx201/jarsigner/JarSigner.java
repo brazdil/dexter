@@ -16,7 +16,12 @@
 
 package com.rx201.jarsigner;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -27,9 +32,14 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.jar.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
 
 import sun.security.util.ManifestDigester;
+
+import com.rx201.jarsigner.manifest.Attributes;
+import com.rx201.jarsigner.manifest.Manifest;
 
 /**
  * Adopted from https://svn.cs.cf.ac.uk/projects/whip/trunk/whip-core/src/main/java/org/whipplugin/data/bundle/JarSigner15.java
