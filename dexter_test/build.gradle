@@ -26,3 +26,5 @@ task dex {
         main.main([ "-o", dexFile.getAbsolutePath(), smaliFolder.getAbsolutePath() ] as String[])
     }
 }
+
+task assemble (dependsOn: dex) { }

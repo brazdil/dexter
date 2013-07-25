@@ -133,8 +133,7 @@ public class UnitTestActivity extends Activity {
                         spinner.setVisibility(View.GONE);
 
                         if (passed) {
-                            CheckBox checkBox =
-                                    (CheckBox) viewTestCases[index].findViewById(R.id.checkPassed);
+                            CheckBox checkBox = (CheckBox) viewTestCases[index].findViewById(R.id.checkPassed);
                             checkBox.setVisibility(View.VISIBLE);
                             checkBox.setChecked(passed);
                         } else

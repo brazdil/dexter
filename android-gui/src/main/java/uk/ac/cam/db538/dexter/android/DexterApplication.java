@@ -53,6 +53,7 @@ public class DexterApplication extends Application {
 
         // start a background thread that will create the hierarchy builder
         workerHierarchyLoader.start();
+        workerHierarchyLoader.setPriority(Thread.MIN_PRIORITY);
     }
 
     private final Thread workerHierarchyLoader = new Thread() {

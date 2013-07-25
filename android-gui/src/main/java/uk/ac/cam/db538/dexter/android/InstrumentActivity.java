@@ -96,17 +96,36 @@ public class InstrumentActivity extends Activity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        System.out.println("SCHEDULED!!!!");
-        memoryTimer.schedule(memoryUpdateTask, 0, 500);
+    public void onBackPressed() {
+        // suppress
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        memoryUpdateTask.cancel();
-        System.out.println("PAUSED!!!!");
+    protected void onResume() {
+        super.onResume();
+        memoryTimer = new Timer();
+        memoryTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                InstrumentActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Runtime rt = Runtime.getRuntime();
+                        long max = rt.maxMemory();
+                        long allocated = rt.totalMemory();
+                        long free = rt.freeMemory();
+
+                        memoryBar.setProgress((int) (100L * (allocated - free) / max));
+                    }
+                });
+            }
+        }, 0, 500);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        memoryTimer.cancel();
     }
 
     private ProgressCallback callbackProgressUpdate = new ProgressCallback() {
@@ -124,6 +143,7 @@ public class InstrumentActivity extends Activity {
     private Runnable workerInstrumentation = new Runnable() {
         @Override
         public void run() {
+            setUiPriority_High();
             try {
                 File localFile = new File(InstrumentActivity.this.getFilesDir(), "app.apk");
                 DexterApplication thisApp = (DexterApplication) getApplication();
@@ -179,6 +199,16 @@ public class InstrumentActivity extends Activity {
             }
         }
 
+        private void setUiPriority_High() {
+            Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+            InstrumentActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+                }
+            });
+        }
+
         private void setStatus(final String status) {
             InstrumentActivity.this.runOnUiThread(new Runnable() {
                 @Override
@@ -207,23 +237,7 @@ public class InstrumentActivity extends Activity {
         }
     };
 
-    private final Timer memoryTimer = new Timer();
-    private final TimerTask memoryUpdateTask = new TimerTask() {
-        @Override
-        public void run() {
-            InstrumentActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Runtime rt = Runtime.getRuntime();
-                    long max = rt.maxMemory();
-                    long allocated = rt.totalMemory();
-                    long free = rt.freeMemory();
-
-                    memoryBar.setProgress((int) (100L * (allocated - free) / max));
-                }
-            });
-        }
-    };
+    private Timer memoryTimer;
 
     public static final String PACKAGE_NAME = "package_name";
 }
