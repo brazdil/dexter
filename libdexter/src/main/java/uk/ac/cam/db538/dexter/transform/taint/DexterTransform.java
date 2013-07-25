@@ -210,7 +210,7 @@ public class DexterTransform extends Transform {
 	}
 
 	private DexCodeElement instrument_Move(DexInstruction_Move insn) {
-		if (insnReturn.getOpcode() == RegisterType.REFERENCE)
+		if (insn.getType() == RegisterType.REFERENCE)
 			return insn;
 		else
 			return new DexMacro(
