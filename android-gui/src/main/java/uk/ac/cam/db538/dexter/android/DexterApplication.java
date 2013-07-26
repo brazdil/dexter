@@ -95,7 +95,7 @@ public class DexterApplication extends Application {
             HierarchyBuilder result;
             try {
                  result = HierarchyBuilder.deserialize(frameworkCache);
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 Log.e(APP_NAME, "Framework could not be loaded from cache");
                 e.printStackTrace();
                 return null;
