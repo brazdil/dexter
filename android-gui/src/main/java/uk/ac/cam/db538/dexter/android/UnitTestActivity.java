@@ -277,6 +277,7 @@ public class UnitTestActivity extends Activity {
                     @Override
                     public void run() {
                         dialog.dismiss();
+
                     }
                 });
             }

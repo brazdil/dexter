@@ -2,12 +2,15 @@ package uk.ac.cam.db538.dexter.android;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -18,7 +21,6 @@ import org.jf.dexlib.DexFileFromMemory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -145,8 +147,13 @@ public class InstrumentActivity extends Activity {
         public void run() {
             setUiPriority_High();
             try {
-                File localFile = new File(InstrumentActivity.this.getFilesDir(), "app.apk");
-                DexterApplication thisApp = (DexterApplication) getApplication();
+                final String packageName = packageInfo.packageName;
+
+                final File localFileTemp = new File(InstrumentActivity.this.getFilesDir(), "temp.apk");
+                final File localFileFinal = new File(
+                        InstrumentActivity.this.getDir("ready", MODE_PRIVATE),
+                        packageName +  ".apk");
+                final DexterApplication thisApp = (DexterApplication) getApplication();
 
                 setStatus("Loading files...");
                 setWaiting();
@@ -157,10 +164,10 @@ public class InstrumentActivity extends Activity {
                  * any point of time.
                  */
 
-                thisApp.waitForHierarchy();
+                // thisApp.waitForHierarchy();
 
-                FileUtils.copyFile(packageFile, localFile);
-                DexFile fileApp = new DexFile(localFile);
+                FileUtils.copyFile(packageFile, localFileTemp);
+                DexFile fileApp = new DexFile(localFileTemp);
                 DexFile fileAux = new DexFileFromMemory(thisApp.getAssets().open("dexter_aux.dex"));
 
                 Pair<RuntimeHierarchy, ClassRenamer> buildData = thisApp.getRuntimeHierarchy(fileApp, fileAux);
@@ -189,10 +196,16 @@ public class InstrumentActivity extends Activity {
 
                 setStatus("Signing...");
                 setWaiting();
-                Apk.produceAPK(localFile, localFile, null, fileApp_New);
+                Apk.produceAPK(localFileTemp, localFileFinal, null, fileApp_New);
 
-                setStatus("DONE");
-                hideProgressCircle();
+//                setStatus("Uninstalling...");
+//                setWaiting();
+//
+//                Uri packageURI = Uri.parse("package:" + packageName);
+//                Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
+//                startActivity(uninstallIntent);
+
+                closeActivity();
 
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
@@ -232,6 +245,15 @@ public class InstrumentActivity extends Activity {
                 @Override
                 public void run() {
                     progressCircle.setVisibility(View.INVISIBLE);
+                }
+            });
+        }
+
+        private void closeActivity() {
+            InstrumentActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    InstrumentActivity.this.finish();
                 }
             });
         }
