@@ -32,11 +32,12 @@ public class PackageDetailFragment extends Fragment {
     private ActivityManager activityManager;
     private PackageManager packageManager;
 
-    private PackageInfo packageInfo;
+    private Package packageInfo;
     private File packageFile;
 
     private ImageView imgPackageIcon;
-    private TextView textPackageName;
+    private TextView textApplicationName;
+    private EditText textPackageName;
     private EditText textPackageVersion;
     private EditText textLastUpdated;
     private EditText textApkPath;
@@ -56,8 +57,8 @@ public class PackageDetailFragment extends Fragment {
         if (getArguments().containsKey(PACKAGE_NAME)) {
             String packageName = getArguments().getString(PACKAGE_NAME);
             try {
-                packageInfo = packageManager.getPackageInfo(packageName, 0);
-                packageFile = new File(packageInfo.applicationInfo.sourceDir);
+                packageInfo = new Package(packageManager, packageManager.getPackageInfo(packageName, 0));
+                packageFile = packageInfo.getPackageFile();
 
                 if (!packageFile.exists()) {
                     // TODO: show error message
@@ -83,7 +84,8 @@ public class PackageDetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_package_detail, container, false);
 
         imgPackageIcon = (ImageView) rootView.findViewById(R.id.imgPackageIcon);
-        textPackageName = (TextView) rootView.findViewById(R.id.textPackageName);
+        textApplicationName = (TextView) rootView.findViewById(R.id.textApplicationName);
+        textPackageName = (EditText) rootView.findViewById(R.id.textPackage);
         textPackageVersion = (EditText) rootView.findViewById(R.id.textVersion);
         textLastUpdated = (EditText) rootView.findViewById(R.id.textLastUpdated);
         textApkPath = (EditText) rootView.findViewById(R.id.textApkPath);
@@ -91,16 +93,14 @@ public class PackageDetailFragment extends Fragment {
         btnInstrument = (Button) rootView.findViewById(R.id.buttonInstrument);
 
         if (packageInfo != null) {
-            Drawable icon = packageInfo.applicationInfo.loadIcon(packageManager);
-            DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
-            String lastUpdated = df.format(new Date(packageInfo.lastUpdateTime));
+            Drawable icon = packageInfo.getApplicationIcon();
             String apkSize = Long.toString(packageFile.length() / 1024) + " KB";
-
             imgPackageIcon.setImageDrawable(icon);
-            textPackageName.setText(packageInfo.packageName);
-            textPackageVersion.setText(packageInfo.versionName);
-            textLastUpdated.setText(lastUpdated);
-            textApkPath.setText(packageInfo.applicationInfo.sourceDir);
+            textApplicationName.setText(packageInfo.getApplicationName());
+            textPackageName.setText(packageInfo.getPackageName());
+            textPackageVersion.setText(packageInfo.getVersion());
+            textLastUpdated.setText(packageInfo.getLastUpdated());
+            textApkPath.setText(packageInfo.getPackageFile().getAbsolutePath());
             textApkSize.setText(apkSize);
 
             btnInstrument.setOnClickListener(new View.OnClickListener() {
@@ -115,7 +115,7 @@ public class PackageDetailFragment extends Fragment {
                     Intent detailIntent = new Intent(PackageDetailFragment.this.getActivity(),
                             InstrumentActivity.class);
                     detailIntent.putExtra(InstrumentActivity.PACKAGE_NAME,
-                            PackageDetailFragment.this.packageInfo.packageName);
+                            PackageDetailFragment.this.packageInfo.getPackageName());
                     startActivity(detailIntent);
                 }
             });

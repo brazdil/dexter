@@ -45,7 +45,7 @@ public class PackageListFragment extends ListFragment {
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(PackageInfo pkg);
+        public void onItemSelected(Package pkg);
     }
 
     /**
@@ -54,7 +54,7 @@ public class PackageListFragment extends ListFragment {
      */
     private static Callbacks sDummyCallbacks = new Callbacks() {
         @Override
-        public void onItemSelected(PackageInfo pkg) { }
+        public void onItemSelected(Package pkg) { }
     };
 
     /**

@@ -7,6 +7,7 @@
     <string name="size_">Size:</string>
     <string name="last_updated_">Last updated:</string>
     <string name="version_">Version:</string>
+    <string name="package_">Package:</string>
     <string name="instrument">Instrument</string>
     <string name="title_activity_instrument">Securing...</string>
     <string name="action_settings">Settings</string>

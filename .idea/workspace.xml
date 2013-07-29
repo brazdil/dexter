@@ -31,7 +31,6 @@
     <disable_hints />
   </component>
   <component name="DebuggerManager">
-    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <breakpoint_any default_suspend_policy="SuspendAll" default_condition_enabled="true">
       <breakpoint>
         <option name="NOTIFY_CAUGHT" value="true" />
@@ -68,7 +67,6 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
-    <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <method_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true">
       <breakpoint url="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListActivity.java" line="85" class="uk.ac.cam.db538.dexter.android.PackageListActivity" package="uk.ac.cam.db538.dexter.android">
         <option name="WATCH_ENTRY" value="true" />
@@ -88,6 +86,8 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </method_breakpoints>
+    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
+    <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <breakpoint_rules />
     <ui_properties />
   </component>
@@ -97,16 +97,86 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="InstrumentActivity.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/InstrumentActivity.java">
+      <file leaf-file-name="PackageDetailActivity.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageDetailActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="207" column="0" selection-start="7265" selection-end="7265" vertical-scroll-proportion="0.49392712" vertical-offset="2109" max-vertical-offset="3300">
-              <folding>
-                <element signature="e#8404#8580#0" expanded="true" />
-                <element signature="e#8565#8566#0" expanded="true" />
-                <element signature="e#8683#8847#0" expanded="true" />
-                <element signature="e#8832#8833#0" expanded="true" />
-              </folding>
+            <state line="17" column="13" selection-start="596" selection-end="596" vertical-scroll-proportion="0.0" vertical-offset="180" max-vertical-offset="1020">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PackageDetailFragment.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageDetailFragment.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="98" column="73" selection-start="3907" selection-end="3907" vertical-scroll-proportion="0.0" vertical-offset="1455" max-vertical-offset="2025">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PackageListFragment.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListFragment.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="56" column="42" selection-start="1891" selection-end="1891" vertical-scroll-proportion="0.0" vertical-offset="825" max-vertical-offset="2205">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PackageListActivity.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListActivity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="90" column="40" selection-start="3268" selection-end="3268" vertical-scroll-proportion="0.0" vertical-offset="841" max-vertical-offset="1440">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="fragment_package_detail.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/layout/fragment_package_detail.xml">
+          <provider editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="3045">
+              <folding />
+            </state>
+          </provider>
+          <provider selected="true" editor-type-id="android-designer">
+            <state />
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="strings.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/values/strings.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="38" selection-start="38" selection-end="38" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="375">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PackageListItem.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListItem.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="52" column="0" selection-start="1669" selection-end="1669" vertical-scroll-proportion="0.0" vertical-offset="765" max-vertical-offset="900">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PackageAdapter.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageAdapter.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="61" column="5" selection-start="1787" selection-end="1787" vertical-scroll-proportion="0.0" vertical-offset="900" max-vertical-offset="1740">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Package.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/Package.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="20" column="0" selection-start="472" selection-end="472" vertical-scroll-proportion="0.515873" vertical-offset="0" max-vertical-offset="675">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -201,15 +271,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/libdexter/src/main/java/uk/ac/cam/db538/dexter/dex/AuxiliaryDex.java" />
-        <option value="$PROJECT_DIR$/libdexter/src/main/java/uk/ac/cam/db538/dexter/dex/Dex.java" />
-        <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/ProgressCircleView.java" />
-        <option value="$PROJECT_DIR$/android-gui/src/main/res/menu/main.xml" />
-        <option value="$PROJECT_DIR$/libdexter/src/main/java/uk/ac/cam/db538/dexter/hierarchy/BaseClassDefinition.java" />
-        <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListActivity.java" />
-        <option value="$PROJECT_DIR$/android-test.bak/DexterTest/src/main/res/layout/item_testcase.xml" />
-        <option value="$PROJECT_DIR$/dexter_test/src/main/java/uk/ac/cam/db538/dexter/tests/TestList.java" />
-        <option value="$PROJECT_DIR$/android-gui/src/main/res/layout/activity_instrument.xml" />
         <option value="$PROJECT_DIR$/android-gui/src/main/res/layout/activity_test.xml" />
         <option value="$PROJECT_DIR$/android-gui/src/main/res/layout/listitem_testcase.xml" />
         <option value="$PROJECT_DIR$/build.gradle" />
@@ -217,14 +278,23 @@
         <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/UnitTestActivity.java" />
         <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/DexterApplication.java" />
         <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/InstrumentActivity.java" />
+        <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageUtils.java" />
+        <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListItem.java" />
+        <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageAdapter.java" />
+        <option value="$PROJECT_DIR$/android-gui/src/main/res/values/strings.xml" />
+        <option value="$PROJECT_DIR$/android-gui/src/main/res/layout/fragment_package_detail.xml" />
+        <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageDetailFragment.java" />
+        <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListFragment.java" />
+        <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListActivity.java" />
+        <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/Package.java" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="-1" />
     <option name="y" value="2" />
-    <option name="width" value="1602" />
-    <option name="height" value="1176" />
+    <option name="width" value="1368" />
+    <option name="height" value="744" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -669,7 +739,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1" y="2" width="1602" height="1176" extended-state="6" />
+    <frame x="-1" y="2" width="1368" height="744" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -682,19 +752,19 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.285576" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25653437" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21878025" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2844273" sideWeight="0.74346566" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3281704" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2840909" sideWeight="0.6738769" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32612312" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32925257" sideWeight="0.75992256" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
@@ -760,93 +830,14 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/libdexter/src/main/java/uk/ac/cam/db538/dexter/hierarchy/builder/HierarchyBuilder.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="95" column="49" selection-start="3075" selection-end="3075" vertical-scroll-proportion="0.4852071" vertical-offset="587" max-vertical-offset="4620">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/libdexter/src/main/java/uk/ac/cam/db538/dexter/hierarchy/BaseClassDefinition.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="98" column="64" selection-start="3055" selection-end="3055" vertical-scroll-proportion="0.26838967" vertical-offset="945" max-vertical-offset="5625" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/layout/listitem_packages.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="0" selection-start="209" selection-end="285" vertical-scroll-proportion="0.10885341" vertical-offset="15" max-vertical-offset="705">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="113" column="20" selection-start="4350" selection-end="4350" vertical-scroll-proportion="1.8041958" vertical-offset="405" max-vertical-offset="1935">
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/layout/listitem_testcase.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="40" selection-start="1442" selection-end="1442" vertical-scroll-proportion="0.65163934" vertical-offset="63" max-vertical-offset="795">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/values/colors.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="25" selection-start="771" selection-end="779" vertical-scroll-proportion="0.37598944" vertical-offset="0" max-vertical-offset="758">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/layout/activity_test.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="48" selection-start="331" selection-end="331" vertical-scroll-proportion="0.10245901" vertical-offset="0" max-vertical-offset="732">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/layout/activity_instrument.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="42" selection-start="340" selection-end="374" vertical-scroll-proportion="0.020491803" vertical-offset="90" max-vertical-offset="930">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListItem.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="23" selection-start="826" selection-end="826" vertical-scroll-proportion="0.020134227" vertical-offset="375" max-vertical-offset="1275">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///opt/android-sdk/sources/android-17/android/content/res/AssetManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="534" column="9" selection-start="18103" selection-end="18103" vertical-scroll-proportion="0.0" vertical-offset="7593" max-vertical-offset="11325">
-          <folding />
-        </state>
+        <state line="534" column="9" selection-start="18103" selection-end="18103" vertical-scroll-proportion="0.0" vertical-offset="7593" max-vertical-offset="11325" />
       </provider>
     </entry>
     <entry file="file:///opt/android-sdk/sources/android-17/android/app/Dialog.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="266" column="49" selection-start="9005" selection-end="9042" vertical-scroll-proportion="0.47503373" vertical-offset="2873" max-vertical-offset="17970">
-          <folding />
-        </state>
+        <state line="266" column="49" selection-start="9005" selection-end="9042" vertical-scroll-proportion="0.47503373" vertical-offset="2873" max-vertical-offset="17970" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/DexterApplication.java">
@@ -865,27 +856,84 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/build.gradle">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="0" selection-start="52" selection-end="52" vertical-scroll-proportion="0.060728744" vertical-offset="0" max-vertical-offset="741">
-          <folding />
-        </state>
+        <state line="3" column="0" selection-start="52" selection-end="52" vertical-scroll-proportion="0.060728744" vertical-offset="0" max-vertical-offset="741" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/dexter_test/build.gradle">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="26" selection-start="503" selection-end="503" vertical-scroll-proportion="0.48582995" vertical-offset="0" max-vertical-offset="741">
-          <folding />
-        </state>
+        <state line="24" column="26" selection-start="503" selection-end="503" vertical-scroll-proportion="0.48582995" vertical-offset="0" max-vertical-offset="741" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/InstrumentActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="207" column="0" selection-start="7265" selection-end="7265" vertical-scroll-proportion="0.49392712" vertical-offset="2109" max-vertical-offset="3300">
-          <folding>
-            <element signature="e#8404#8580#0" expanded="true" />
-            <element signature="e#8565#8566#0" expanded="true" />
-            <element signature="e#8683#8847#0" expanded="true" />
-            <element signature="e#8832#8833#0" expanded="true" />
-          </folding>
+        <state line="163" column="37" selection-start="5647" selection-end="5665" vertical-scroll-proportion="0.019181585" vertical-offset="1980" max-vertical-offset="3615">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="61" column="5" selection-start="1787" selection-end="1787" vertical-scroll-proportion="0.0" vertical-offset="270" max-vertical-offset="1470">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListItem.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="52" column="0" selection-start="1669" selection-end="1669" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="795">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/values/strings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="38" selection-start="38" selection-end="38" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="375">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/layout/fragment_package_detail.xml">
+      <provider editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2625">
+          <folding />
+        </state>
+      </provider>
+      <provider selected="true" editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageDetailFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="98" column="73" selection-start="3907" selection-end="3907" vertical-scroll-proportion="0.0" vertical-offset="689" max-vertical-offset="1695">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="56" column="42" selection-start="1891" selection-end="1891" vertical-scroll-proportion="0.0" vertical-offset="1109" max-vertical-offset="2115">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageListActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="90" column="40" selection-start="3268" selection-end="3268" vertical-scroll-proportion="0.0" vertical-offset="841" max-vertical-offset="1440">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageDetailActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="13" selection-start="596" selection-end="596" vertical-scroll-proportion="0.0" vertical-offset="195" max-vertical-offset="1020">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/Package.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="0" selection-start="472" selection-end="472" vertical-scroll-proportion="0.515873" vertical-offset="0" max-vertical-offset="675">
+          <folding />
         </state>
       </provider>
     </entry>

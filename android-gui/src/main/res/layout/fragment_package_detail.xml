@@ -24,12 +24,12 @@
                 android:paddingRight="3pt" />
 
         <TextView
-                android:id="@+id/textPackageName"
+                android:id="@+id/textApplicationName"
                 style="?android:attr/textAppearanceLarge"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
-                android:text="com.example.packagename"
+                android:text="My Awesome Application"
                 android:textIsSelectable="true"/>
 
     </LinearLayout>
@@ -39,6 +39,34 @@
             android:layout_height="wrap_content"
             android:shrinkColumns="1"
             android:layout_weight="1">
+
+        <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="center_vertical"
+                >
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="@string/package_"/>
+
+            <HorizontalScrollView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
+
+                <EditText
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textPackage"
+                        android:layout_column="1"
+                        android:editable="false"
+                        android:inputType="none"
+                        android:textIsSelectable="true"
+                        android:singleLine="true"/>
+            </HorizontalScrollView>
+        </TableRow>
 
         <TableRow
                 android:layout_width="fill_parent"

@@ -24,7 +24,7 @@ public class PackageAdapter implements ListAdapter {
 
     private final Context context;
     private final PackageManager packageManager;
-    private List<PackageInfo> packages;
+    private List<Package> packages;
 
     public PackageAdapter(Context context) {
         this.context = context;
@@ -34,11 +34,11 @@ public class PackageAdapter implements ListAdapter {
 
     public void updateList() {
         List<PackageInfo> pkgs = this.packageManager.getInstalledPackages(0);
-        this.packages = new ArrayList<PackageInfo>(pkgs.size());
+        this.packages = new ArrayList<Package>(pkgs.size());
         for (PackageInfo pkg : pkgs)
             if (!pkg.applicationInfo.sourceDir.startsWith("/system/") &&
-                !pkg.packageName.equals("uk.ac.cam.db538.dexter"))
-                    this.packages.add(pkg);
+                !pkg.packageName.equals("uk.ac.cam.db538.dexter.android"))
+                    this.packages.add(new Package(this.packageManager, pkg));
     }
 
     @Override
@@ -63,7 +63,7 @@ public class PackageAdapter implements ListAdapter {
 
     @Override
     public long getItemId(int i) {
-        return this.packages.get(i).packageName.hashCode();
+        return this.packages.get(i).getPackageName().hashCode();
     }
 
     @Override
