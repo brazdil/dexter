@@ -76,8 +76,6 @@ public class PackageListActivity extends FragmentActivity implements PackageList
                     .findFragmentById(R.id.package_list))
                     .setActivateOnItemClick(true);
         }
-
-        // TODO: If exposing deep links into your app, handle intents here.
     }
 
     /**
@@ -89,10 +87,8 @@ public class PackageListActivity extends FragmentActivity implements PackageList
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a fragment transaction.
-            Bundle arguments = new Bundle();
-            arguments.putString(PackageDetailFragment.PACKAGE_NAME, pkg.getPackageName());
             PackageDetailFragment fragment = new PackageDetailFragment();
-            fragment.setArguments(arguments);
+            fragment.setArgumentsFromPackage(pkg);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.package_detail_container, fragment)
                     .commit();
@@ -100,7 +96,7 @@ public class PackageListActivity extends FragmentActivity implements PackageList
         } else {
             // In single-pane mode, simply start the detail activity for the selected item ID.
             Intent detailIntent = new Intent(this, PackageDetailActivity.class);
-            detailIntent.putExtra(PackageDetailFragment.PACKAGE_NAME, pkg.getPackageName());
+            PackageFragment.createPackageArgs(detailIntent, pkg);
             startActivity(detailIntent);
         }
     }

@@ -1,0 +1,56 @@
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".InstrumentFragment"
+        android:background="@color/clouds"
+        android:orientation="vertical">
+
+    <uk.ac.cam.db538.dexter.android.ProgressCircleView
+            android:layout_width="fill_parent"
+            android:layout_height="365dp"
+            android:layout_weight="0.6"
+            android:background="@color/clouds"
+            android:id="@+id/progressCircle"
+            custom:textColor="@color/wet_asphalt"
+            custom:circleColor="@color/peter_river" />
+
+    <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Processing..."
+            android:id="@+id/textStatus"
+            android:textColor="@color/wet_asphalt"
+            android:gravity="center_horizontal"/>
+
+    <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.6"/>
+
+    <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Mem: "
+                android:layout_gravity="center"/>
+
+        <ProgressBar
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/memoryBar"
+                android:layout_gravity="center"
+                android:progress="42" />
+    </LinearLayout>
+
+</LinearLayout>

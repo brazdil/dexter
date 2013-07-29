@@ -22,6 +22,8 @@ import android.view.animation.LinearInterpolator;
  */
 public class ProgressCircleView extends View {
 
+    private boolean positioned;
+
     private int value = 42;
 
     private int colorText = 0xff000000;
@@ -100,6 +102,8 @@ public class ProgressCircleView extends View {
         paintInnerCircle = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintInnerCircle.setColor(colorBackground);
         paintInnerCircle.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        positioned = false;
     }
 
     public int getValue() {
@@ -152,6 +156,7 @@ public class ProgressCircleView extends View {
         float width_over_height = computeValueTextWidth(const_height, 100) / const_height;
         sizeText = (float) Math.sqrt(4 * radiusText * radiusText / (1 + width_over_height * width_over_height));
 
+        positioned = true;
         computeTextPosition();
     }
 
@@ -178,6 +183,9 @@ public class ProgressCircleView extends View {
     }
 
     private void computeTextPosition() {
+        if (!positioned)
+            return;
+
         String strNumber = Integer.toString(value);
         String strPercent = "%";
 
@@ -244,6 +252,9 @@ public class ProgressCircleView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        if (!positioned)
+            return;
 
         if (this.waitingMode) {
             drawWaitingCircle(canvas);

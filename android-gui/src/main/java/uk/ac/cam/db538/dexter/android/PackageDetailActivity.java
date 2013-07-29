@@ -36,11 +36,8 @@ public class PackageDetailActivity extends FragmentActivity {
         //
         if (savedInstanceState == null) {
             // Create the detail fragment and add it to the activity using a fragment transaction.
-            Bundle arguments = new Bundle();
-            arguments.putString(PackageDetailFragment.PACKAGE_NAME,
-                    getIntent().getStringExtra(PackageDetailFragment.PACKAGE_NAME));
             PackageDetailFragment fragment = new PackageDetailFragment();
-            fragment.setArguments(arguments);
+            fragment.setArgumentsFromIntent(getIntent());
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.package_detail_container, fragment)
                     .commit();

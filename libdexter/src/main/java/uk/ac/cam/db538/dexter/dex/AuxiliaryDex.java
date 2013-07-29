@@ -19,11 +19,11 @@ import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class AuxiliaryDex extends Dex {
 
-	@Getter private final DexMethod method_TaintGet; 
-	@Getter private final DexMethod method_TaintSet; 
-
-	@Getter private final DexMethod method_QueryTaint; 
-	@Getter private final DexMethod method_ServiceTaint; 
+//	@Getter private final DexMethod method_TaintGet;
+//	@Getter private final DexMethod method_TaintSet;
+//
+//	@Getter private final DexMethod method_QueryTaint;
+//	@Getter private final DexMethod method_ServiceTaint;
 	
 	@Getter private final DexStaticField field_CallParamTaint;
 	@Getter private final DexStaticField field_CallResultTaint;
@@ -34,17 +34,17 @@ public class AuxiliaryDex extends Dex {
 	public AuxiliaryDex(DexFile dexAux, RuntimeHierarchy hierarchy, ClassRenamer renamer) {
 		super(dexAux, hierarchy, null, renamer);
 		
-		// ObjectTaintStorage class
-		val clsObjTaint = getDexClass(hierarchy, renamer, CLASS_OBJTAINT);
-		
-		this.method_TaintGet = findStaticMethodByName(clsObjTaint, "get");
-		this.method_TaintSet = findStaticMethodByName(clsObjTaint, "set");
-		
-		// TaintConstants class
-		val clsTaintConsts = getDexClass(hierarchy, renamer, CLASS_TAINTCONSTANTS);
-		
-		this.method_QueryTaint = findStaticMethodByName(clsTaintConsts, "queryTaint");
-		this.method_ServiceTaint = findStaticMethodByName(clsTaintConsts, "serviceTaint");
+//		// ObjectTaintStorage class
+//		val clsObjTaint = getDexClass(hierarchy, renamer, CLASS_OBJTAINT);
+//
+//		this.method_TaintGet = findStaticMethodByName(clsObjTaint, "get");
+//		this.method_TaintSet = findStaticMethodByName(clsObjTaint, "set");
+//
+//		// TaintConstants class
+//		val clsTaintConsts = getDexClass(hierarchy, renamer, CLASS_TAINTCONSTANTS);
+//
+//		this.method_QueryTaint = findStaticMethodByName(clsTaintConsts, "queryTaint");
+//		this.method_ServiceTaint = findStaticMethodByName(clsTaintConsts, "serviceTaint");
 		
 		// MethodCallHelper class
 		val clsMethodCallHelper = getDexClass(hierarchy, renamer, CLASS_METHODCALLHELPER);

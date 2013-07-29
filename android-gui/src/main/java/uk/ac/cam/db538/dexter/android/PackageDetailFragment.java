@@ -1,14 +1,10 @@
 package uk.ac.cam.db538.dexter.android;
 
-import android.app.Activity;
 import android.app.ActivityManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,23 +13,18 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.File;
-import java.text.DateFormat;
-import java.util.Date;
-
 /**
  * A fragment representing a single Package detail screen.
  * This fragment is either contained in a {@link PackageListActivity}
  * in two-pane mode (on tablets) or a {@link PackageDetailActivity}
  * on handsets.
  */
-public class PackageDetailFragment extends Fragment {
+public class PackageDetailFragment extends PackageFragment {
 
     private ActivityManager activityManager;
     private PackageManager packageManager;
 
     private Package packageInfo;
-    private File packageFile;
 
     private ImageView imgPackageIcon;
     private TextView textApplicationName;
@@ -49,34 +40,7 @@ public class PackageDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Activity activity = this.getActivity();
-        activityManager = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
-        packageManager = activity.getPackageManager();
-
-        if (getArguments().containsKey(PACKAGE_NAME)) {
-            String packageName = getArguments().getString(PACKAGE_NAME);
-            try {
-                packageInfo = new Package(packageManager, packageManager.getPackageInfo(packageName, 0));
-                packageFile = packageInfo.getPackageFile();
-
-                if (!packageFile.exists()) {
-                    // TODO: show error message
-                    throw new RuntimeException();
-                } else if (!packageFile.canRead()) {
-                    // TODO: show error message
-                    throw new RuntimeException();
-                }
-            } catch (PackageManager.NameNotFoundException ex) {
-                // package of given name not found
-                // TODO: show error message
-                throw new RuntimeException(ex);
-            }
-        } else {
-            // intent does not contain package name
-            // TODO: show error message
-            throw new RuntimeException();
-        }
+        packageInfo = extractArgsPackage();
     }
 
     @Override
@@ -94,7 +58,7 @@ public class PackageDetailFragment extends Fragment {
 
         if (packageInfo != null) {
             Drawable icon = packageInfo.getApplicationIcon();
-            String apkSize = Long.toString(packageFile.length() / 1024) + " KB";
+            String apkSize = Long.toString(packageInfo.getPackageFile().length() / 1024) + " KB";
             imgPackageIcon.setImageDrawable(icon);
             textApplicationName.setText(packageInfo.getApplicationName());
             textPackageName.setText(packageInfo.getPackageName());
@@ -106,16 +70,8 @@ public class PackageDetailFragment extends Fragment {
             btnInstrument.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
-                    System.out.println("Heap size: " +
-                        PackageDetailFragment.this.activityManager.getMemoryClass());
-                    System.out.println("Large heap size: " +
-                            PackageDetailFragment.this.activityManager.getLargeMemoryClass());
-
-                    Intent detailIntent = new Intent(PackageDetailFragment.this.getActivity(),
-                            InstrumentActivity.class);
-                    detailIntent.putExtra(InstrumentActivity.PACKAGE_NAME,
-                            PackageDetailFragment.this.packageInfo.getPackageName());
+                    Intent detailIntent = new Intent(getActivity(), InstrumentActivity.class);
+                    createPackageArgs(detailIntent, packageInfo);
                     startActivity(detailIntent);
                 }
             });
@@ -123,7 +79,4 @@ public class PackageDetailFragment extends Fragment {
 
         return rootView;
     }
-
-    public static final String PACKAGE_NAME = "package_name";
-
 }
