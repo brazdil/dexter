@@ -31,7 +31,7 @@ public class UnitTestTransform extends DexterTransform {
 			List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
 			for (DexCodeElement insn : oldCode.getInstructionList())
 				if (insn instanceof DexInstruction_Return)
-					newInstructions.add(new DexInstruction_Return(paramReg.getTaintRegister(), oldCode.getHierarchy()));
+					newInstructions.add(new DexInstruction_Return(paramReg.getTaintRegister(), false, oldCode.getHierarchy()));
 				else
 					newInstructions.add(insn);
 			
