@@ -38,11 +38,11 @@ public class DexInstruction_MoveResult extends DexInstruction {
     this.type = RegisterType.WIDE_PRIMITIVE;
   }
 
-  public DexInstruction_MoveResult(DexTaintRegister regTo, RuntimeHierarchy hierarchy) {
+  public DexInstruction_MoveResult(DexTaintRegister regTo, boolean objectMoving, RuntimeHierarchy hierarchy) {
 	super(hierarchy);
 	
     this.regTo = regTo;
-    this.type = RegisterType.SINGLE_PRIMITIVE;
+    this.type = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
   }
 
   public DexInstruction_MoveResult(DexInstruction_MoveResult toClone) {

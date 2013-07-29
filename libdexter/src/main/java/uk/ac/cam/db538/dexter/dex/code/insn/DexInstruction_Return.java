@@ -41,11 +41,11 @@ public class DexInstruction_Return extends DexInstruction {
     this.opcode = RegisterType.WIDE_PRIMITIVE;
   }
 
-  public DexInstruction_Return(DexTaintRegister regFrom, RuntimeHierarchy hierarchy) {
+  public DexInstruction_Return(DexTaintRegister regFrom, boolean objectMoving, RuntimeHierarchy hierarchy) {
 	super(hierarchy);
 	
     this.regFrom = regFrom;
-    this.opcode = RegisterType.SINGLE_PRIMITIVE;
+    this.opcode = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
   }
 
   public static DexInstruction_Return parse(Instruction insn, CodeParserState parsingState) {

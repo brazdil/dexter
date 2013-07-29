@@ -43,12 +43,12 @@ public class DexInstruction_Move extends DexInstruction {
     this.type = RegisterType.WIDE_PRIMITIVE;
   }
 
-  public DexInstruction_Move(DexTaintRegister regTo, DexTaintRegister regFrom, RuntimeHierarchy hierarchy) {
+  public DexInstruction_Move(DexTaintRegister regTo, DexTaintRegister regFrom, boolean objectMoving, RuntimeHierarchy hierarchy) {
 	super(hierarchy);
 	
     this.regTo = regTo;
     this.regFrom = regFrom;
-    this.type = RegisterType.SINGLE_PRIMITIVE;
+    this.type = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
   }
   
   public static DexInstruction_Move parse(Instruction insn, CodeParserState parsingState) {

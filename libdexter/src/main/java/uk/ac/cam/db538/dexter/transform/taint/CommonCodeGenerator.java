@@ -212,7 +212,7 @@ public final class CommonCodeGenerator {
 			
 			// virtual call auxReg1.intValue()
 			new DexInstruction_Invoke(method_Integer_intValue, Arrays.asList(auxReg), hierarchy),
-			new DexInstruction_MoveResult(regTo, hierarchy));
+			new DexInstruction_MoveResult(regTo, false, hierarchy));
 	}
 
 	public DexMacro setResultTaint(DexTaintRegister regFrom) {
@@ -293,7 +293,7 @@ public final class CommonCodeGenerator {
 		if (inputs.length == 0)
 			return setZero(outputTaint);
 		else if (inputs.length == 1)
-			return new DexInstruction_Move(outputTaint, taint(inputs[0]), hierarchy);
+			return new DexInstruction_Move(outputTaint, taint(inputs[0]), false, hierarchy);
 		else if (inputs.length == 2)
 			return new DexInstruction_BinaryOp(outputTaint, taint(inputs[0]), taint(inputs[1]), Opcode_BinaryOp.OrInt, hierarchy);
 		else {
