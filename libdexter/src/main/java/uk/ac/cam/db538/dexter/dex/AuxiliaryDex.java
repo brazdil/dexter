@@ -8,7 +8,7 @@ import org.jf.dexlib.DexFile;
 import uk.ac.cam.db538.dexter.aux.InternalClassAnnotation;
 import uk.ac.cam.db538.dexter.aux.InternalMethodAnnotation;
 import uk.ac.cam.db538.dexter.aux.MethodCallHelper;
-import uk.ac.cam.db538.dexter.aux.ObjectTaintStorage;
+import uk.ac.cam.db538.dexter.aux.SafeHashMap;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
@@ -85,7 +85,7 @@ public class AuxiliaryDex extends Dex {
 	}
 
 	private static final String CLASS_OBJTAINT = 
-			DexClassType.jvm2dalvik(ObjectTaintStorage.class.getName());
+			DexClassType.jvm2dalvik(SafeHashMap.class.getName());
 	private static final String CLASS_METHODCALLHELPER = 
 			DexClassType.jvm2dalvik(MethodCallHelper.class.getName());
 	private static final String CLASS_INTERNALCLASS = 

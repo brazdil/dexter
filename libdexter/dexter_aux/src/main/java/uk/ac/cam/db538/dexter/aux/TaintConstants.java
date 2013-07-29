@@ -25,10 +25,6 @@ public class TaintConstants {
     TAINT_SINK_SOCKET |
     TAINT_SINK_OUT;
 
-  public static final void init() {
-    ObjectTaintStorage.set(System.out, TAINT_SINK_OUT);
-  }
-
   public static final int queryTaint(String query) {
     if (query.startsWith("content://com.android.contacts"))
       return TAINT_SOURCE_CONTACTS;
