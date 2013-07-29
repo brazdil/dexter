@@ -17,7 +17,11 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import java.nio.charset.Charset;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class PackageAdapter implements ListAdapter {
@@ -39,6 +43,13 @@ public class PackageAdapter implements ListAdapter {
             if (!pkg.applicationInfo.sourceDir.startsWith("/system/") &&
                 !pkg.packageName.equals("uk.ac.cam.db538.dexter.android"))
                     this.packages.add(new Package(this.packageManager, pkg));
+        Collections.sort(this.packages, new Comparator<Package>() {
+            @Override
+            public int compare(Package lhs, Package rhs) {
+                Collator c = Collator.getInstance();
+                return c.compare(lhs.getApplicationName(), rhs.getApplicationName());
+            }
+        });
     }
 
     @Override
