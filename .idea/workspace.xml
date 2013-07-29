@@ -100,9 +100,10 @@
       <file leaf-file-name="PackageAdapter.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageAdapter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="45" column="67" selection-start="1625" selection-end="1625" vertical-scroll-proportion="0.5555556" vertical-offset="135" max-vertical-offset="1575">
+            <state line="42" column="72" selection-start="1404" selection-end="1404" vertical-scroll-proportion="0.43650794" vertical-offset="135" max-vertical-offset="1575">
               <folding>
-                <element signature="e#1858#1859#0" expanded="true" />
+                <element signature="e#1612#1883#0" expanded="true" />
+                <element signature="e#1872#1873#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -859,9 +860,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageAdapter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="45" column="67" selection-start="1625" selection-end="1625" vertical-scroll-proportion="0.5555556" vertical-offset="135" max-vertical-offset="1575">
+        <state line="42" column="72" selection-start="1404" selection-end="1404" vertical-scroll-proportion="0.43650794" vertical-offset="135" max-vertical-offset="1575">
           <folding>
-            <element signature="e#1858#1859#0" expanded="true" />
+            <element signature="e#1612#1883#0" expanded="true" />
+            <element signature="e#1872#1873#0" expanded="true" />
           </folding>
         </state>
       </provider>

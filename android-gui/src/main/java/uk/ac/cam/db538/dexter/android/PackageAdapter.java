@@ -41,7 +41,7 @@ public class PackageAdapter implements ListAdapter {
         this.packages = new ArrayList<Package>(pkgs.size());
         for (PackageInfo pkg : pkgs)
             if (!pkg.applicationInfo.sourceDir.startsWith("/system/") &&
-                !pkg.packageName.equals("uk.ac.cam.db538.dexter.android"))
+                !pkg.packageName.equals(DexterApplication.class.getPackage().getName()))
                     this.packages.add(new Package(this.packageManager, pkg));
         Collections.sort(this.packages, new Comparator<Package>() {
             @Override
