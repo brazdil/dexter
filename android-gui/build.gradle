@@ -23,6 +23,10 @@ android {
         minSdkVersion 11
         targetSdkVersion 16
     }
+
+    dexOptions {
+        incremental false
+    }
 }
 
 android.applicationVariants.each { variant ->

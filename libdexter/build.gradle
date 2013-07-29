@@ -30,7 +30,7 @@ task copy_dexter_aux (dependsOn: [ ':libdexter:dexter_aux:dex' ]) {
     }
 }
 
-task aggregate_libs (dependsOn: ':libdexter:jar') {
+task aggregate_libs (dependsOn: ':libdexter:compileJava') {
     doLast {
         copy {
 		    from configurations.runtime
@@ -44,4 +44,4 @@ task aggregate_libs (dependsOn: ':libdexter:jar') {
 }
 
 classes.dependsOn copy_dexter_aux
-assemble.dependsOn aggregate_libs
+jar.dependsOn aggregate_libs
