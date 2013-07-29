@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/android-gui/android-gui.iml" filepath="$PROJECT_DIR$/android-gui/android-gui.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android-guiProject.iml" filepath="$PROJECT_DIR$/android-guiProject.iml" />
       <module fileurl="file://$PROJECT_DIR$/libdexter/libcore/dex/dex.iml" filepath="$PROJECT_DIR$/libdexter/libcore/dex/dex.iml" />
       <module fileurl="file://$PROJECT_DIR$/libdexter/smali/dexlib/dexlib.iml" filepath="$PROJECT_DIR$/libdexter/smali/dexlib/dexlib.iml" />
       <module fileurl="file://$PROJECT_DIR$/dexter.iml" filepath="$PROJECT_DIR$/dexter.iml" />
