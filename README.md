@@ -54,3 +54,7 @@ Preferred IDE for developing Dexter is the Android Studio built on top of Intell
 ### Project Lombok
 
 Libdexter is written in Java but with the extension provided by [Project Lombok](projectlombok.org). Their website provides information how to install plugins for the IDE of your choice.
+
+## Credits
+
+* app icon: [dAKirby309](http://dakirby309.deviantart.com/art/Metro-UI-Icon-Set-725-Icons-280724102)
