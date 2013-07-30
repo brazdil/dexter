@@ -19,7 +19,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "MovePrimitive"
+    const-string v0, "Move: primitive"
     return-object v0
     
 .end method
