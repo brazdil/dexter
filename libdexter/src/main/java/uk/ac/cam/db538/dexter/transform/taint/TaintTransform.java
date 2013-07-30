@@ -37,11 +37,11 @@ import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
 import uk.ac.cam.db538.dexter.transform.Transform;
 
-public class DexterTransform extends Transform {
+public class TaintTransform extends Transform {
 
-	public DexterTransform() { }
+	public TaintTransform() { }
 
-	public DexterTransform(ProgressCallback progressCallback) {
+	public TaintTransform(ProgressCallback progressCallback) {
 		super(progressCallback);
 	}
 

@@ -13,7 +13,7 @@ import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 
-public class UnitTestTransform extends DexterTransform {
+public class UnitTestTransform extends TaintTransform {
 
 	public UnitTestTransform() {
 	}
