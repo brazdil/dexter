@@ -1,4 +1,4 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_MovePrimitive;
+.class public Luk/ac/cam/db538/dexter/tests/Test_Move_Primitive;
 .super Ljava/lang/Object;
 
 # interfaces

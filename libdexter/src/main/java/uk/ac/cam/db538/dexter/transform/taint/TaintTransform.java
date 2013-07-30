@@ -28,6 +28,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
@@ -115,6 +116,9 @@ public class TaintTransform extends Transform {
 
 		if (element instanceof DexInstruction_Convert)
 			return instrument_Convert((DexInstruction_Convert) element);
+
+		if (element instanceof DexInstruction_UnaryOp)
+			return instrument_UnaryOp((DexInstruction_UnaryOp) element);
 
 		return element;
 	}
@@ -228,14 +232,14 @@ public class TaintTransform extends Transform {
 
 	private DexCodeElement instrument_BinaryOp(DexInstruction_BinaryOp insn) {
 		return new DexMacro(
-				codeGen.combineTaint(insn.getRegTo(), insn.getRegArgA(), insn.getRegArgB()),
-				insn);
+			codeGen.combineTaint(insn.getRegTo(), insn.getRegArgA(), insn.getRegArgB()),
+			insn);
 	}
 	
 	private DexCodeElement instrument_BinaryOpLiteral(DexInstruction_BinaryOpLiteral insn) {
 		return new DexMacro(
-				codeGen.combineTaint(insn.getRegTo(), insn.getRegArgA()),
-				insn);
+			codeGen.combineTaint(insn.getRegTo(), insn.getRegArgA()),
+			insn);
 	}
 
 	private DexCodeElement instrument_Compare(DexInstruction_Compare insn) {
@@ -245,6 +249,12 @@ public class TaintTransform extends Transform {
 	}
 
 	private DexCodeElement instrument_Convert(DexInstruction_Convert insn) {
+		return new DexMacro(
+			codeGen.combineTaint(insn.getRegTo(), insn.getRegFrom()),
+			insn);
+	}
+
+	private DexCodeElement instrument_UnaryOp(DexInstruction_UnaryOp insn) {
 		return new DexMacro(
 			codeGen.combineTaint(insn.getRegTo(), insn.getRegFrom()),
 			insn);

@@ -1,4 +1,4 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_Compare_Arg2;
+.class public Luk/ac/cam/db538/dexter/tests/Test_UnaryOp;
 .super Ljava/lang/Object;
 
 # interfaces
@@ -19,7 +19,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "Compare: arg2, double"
+    const-string v0, "UnaryOp"
     return-object v0
     
 .end method
@@ -27,17 +27,15 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "cmpl-double rX, rConst, [+]"
+    const-string v0, "not-int rX, [+]"
     return-object v0
     
 .end method
 
 .method public propagate(I)I
-    .registers 6
+    .registers 3
 
-    const-wide v2, 0x0
-    int-to-double v4, p1
-    cmpl-double v0, v2, v4
+    not-int v0, p1
     return v0
     
 .end method

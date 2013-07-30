@@ -27,7 +27,7 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "cmpl-float rX, [+], const"
+    const-string v0, "cmpl-float rX, [+], rConst"
     return-object v0
     
 .end method
