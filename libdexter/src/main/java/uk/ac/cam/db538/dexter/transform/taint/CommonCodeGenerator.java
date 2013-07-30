@@ -299,9 +299,13 @@ public final class CommonCodeGenerator {
 			int count = inputs.length;
 			List<DexCodeElement> insns = new ArrayList<DexCodeElement>(count - 1);
 			
-			insns.add(new DexInstruction_BinaryOp(outputTaint, taint(inputs[0]), taint(inputs[1]), Opcode_BinaryOp.OrInt, hierarchy));
-			for (int i = 2; i < count; i++)
-				insns.add(new DexInstruction_BinaryOp(outputTaint, outputTaint, taint(inputs[i]), Opcode_BinaryOp.OrInt, hierarchy));
+			// might have output equal to one of the inputs !
+			DexSingleRegister aux = auxReg();
+			
+			insns.add(new DexInstruction_Move(aux, taint(inputs[0]), false, hierarchy));
+			for (int i = 1; i < count; i++)
+				insns.add(new DexInstruction_BinaryOp(aux, aux, taint(inputs[i]), Opcode_BinaryOp.OrInt, hierarchy));
+			insns.add(new DexInstruction_Move(outputTaint, aux, false, hierarchy));			
 			
 			return new DexMacro(insns);
 		}
