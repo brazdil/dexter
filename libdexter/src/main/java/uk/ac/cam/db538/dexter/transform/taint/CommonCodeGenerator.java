@@ -18,6 +18,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
@@ -311,6 +312,23 @@ public final class CommonCodeGenerator {
 		}
 	}
 	
+	public DexCodeElement newTaint_ArrayPrimitive(DexSingleRegister regTo, DexSingleRegister regOrigLength) {
+		assert(regTo != regOrigLength);
+		assert(regTo != regOrigLength.getTaintRegister());
+		
+		return new DexMacro(
+				new DexInstruction_NewInstance(regTo, dexAux.getType_TaintArrayPrimitive(), hierarchy),
+				new DexInstruction_Invoke(
+					dexAux.getMethod_TaintArrayPrimitive_Constructor(),
+					Arrays.asList(regTo, regOrigLength, regOrigLength.getTaintRegister()),
+					hierarchy)
+				);
+	}
+	
+	public DexCodeElement getTaint_Array_Length(DexTaintRegister regTo, DexTaintRegister regArrayTaint) {
+		return new DexInstruction_InstanceGet(regTo, regArrayTaint, dexAux.getField_TaintArray_TLength(), hierarchy);
+	}
+
 	private static DexTaintRegister taint(DexRegister reg) {
 		if (reg instanceof DexTaintRegister)
 			return (DexTaintRegister) reg;
@@ -337,6 +355,12 @@ public final class CommonCodeGenerator {
 	
 	public DexCodeElement ifZero(DexSingleRegister reg, DexLabel target) {
 		return new DexInstruction_IfTestZero(reg, target, Opcode_IfTestZero.eqz, hierarchy);		
+	}
+	
+	public DexCodeElement moveObj(DexSingleRegister to, DexSingleRegister from) {
+		if (to.equals(from))
+			return empty();
+		return new DexInstruction_Move(to, from, true, hierarchy);
 	}
 	
 	public DexMacro empty() {

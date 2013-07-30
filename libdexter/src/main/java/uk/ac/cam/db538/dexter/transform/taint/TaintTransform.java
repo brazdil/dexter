@@ -19,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Compare;
@@ -27,6 +28,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
@@ -119,8 +121,16 @@ public class TaintTransform extends Transform {
 
 		if (element instanceof DexInstruction_UnaryOp)
 			return instrument_UnaryOp((DexInstruction_UnaryOp) element);
+		
+		if (element instanceof DexInstruction_NewArray)
+			return instrument_NewArray((DexInstruction_NewArray) element);
 
+		if (element instanceof DexInstruction_ArrayLength)
+			return instrument_ArrayLength((DexInstruction_ArrayLength) element);
+		
 		return element;
+		
+		// TODO: throw an exception here to make sure all cases are taken care of
 	}
 
 	@Override
@@ -258,6 +268,41 @@ public class TaintTransform extends Transform {
 		return new DexMacro(
 			codeGen.combineTaint(insn.getRegTo(), insn.getRegFrom()),
 			insn);
+	}
+
+	private DexCodeElement instrument_NewArray(DexInstruction_NewArray insn) {
+		return insn;
+//		DexSingleRegister regTo = insn.getRegTo();
+//		DexSingleRegister regSize = insn.getRegSize();
+//		
+//		DexSingleRegister regTaintObject;
+//		if (regTo.equals(regSize))
+//			regTaintObject = codeGen.auxReg();
+//		else
+//			regTaintObject = regTo.getTaintRegister();
+//
+//		if (insn.getValue().getElementType() instanceof DexPrimitiveType)
+//			return new DexMacro(
+//				codeGen.newTaint_ArrayPrimitive(regTaintObject, regSize),
+//				insn,
+//				codeGen.moveObj(regTo.getTaintRegister(), regTaintObject));
+//		else
+//			// WRONG!!! Change to TaintArrayReference
+//			// Only here to be able to compile the unit tests
+//			return new DexMacro(
+//					codeGen.newTaint_ArrayPrimitive(regTaintObject, regSize),
+//					insn,
+//					codeGen.moveObj(regTo.getTaintRegister(), regTaintObject));
+	}
+
+	private DexCodeElement instrument_ArrayLength(DexInstruction_ArrayLength insn) {
+		return new DexMacro(
+			codeGen.setZero(insn.getRegTo().getTaintRegister()),
+			insn);
+			
+//		return new DexMacro(
+//			codeGen.getTaint_Array_Length(insn.getRegTo().getTaintRegister(), insn.getRegArray().getTaintRegister()),
+//			insn);
 	}
 
 	// UTILS

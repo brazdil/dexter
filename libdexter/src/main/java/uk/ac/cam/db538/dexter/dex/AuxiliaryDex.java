@@ -9,7 +9,11 @@ import uk.ac.cam.db538.dexter.aux.InternalClassAnnotation;
 import uk.ac.cam.db538.dexter.aux.InternalMethodAnnotation;
 import uk.ac.cam.db538.dexter.aux.MethodCallHelper;
 import uk.ac.cam.db538.dexter.aux.SafeHashMap;
+import uk.ac.cam.db538.dexter.aux.Taint;
+import uk.ac.cam.db538.dexter.aux.TaintArray;
+import uk.ac.cam.db538.dexter.aux.TaintArrayPrimitive;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
+import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
@@ -30,6 +34,15 @@ public class AuxiliaryDex extends Dex {
 	
 	@Getter private final InterfaceDefinition anno_InternalClass;
 	@Getter private final InterfaceDefinition anno_InternalMethod;
+	
+	@Getter private final DexClass type_Taint;
+	@Getter private final DexMethod method_Taint_Get;
+	@Getter private final DexMethod method_Taint_Set;
+	@Getter private final DexClass type_TaintArray;
+	@Getter private final DexInstanceField field_TaintArray_TLength;
+	@Getter private final DexClass type_TaintArrayPrimitive;
+	@Getter private final DexMethod method_TaintArrayPrimitive_Constructor;
+	@Getter private final DexInstanceField field_TaintArrayPrimitive_TArray;
 	
 	public AuxiliaryDex(DexFile dexAux, RuntimeHierarchy hierarchy, ClassRenamer renamer) {
 		super(dexAux, hierarchy, null, renamer);
@@ -53,8 +66,20 @@ public class AuxiliaryDex extends Dex {
 		this.field_CallResultTaint = findStaticFieldByName(clsMethodCallHelper, "RES");
 		
 		// Annotations
-		this.anno_InternalClass = getAnnoDef(hierarchy, renamer, CLASS_INTERNALCLASS);
-		this.anno_InternalMethod = getAnnoDef(hierarchy, renamer, CLASS_INTERNALMETHOD);
+		this.anno_InternalClass = getIfaceDef(hierarchy, renamer, CLASS_INTERNALCLASS);
+		this.anno_InternalMethod = getIfaceDef(hierarchy, renamer, CLASS_INTERNALMETHOD);
+		
+		// Taint types
+		this.type_Taint = getDexClass(hierarchy, renamer, CLASS_TAINT);
+		this.method_Taint_Get = findInstanceMethodByName(type_Taint, "get");
+		this.method_Taint_Set = findInstanceMethodByName(type_Taint, "set");
+		
+		this.type_TaintArray = getDexClass(hierarchy, renamer, CLASS_TAINT_ARRAY);
+		this.field_TaintArray_TLength = findInstanceFieldByName(type_TaintArray, "t_length");
+		
+		this.type_TaintArrayPrimitive = getDexClass(hierarchy, renamer, CLASS_TAINT_ARRAY_PRIMITIVE);
+		this.method_TaintArrayPrimitive_Constructor = findInstanceMethodByName(type_TaintArrayPrimitive, "<init>");
+		this.field_TaintArrayPrimitive_TArray = findInstanceFieldByName(type_TaintArrayPrimitive, "t_array");
 	}
 	
 	private static DexMethod findStaticMethodByName(DexClass clsDef, String name) {
@@ -65,6 +90,14 @@ public class AuxiliaryDex extends Dex {
 		throw new Error("Failed to locate an auxiliary method");
 	}
 	
+	private static DexMethod findInstanceMethodByName(DexClass clsDef, String name) {
+		for (val method : clsDef.getMethods())
+			if (method.getMethodDef().getMethodId().getName().equals(name) &&
+				!method.getMethodDef().isStatic())
+				return method;
+		throw new Error("Failed to locate an auxiliary method");
+	}
+
 	private static DexStaticField findStaticFieldByName(DexClass clsDef, String name) {
 		for (val field : clsDef.getStaticFields())
 			if (field.getFieldDef().getFieldId().getName().equals(name))
@@ -72,15 +105,22 @@ public class AuxiliaryDex extends Dex {
 		throw new Error("Failed to locate an auxiliary static field");
 	}
 
+	private static DexInstanceField findInstanceFieldByName(DexClass clsDef, String name) {
+		for (val field : clsDef.getInstanceFields())
+			if (field.getFieldDef().getFieldId().getName().equals(name))
+				return field;
+		throw new Error("Failed to locate an auxiliary instance field");
+	}
+
 	private DexClass getDexClass(RuntimeHierarchy hierarchy, ClassRenamer classRenamer, String className) {
-		val classDef = hierarchy.getClassDefinition(new DexClassType(classRenamer.applyRules(className)));
+		val classDef = hierarchy.getBaseClassDefinition(new DexClassType(classRenamer.applyRules(className)));
 		for (val cls : this.getClasses())
 			if (classDef.equals(cls.getClassDef()))
 				return cls;
 		throw new Error("Auxiliary class was not found");
 	}
 	
-	private InterfaceDefinition getAnnoDef(RuntimeHierarchy hierarchy, ClassRenamer classRenamer, String className) {
+	private InterfaceDefinition getIfaceDef(RuntimeHierarchy hierarchy, ClassRenamer classRenamer, String className) {
 		return hierarchy.getInterfaceDefinition(new DexClassType(classRenamer.applyRules(className)));
 	}
 
@@ -94,4 +134,11 @@ public class AuxiliaryDex extends Dex {
 			DexClassType.jvm2dalvik(InternalMethodAnnotation.class.getName());
 	private static final String CLASS_TAINTCONSTANTS =
 			DexClassType.jvm2dalvik(TaintConstants.class.getName());
+
+	private static final String CLASS_TAINT =
+			DexClassType.jvm2dalvik(Taint.class.getName());
+	private static final String CLASS_TAINT_ARRAY =
+			DexClassType.jvm2dalvik(TaintArray.class.getName());
+	private static final String CLASS_TAINT_ARRAY_PRIMITIVE =
+			DexClassType.jvm2dalvik(TaintArrayPrimitive.class.getName());
 }

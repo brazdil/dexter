@@ -57,9 +57,9 @@ public class MainConsole {
     AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
     Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
     
-//    System.out.println("Instrumenting application");
-//    Transform transform = new UnitTestTransform();
-//    transform.apply(dexApp);
+    System.out.println("Instrumenting application");
+    Transform transform = new UnitTestTransform();
+    transform.apply(dexApp);
     
     System.out.println("Recompiling application");
     val newDex = dexApp.writeToFile();
