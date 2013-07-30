@@ -160,7 +160,7 @@ public final class CommonCodeGenerator {
 	private DexMacro getParamArray(DexSingleRegister regTo) {
 		return new DexMacro(
 				// retrieve ThreadLocal<int[]> ARGS => auxReg1
-				new DexInstruction_StaticGet(regTo, dexAux.getField_CallParamTaint().getFieldDef(), Opcode_GetPut.Object, hierarchy),
+				new DexInstruction_StaticGet(regTo, dexAux.getField_CallParamTaint().getFieldDef(), hierarchy),
 				
 				// call auxReg1.get(); automatically initializes the array
 				new DexInstruction_Invoke(method_ThreadLocal_Get, Arrays.asList(regTo), hierarchy),
@@ -201,7 +201,7 @@ public final class CommonCodeGenerator {
 		
 		return new DexMacro(
 			// retrieve ThreadLocal<Integer> RES => auxReg1
-			new DexInstruction_StaticGet(auxReg, dexAux.getField_CallResultTaint().getFieldDef(), Opcode_GetPut.Object, hierarchy),
+			new DexInstruction_StaticGet(auxReg, dexAux.getField_CallResultTaint().getFieldDef(), hierarchy),
 			
 			// virtual call auxReg1.get() => auxReg1
 			new DexInstruction_Invoke(method_ThreadLocal_Get, Arrays.asList(auxReg), hierarchy),
@@ -224,7 +224,7 @@ public final class CommonCodeGenerator {
 			new DexInstruction_MoveResult(auxReg1, true, hierarchy),
 			
 			// retrieve ThreadLocal<Integer> RES => auxReg2
-			new DexInstruction_StaticGet(auxReg2, dexAux.getField_CallResultTaint().getFieldDef(), Opcode_GetPut.Object, hierarchy),
+			new DexInstruction_StaticGet(auxReg2, dexAux.getField_CallResultTaint().getFieldDef(), hierarchy),
 			
 			// virtual call auxReg2.set(auxReg1)
 			new DexInstruction_Invoke(method_ThreadLocal_Set, Arrays.asList(auxReg2, auxReg1), hierarchy));
@@ -279,8 +279,7 @@ public final class CommonCodeGenerator {
 			new DexInstruction_ConstClass(auxAnnoClass, annoType, hierarchy),
 			// regTo = auxInspectedClass.getAnnotation(auxAnnoClass)
 			new DexInstruction_Invoke(method_Class_getAnnotation, Arrays.asList(auxInspectedClass, auxAnnoClass), hierarchy),
-			new DexInstruction_MoveResult(regTo, true, hierarchy)
-			);
+			new DexInstruction_MoveResult(regTo, true, hierarchy));
 	}
 	
 	/*
