@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 0x9
+    const v0, 11
     new-array v0, v0, [Luk/ac/cam/db538/dexter/tests/TestExerciser;
 
     const v1, 0x0
@@ -75,6 +75,20 @@
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_Convert_ToDouble;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_Convert_ToDouble;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    const v1, 0x9
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_Compare_Arg1;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_Compare_Arg1;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    const v1, 0xA
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_Compare_Arg2;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_Compare_Arg2;-><init>()V
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
