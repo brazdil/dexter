@@ -14,7 +14,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp.Arg;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -52,10 +51,6 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   public DexInstruction_BinaryOp(DexWideRegister target, DexWideRegister sourceA, DexWideRegister sourceB, Opcode_BinaryOp opcode, RuntimeHierarchy hierarchy) {
-    this((DexRegister) target, sourceA, sourceB, opcode, hierarchy);
-  }
-
-  public DexInstruction_BinaryOp(DexTaintRegister target, DexTaintRegister sourceA, DexTaintRegister sourceB, Opcode_BinaryOp opcode, RuntimeHierarchy hierarchy) {
     this((DexRegister) target, sourceA, sourceB, opcode, hierarchy);
   }
 

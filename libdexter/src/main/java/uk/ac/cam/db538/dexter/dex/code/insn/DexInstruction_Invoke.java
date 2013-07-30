@@ -63,7 +63,7 @@ public class DexInstruction_Invoke extends DexInstruction {
 	}
   }
   
-  public DexInstruction_Invoke(DexMethod method, List<DexStandardRegister> argumentRegisters, RuntimeHierarchy hierarchy) {
+  public DexInstruction_Invoke(DexMethod method, List<? extends DexRegister> argumentRegisters, RuntimeHierarchy hierarchy) {
     this(method.getMethodDef(), argumentRegisters, hierarchy);
   }
   

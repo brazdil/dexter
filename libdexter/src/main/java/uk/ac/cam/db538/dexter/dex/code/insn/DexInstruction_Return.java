@@ -15,7 +15,6 @@ import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -39,13 +38,6 @@ public class DexInstruction_Return extends DexInstruction {
 	
     this.regFrom = regFrom;
     this.opcode = RegisterType.WIDE_PRIMITIVE;
-  }
-
-  public DexInstruction_Return(DexTaintRegister regFrom, boolean objectMoving, RuntimeHierarchy hierarchy) {
-	super(hierarchy);
-	
-    this.regFrom = regFrom;
-    this.opcode = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
   }
 
   public static DexInstruction_Return parse(Instruction insn, CodeParserState parsingState) {

@@ -14,7 +14,6 @@ import org.jf.dexlib.Code.Format.Instruction32x;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -43,14 +42,6 @@ public class DexInstruction_Move extends DexInstruction {
     this.type = RegisterType.WIDE_PRIMITIVE;
   }
 
-  public DexInstruction_Move(DexTaintRegister regTo, DexTaintRegister regFrom, boolean objectMoving, RuntimeHierarchy hierarchy) {
-	super(hierarchy);
-	
-    this.regTo = regTo;
-    this.regFrom = regFrom;
-    this.type = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
-  }
-  
   public static DexInstruction_Move parse(Instruction insn, CodeParserState parsingState) {
     int regA, regB;
 

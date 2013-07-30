@@ -24,11 +24,11 @@ import com.google.common.collect.Sets;
 public class DexInstruction_InstanceGet extends DexInstruction {
 
   @Getter private final DexRegister regTo;
-  @Getter private final DexSingleRegister regObject;
+  @Getter private final DexRegister regObject;
   @Getter private final InstanceFieldDefinition fieldDef;
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, InstanceFieldDefinition fieldDef, RuntimeHierarchy hierarchy) {
+  private DexInstruction_InstanceGet(DexRegister to, DexRegister obj, InstanceFieldDefinition fieldDef, RuntimeHierarchy hierarchy) {
     super(hierarchy);
 
     this.regTo = to;
@@ -39,9 +39,12 @@ public class DexInstruction_InstanceGet extends DexInstruction {
     Opcode_GetPut.checkRegisterWidth(regTo, opcode);
   }
   
+  public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, InstanceFieldDefinition fieldDef, RuntimeHierarchy hierarchy) {
+    this(to, (DexRegister) obj, fieldDef, hierarchy);
+  }
+  
   public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, DexInstanceField field, RuntimeHierarchy hierarchy) {
 	this(to, obj, field.getFieldDef(), hierarchy);
-			 
   }
 
   public static DexInstruction_InstanceGet parse(Instruction insn, CodeParserState parsingState) {
