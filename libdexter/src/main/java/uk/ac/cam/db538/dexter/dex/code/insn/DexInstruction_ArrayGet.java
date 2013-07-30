@@ -31,6 +31,8 @@ public class DexInstruction_ArrayGet extends DexInstruction {
     this.regArray = array;
     this.regIndex = index;
     this.opcode = opcode;
+
+    Opcode_GetPut.checkRegisterWidth(regTo, this.opcode);
   }
 
   public static DexInstruction_ArrayGet parse(Instruction insn, CodeParserState parsingState) {

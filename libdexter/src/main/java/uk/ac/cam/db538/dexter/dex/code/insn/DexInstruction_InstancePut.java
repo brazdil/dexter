@@ -27,15 +27,15 @@ public class DexInstruction_InstancePut extends DexInstruction {
   @Getter private final InstanceFieldDefinition fieldDef;
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_InstancePut(DexRegister from, DexSingleRegister obj, InstanceFieldDefinition fieldDef, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
+  public DexInstruction_InstancePut(DexRegister from, DexSingleRegister obj, InstanceFieldDefinition fieldDef, RuntimeHierarchy hierarchy) {
     super(hierarchy);
 
     this.regFrom = from;
     this.regObject = obj;
     this.fieldDef = fieldDef;
-    this.opcode = opcode;
+    this.opcode = Opcode_GetPut.getOpcodeFromType(this.fieldDef.getFieldId().getType());
     
-    Opcode_GetPut.checkTypeAgainstOpcode(this.fieldDef.getFieldId().getType(), this.opcode);
+    Opcode_GetPut.checkRegisterWidth(regFrom, opcode);
   }
 
   public static DexInstruction_InstancePut parse(Instruction insn, CodeParserState parsingState) {
@@ -72,7 +72,7 @@ public class DexInstruction_InstancePut extends DexInstruction {
       if (fieldDef == null)
     	  throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
       
-      return new DexInstruction_InstancePut(regFrom, regObj, fieldDef, opcode, hierarchy);
+      return new DexInstruction_InstancePut(regFrom, regObj, fieldDef, hierarchy);
 
     } else
       throw FORMAT_EXCEPTION;

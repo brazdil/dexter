@@ -12,6 +12,7 @@ import org.jf.dexlib.Code.Format.Instruction22c;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -27,15 +28,20 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   @Getter private final InstanceFieldDefinition fieldDef;
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, InstanceFieldDefinition fieldDef, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
+  public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, InstanceFieldDefinition fieldDef, RuntimeHierarchy hierarchy) {
     super(hierarchy);
 
     this.regTo = to;
     this.regObject = obj;
     this.fieldDef = fieldDef;
-    this.opcode = opcode;
+    this.opcode = Opcode_GetPut.getOpcodeFromType(this.fieldDef.getFieldId().getType());
     
-    Opcode_GetPut.checkTypeAgainstOpcode(this.fieldDef.getFieldId().getType(), this.opcode);
+    Opcode_GetPut.checkRegisterWidth(regTo, opcode);
+  }
+  
+  public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, DexInstanceField field, RuntimeHierarchy hierarchy) {
+	this(to, obj, field.getFieldDef(), hierarchy);
+			 
   }
 
   public static DexInstruction_InstanceGet parse(Instruction insn, CodeParserState parsingState) {
@@ -72,7 +78,7 @@ public class DexInstruction_InstanceGet extends DexInstruction {
       if (fieldDef == null)
     	  throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
       
-      return new DexInstruction_InstanceGet(regTo, regObj, fieldDef, opcode, hierarchy);
+      return new DexInstruction_InstanceGet(regTo, regObj, fieldDef, hierarchy);
 
     } else
       throw FORMAT_EXCEPTION;

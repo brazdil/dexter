@@ -4,6 +4,8 @@ import lombok.Getter;
 
 import org.jf.dexlib.Code.Opcode;
 
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexBoolean;
 import uk.ac.cam.db538.dexter.dex.type.DexByte;
 import uk.ac.cam.db538.dexter.dex.type.DexChar;
@@ -16,18 +18,20 @@ import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexShort;
 
 public enum Opcode_GetPut {
-  Object("-object"),
-  IntFloat("-int-float"),
-  Boolean("-boolean"),
-  Byte("-byte"),
-  Char("-char"),
-  Short("-short"),
-  Wide("-wide");
+  Object("-object", RegisterType.REFERENCE),
+  IntFloat("-int-float", RegisterType.SINGLE_PRIMITIVE),
+  Boolean("-boolean", RegisterType.SINGLE_PRIMITIVE),
+  Byte("-byte", RegisterType.SINGLE_PRIMITIVE),
+  Char("-char", RegisterType.SINGLE_PRIMITIVE),
+  Short("-short", RegisterType.SINGLE_PRIMITIVE),
+  Wide("-wide", RegisterType.WIDE_PRIMITIVE);
 
   @Getter private final String AsmSuffix;
+  private final RegisterType RegType;
 
-  private Opcode_GetPut(String asmSuffix) {
+  private Opcode_GetPut(String asmSuffix, RegisterType regType) {
 	  AsmSuffix = asmSuffix;
+	  RegType = regType;
   }
 
   public static Opcode_GetPut convert_SGET(Opcode opcode) {
@@ -205,5 +209,10 @@ public enum Opcode_GetPut {
       return Wide;
     else
       throw new Error("Type given to instruction is not supported");
+  }
+  
+  public static void checkRegisterWidth(DexRegister reg, Opcode_GetPut opcode) {
+	  if (!reg.canStoreType(opcode.RegType))
+		  throw new Error("Given register is incompatible with the given get/put opcode"); 
   }
 }
