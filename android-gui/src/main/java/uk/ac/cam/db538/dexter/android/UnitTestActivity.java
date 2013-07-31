@@ -32,12 +32,12 @@ import java.util.jar.Manifest;
 import dalvik.system.DexClassLoader;
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.apk.Apk;
-import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.transform.Transform;
-import uk.ac.cam.db538.dexter.transform.taint.UnitTestTransform;
+import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.transform.taint.TestingTaintTransform;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class UnitTestActivity extends Activity {
@@ -232,7 +232,7 @@ public class UnitTestActivity extends Activity {
 
                     setMessage("Instrumenting...");
 
-                    UnitTestTransform transform = new UnitTestTransform();
+                    Transform transform = new TestingTaintTransform();
                     transform.apply(dexTestApp);
 
                     setMessage("Saving...");
