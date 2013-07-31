@@ -10,9 +10,9 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.DexFileFromMemory;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
 
 import com.rx201.dx.translator.DexCodeGeneration;
 

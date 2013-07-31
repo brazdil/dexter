@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
@@ -42,7 +41,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
-public final class CommonCodeGenerator {
+public final class CodeGenerator {
 
 	private final AuxiliaryDex dexAux;
 	private final RuntimeHierarchy hierarchy;
@@ -72,7 +71,7 @@ public final class CommonCodeGenerator {
 	private int regAuxId;
 	private int labelId;
 	
-	public CommonCodeGenerator(AuxiliaryDex dexAux) {
+	public CodeGenerator(AuxiliaryDex dexAux) {
 		this.dexAux = dexAux;
 
 		this.hierarchy = dexAux.getHierarchy();

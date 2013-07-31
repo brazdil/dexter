@@ -10,7 +10,6 @@ import lombok.val;
 import org.jf.dexlib.AnnotationVisibility;
 
 import uk.ac.cam.db538.dexter.ProgressCallback;
-import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -51,14 +50,14 @@ public class TaintTransform extends Transform {
 	}
 
 	private AuxiliaryDex dexAux;
-	private CommonCodeGenerator codeGen;
+	private CodeGenerator codeGen;
 
 	@Override
 	public void doFirst(Dex dex) {
 		super.doFirst(dex);
 		
 		dexAux = dex.getAuxiliaryDex();
-		codeGen = new CommonCodeGenerator(dexAux);
+		codeGen = new CodeGenerator(dexAux);
 	}
 
 	private Map<DexInstruction_Invoke, CallDestinationType> invokeClassification;

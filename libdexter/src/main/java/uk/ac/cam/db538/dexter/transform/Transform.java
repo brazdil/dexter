@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.cam.db538.dexter.ProgressCallback;
-import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
 
 public abstract class Transform {
 	

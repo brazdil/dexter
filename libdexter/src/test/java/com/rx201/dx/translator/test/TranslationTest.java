@@ -17,9 +17,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
 
 import com.rx201.dx.translator.DexCodeGeneration;
 

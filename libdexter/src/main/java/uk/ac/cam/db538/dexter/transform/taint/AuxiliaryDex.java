@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.dex;
+package uk.ac.cam.db538.dexter.transform.taint;
 
 import lombok.Getter;
 import lombok.val;
@@ -13,6 +13,8 @@ import uk.ac.cam.db538.dexter.aux.Taint;
 import uk.ac.cam.db538.dexter.aux.TaintArray;
 import uk.ac.cam.db538.dexter.aux.TaintArrayPrimitive;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
+import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
@@ -38,8 +40,10 @@ public class AuxiliaryDex extends Dex {
 	@Getter private final DexClass type_Taint;
 	@Getter private final DexMethod method_Taint_Get;
 	@Getter private final DexMethod method_Taint_Set;
+	
 	@Getter private final DexClass type_TaintArray;
 	@Getter private final DexInstanceField field_TaintArray_TLength;
+	
 	@Getter private final DexClass type_TaintArrayPrimitive;
 	@Getter private final DexMethod method_TaintArrayPrimitive_Constructor;
 	@Getter private final DexInstanceField field_TaintArrayPrimitive_TArray;

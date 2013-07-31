@@ -8,11 +8,11 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 
 import uk.ac.cam.db538.dexter.apk.Apk;
-import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.transform.Transform;
-import uk.ac.cam.db538.dexter.transform.taint.UnitTestTransform;
+import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.transform.taint.TestingTaintTransform;
 
 import com.rx201.dx.translator.DexCodeGeneration;
 
@@ -58,7 +58,7 @@ public class MainConsole {
     Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
     
     System.out.println("Instrumenting application");
-    Transform transform = new UnitTestTransform();
+    Transform transform = new TestingTaintTransform();
     transform.apply(dexApp);
     
     System.out.println("Recompiling application");
