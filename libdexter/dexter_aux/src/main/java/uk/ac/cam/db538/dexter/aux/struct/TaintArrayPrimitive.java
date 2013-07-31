@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.aux;
+package uk.ac.cam.db538.dexter.aux.struct;
 
 public final class TaintArrayPrimitive extends TaintArray {
 

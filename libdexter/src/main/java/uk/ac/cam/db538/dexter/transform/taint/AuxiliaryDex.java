@@ -5,14 +5,14 @@ import lombok.val;
 
 import org.jf.dexlib.DexFile;
 
-import uk.ac.cam.db538.dexter.aux.InternalClassAnnotation;
-import uk.ac.cam.db538.dexter.aux.InternalMethodAnnotation;
 import uk.ac.cam.db538.dexter.aux.MethodCallHelper;
 import uk.ac.cam.db538.dexter.aux.SafeHashMap;
-import uk.ac.cam.db538.dexter.aux.Taint;
-import uk.ac.cam.db538.dexter.aux.TaintArray;
-import uk.ac.cam.db538.dexter.aux.TaintArrayPrimitive;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
+import uk.ac.cam.db538.dexter.aux.anno.InternalClass;
+import uk.ac.cam.db538.dexter.aux.anno.InternalMethod;
+import uk.ac.cam.db538.dexter.aux.struct.Taint;
+import uk.ac.cam.db538.dexter.aux.struct.TaintArray;
+import uk.ac.cam.db538.dexter.aux.struct.TaintArrayPrimitive;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
@@ -133,9 +133,9 @@ public class AuxiliaryDex extends Dex {
 	private static final String CLASS_METHODCALLHELPER = 
 			DexClassType.jvm2dalvik(MethodCallHelper.class.getName());
 	private static final String CLASS_INTERNALCLASS = 
-			DexClassType.jvm2dalvik(InternalClassAnnotation.class.getName());
+			DexClassType.jvm2dalvik(InternalClass.class.getName());
 	private static final String CLASS_INTERNALMETHOD =
-			DexClassType.jvm2dalvik(InternalMethodAnnotation.class.getName());
+			DexClassType.jvm2dalvik(InternalMethod.class.getName());
 	private static final String CLASS_TAINTCONSTANTS =
 			DexClassType.jvm2dalvik(TaintConstants.class.getName());
 

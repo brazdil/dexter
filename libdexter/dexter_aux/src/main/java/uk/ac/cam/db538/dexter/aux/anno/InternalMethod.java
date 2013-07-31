@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.aux;
+package uk.ac.cam.db538.dexter.aux.anno;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface InternalClassAnnotation {
+public @interface InternalMethod {
 
 }

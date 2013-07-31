@@ -2,6 +2,8 @@ package uk.ac.cam.db538.dexter.aux;
 
 public class TaintConstants {
 
+  public static final int TAINT_EMPTY = 0;
+	
   public static final int TAINT_SOURCE_CONTACTS = 	1 << 0;
   public static final int TAINT_SOURCE_SMS = 		1 << 1;
   public static final int TAINT_SOURCE_CALL_LOG = 	1 << 2;

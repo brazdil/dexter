@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.aux;
+package uk.ac.cam.db538.dexter.aux.struct;
 
 /*
  * This is mainly a common parent for all taint-storing structures.

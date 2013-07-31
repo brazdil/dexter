@@ -182,7 +182,7 @@ public class TaintTransform extends Transform {
 
 	private DexCodeElement instrument_Const(DexInstruction_Const insn) {
 		return new DexMacro(
-				codeGen.setZero(insn.getRegTo().getTaintRegister()),
+				codeGen.setEmptyTaint(insn.getRegTo().getTaintRegister()),
 				insn);
 	}
 
@@ -214,7 +214,7 @@ public class TaintTransform extends Transform {
 		
 		DexCodeElement macroGetResultTaint;
 		if (insnMoveResult != null && prototype.getReturnType() instanceof DexPrimitiveType)
-			macroGetResultTaint = codeGen.setZero(insnMoveResult.getRegTo().getTaintRegister()); 
+			macroGetResultTaint = codeGen.setEmptyTaint(insnMoveResult.getRegTo().getTaintRegister()); 
 		else
 			macroGetResultTaint = codeGen.empty();
 		

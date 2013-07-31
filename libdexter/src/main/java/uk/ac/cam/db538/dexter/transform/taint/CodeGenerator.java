@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import uk.ac.cam.db538.dexter.aux.TaintConstants;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
@@ -290,7 +291,7 @@ public final class CodeGenerator {
 		DexTaintRegister outputTaint = taint(output);
 		
 		if (inputs.length == 0)
-			return setZero(outputTaint);
+			return setEmptyTaint(outputTaint);
 		else if (inputs.length == 1)
 			return new DexInstruction_Move(outputTaint, taint(inputs[0]), false, hierarchy);
 		else if (inputs.length == 2)
@@ -350,6 +351,10 @@ public final class CodeGenerator {
 
 	public DexCodeElement setZero(DexRegister regTo) {
 		return new DexInstruction_Const(regTo, 0, hierarchy);
+	}
+	
+	public DexCodeElement setEmptyTaint(DexTaintRegister regTo) {
+		return new DexInstruction_Const(regTo, TaintConstants.TAINT_EMPTY, hierarchy);
 	}
 	
 	public DexCodeElement ifZero(DexSingleRegister reg, DexLabel target) {
