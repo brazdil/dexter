@@ -1,7 +1,7 @@
 package uk.ac.cam.db538.dexter.aux;
 
 
-public class MethodCallHelper {
+public class InvokeTaintStore {
 
 	public static ThreadLocalArguments ARGS = new ThreadLocalArguments();
 	public static ThreadLocalResult RES = new ThreadLocalResult();

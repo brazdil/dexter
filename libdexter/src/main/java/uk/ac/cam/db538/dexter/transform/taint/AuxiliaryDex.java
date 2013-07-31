@@ -5,7 +5,7 @@ import lombok.val;
 
 import org.jf.dexlib.DexFile;
 
-import uk.ac.cam.db538.dexter.aux.MethodCallHelper;
+import uk.ac.cam.db538.dexter.aux.InvokeTaintStore;
 import uk.ac.cam.db538.dexter.aux.SafeHashMap;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
 import uk.ac.cam.db538.dexter.aux.anno.InternalClass;
@@ -63,11 +63,11 @@ public class AuxiliaryDex extends Dex {
 //		this.method_QueryTaint = findStaticMethodByName(clsTaintConsts, "queryTaint");
 //		this.method_ServiceTaint = findStaticMethodByName(clsTaintConsts, "serviceTaint");
 		
-		// MethodCallHelper class
-		val clsMethodCallHelper = getDexClass(hierarchy, renamer, CLASS_METHODCALLHELPER);
+		// InvokeTaintStore class
+		val clsInvokeTaintStore = getDexClass(hierarchy, renamer, CLASS_INVOKETAINTSTORE);
 		
-		this.field_CallParamTaint = findStaticFieldByName(clsMethodCallHelper, "ARGS");
-		this.field_CallResultTaint = findStaticFieldByName(clsMethodCallHelper, "RES");
+		this.field_CallParamTaint = findStaticFieldByName(clsInvokeTaintStore, "ARGS");
+		this.field_CallResultTaint = findStaticFieldByName(clsInvokeTaintStore, "RES");
 		
 		// Annotations
 		this.anno_InternalClass = getIfaceDef(hierarchy, renamer, CLASS_INTERNALCLASS);
@@ -130,8 +130,8 @@ public class AuxiliaryDex extends Dex {
 
 	private static final String CLASS_OBJTAINT = 
 			DexClassType.jvm2dalvik(SafeHashMap.class.getName());
-	private static final String CLASS_METHODCALLHELPER = 
-			DexClassType.jvm2dalvik(MethodCallHelper.class.getName());
+	private static final String CLASS_INVOKETAINTSTORE = 
+			DexClassType.jvm2dalvik(InvokeTaintStore.class.getName());
 	private static final String CLASS_INTERNALCLASS = 
 			DexClassType.jvm2dalvik(InternalClass.class.getName());
 	private static final String CLASS_INTERNALMETHOD =
