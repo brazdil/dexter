@@ -13,6 +13,6 @@ public class TaintExternal implements Taint {
 	}
 	
 	public void set(int taint) {
-		this.taint = taint;
+		this.taint |= taint;
 	}
 }
