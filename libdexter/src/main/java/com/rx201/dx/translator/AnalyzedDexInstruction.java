@@ -131,7 +131,7 @@ public class AnalyzedDexInstruction {
 	    	usedRegisterMap.put(usedReg, definition);
 	    }
 
-	    public TypeSolver getUsedRegisterTypeSolver(DexRegister usedReg) {
+	    public TypeSolver getUsedRegisterSolver(DexRegister usedReg) {
 	    	return usedRegisterMap.get(usedReg);
 	    }
 

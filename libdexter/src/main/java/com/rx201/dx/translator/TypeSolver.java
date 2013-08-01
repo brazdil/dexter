@@ -39,10 +39,14 @@ public class TypeSolver {
 		info.definedSites.add(site);
 	}
 	
+	public boolean areUnified(TypeSolver other) {
+		return other.info == this.info;
+	}
+	
 	public void unify(TypeSolver other) {
 		assert this.info.constraints.isEmpty();
 		assert other.info.constraints.isEmpty();
-		if (other.info == this.info)
+		if (areUnified(other))
 			return;
 		assert this.info.depends.isEmpty();
 		assert other.info.depends.isEmpty();

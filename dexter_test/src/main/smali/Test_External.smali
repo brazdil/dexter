@@ -35,6 +35,9 @@
 .method public propagate(I)I
     .registers 3
 
+    # size = param % 4
+    rem-int/lit8 p1, p1, 0x4
+
     new-instance v1, Ljava/util/ArrayList;
     invoke-direct {v1, p1}, Ljava/util/ArrayList;-><init>(I)V
 

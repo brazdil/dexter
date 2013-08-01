@@ -28,7 +28,7 @@ public class ControlFlowGraph_Test {
   }
 	
   private DexCode createCode(List<DexCodeElement> insns) {
-	  return new DexCode(new InstructionList(insns), null, null, null);
+	  return new DexCode(new InstructionList(insns), null, null, false, null);
   }
 	
   @Test

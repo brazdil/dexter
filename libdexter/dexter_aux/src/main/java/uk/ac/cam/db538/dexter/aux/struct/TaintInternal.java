@@ -6,10 +6,12 @@ import uk.ac.cam.db538.dexter.aux.TaintConstants;
 
 public class TaintInternal implements Taint {
 
-	private final InternalDataStructure obj;
+	private final Object obj;
 	
-	public TaintInternal(InternalDataStructure obj) {
+	public TaintInternal(Object obj, Taint t_super) {
 		this.obj = obj;
+		
+		// store t_super inside the internal structure
 	}
 	
 	public int get() {
@@ -19,14 +21,15 @@ public class TaintInternal implements Taint {
 		else
 			visited.add(this);
 		
-		return this.obj.getTaint();
+		// return this.obj.getTaint();
+		return TaintConstants.TAINT_EMPTY;
 	}
 	
 	public void set(int taint) {
 		HashSet<TaintInternal> visited = visitedSet.get();
 		if (!visited.contains(this)) {
 			visited.add(this);
-			this.obj.setTaint(taint);
+			// this.obj.setTaint(taint);
 		}
 	}
 	

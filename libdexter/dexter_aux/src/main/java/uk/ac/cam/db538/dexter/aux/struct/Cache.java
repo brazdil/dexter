@@ -60,7 +60,7 @@ public class Cache {
 		return null;
 	}
 
-	final void set(Object key, Taint value) {
+	static final void set(Object key, Taint value) {
 		// generate hash code and table index
 		int objTableIndex = key.getClass().hashCode() & mask;
 
@@ -109,7 +109,7 @@ public class Cache {
 		}
 	}
 	
-	static void insert(Object key, Taint value) {
+	static final void insert(Object key, Taint value) {
     	// generate hash code and table index
 		int objTableIndex = key.getClass().hashCode() & mask;
 		

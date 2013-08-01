@@ -10,6 +10,18 @@ public final class Assigner {
 		return tobj;
 	}
 	
+	public static final TaintInternal newInternal(Object obj) {
+		Taint t_super = Cache.get(obj);
+		if (t_super == null) {
+			System.err.println("Internal object is not initialized");
+			System.exit(1);
+		}
+		
+		TaintInternal tobj = new TaintInternal(obj, t_super);
+		Cache.set(obj, tobj);
+		return tobj;
+	}
+	
 	public static final TaintExternal lookupExternal(Object obj, int addTaint) {
 		TaintExternal tobj = (TaintExternal) Cache.get(obj);
 		if (tobj == null) {
@@ -20,11 +32,11 @@ public final class Assigner {
 		return tobj;
 	}
 	
-	public static final TaintInternal lookupInternal(InternalDataStructure obj, int addTaint) {
+	public static final TaintInternal lookupInternal(Object obj, int addTaint) {
 		TaintInternal tobj = (TaintInternal) Cache.get(obj);
 		if (tobj == null) {
-			tobj = new TaintInternal(obj);
-			Cache.insert(obj, tobj);
+			System.err.println("Internal object is not initialized");
+			System.exit(1);
 		}
 		
 		tobj.set(addTaint);

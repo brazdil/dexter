@@ -21,16 +21,18 @@ public class DexCode {
   @Getter private final InstructionList instructionList;
   @Getter private final List<Parameter> parameters;
   @Getter private final DexType returnType;
+  @Getter private final boolean constructor;
   
-  public DexCode(InstructionList instructionList, List<Parameter> parameters, DexType returnType, RuntimeHierarchy hierarchy) {
+  public DexCode(InstructionList instructionList, List<Parameter> parameters, DexType returnType, boolean isConstructor, RuntimeHierarchy hierarchy) {
 	  this.instructionList = instructionList;
 	  this.parameters = Utils.finalList(parameters);
 	  this.returnType = returnType;
+	  this.constructor = isConstructor;
 	  this.hierarchy = hierarchy;
   }
 
   public DexCode(DexCode toClone, InstructionList newInstructionList) {
-	  this(newInstructionList, toClone.parameters, toClone.returnType, toClone.hierarchy);
+	  this(newInstructionList, toClone.parameters, toClone.returnType, toClone.constructor, toClone.hierarchy);
   }
 
   public Set<DexRegister> getUsedRegisters() {

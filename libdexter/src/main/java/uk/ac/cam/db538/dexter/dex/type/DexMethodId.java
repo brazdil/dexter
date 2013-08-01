@@ -50,6 +50,10 @@ public class DexMethodId implements Serializable {
 			this.prototype.equals(other.prototype);
 	}
 	
+	public boolean isConstructor() {
+		return this.name.equals("<init>");
+	}
+	
 	@Override
 	public String toString() {
 		return name + prototype;

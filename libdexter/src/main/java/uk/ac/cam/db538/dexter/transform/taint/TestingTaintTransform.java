@@ -43,7 +43,7 @@ public class TestingTaintTransform extends TaintTransform {
 	}
 	
 	@Override
-	public DexCodeElement doFirst(DexCodeElement element, DexCode code) {
+	public DexCodeElement doFirst(DexCodeElement element, DexCode code, DexMethod method) {
 		if (element instanceof DexInstruction_Const) {
 			DexInstruction_Const insnConst = (DexInstruction_Const) element;
 			if (insnConst.getValue() == 0xDEC0DEDL)
@@ -52,7 +52,7 @@ public class TestingTaintTransform extends TaintTransform {
 					insnConst);
 		}
 		
-		return super.doFirst(element, code);
+		return super.doFirst(element, code, method);
 	}
 
 	private static final String TAINTCHECK_CLASS = "Luk/ac/cam/db538/dexter/tests/TaintChecker;";

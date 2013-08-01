@@ -59,33 +59,33 @@ public abstract class Transform {
 	
 	private List<DexMethod> apply(List<DexMethod> oldMethods) {
 		List<DexMethod> newMethods = new ArrayList<DexMethod>(oldMethods.size()); 
-		for (DexMethod method : oldMethods) {
-			method = doFirst(method);
+		for (DexMethod newMethod : oldMethods) {
+			newMethod = doFirst(newMethod);
 			
-			DexCode oldMethodBody = method.getMethodBody();
+			DexCode oldMethodBody = newMethod.getMethodBody();
 			DexCode newMethodBody = oldMethodBody;
 			if (newMethodBody != null) {
-				newMethodBody = doFirst(newMethodBody);
+				newMethodBody = doFirst(newMethodBody, newMethod);
 				
 				boolean instructionsChanged = false;
 				InstructionList oldInstructions = newMethodBody.getInstructionList();
 				List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>(oldInstructions.size());
 				for (DexCodeElement oldInsn : oldInstructions) {
-					DexCodeElement newInsn = doLast(doFirst(oldInsn, newMethodBody), newMethodBody);
+					DexCodeElement newInsn = doLast(doFirst(oldInsn, newMethodBody, newMethod), newMethodBody, newMethod);
 					newInstructions.add(newInsn);
 					instructionsChanged |= (newInsn != oldInsn);
 				}
 				if (instructionsChanged)
 					newMethodBody = new DexCode(newMethodBody, new InstructionList(newInstructions));
 				
-				newMethodBody = doLast(newMethodBody);
+				newMethodBody = doLast(newMethodBody, newMethod);
 			}
 			if (oldMethodBody != newMethodBody)
-				method = new DexMethod(method, newMethodBody);
+				newMethod = new DexMethod(newMethod, newMethodBody);
 			
-			method = doLast(method);
+			newMethod = doLast(newMethod);
 			
-			newMethods.add(method);
+			newMethods.add(newMethod);
 		}
 		return newMethods;
 	}
@@ -93,14 +93,14 @@ public abstract class Transform {
 	public void doFirst(Dex dex) { }
 	public void doFirst(DexClass clazz) { }
 	public DexMethod doFirst(DexMethod method) { return method; }
-	public DexCode doFirst(DexCode code) { return code; }
-	public DexCodeElement doFirst(DexCodeElement element, DexCode code) { return element; }
+	public DexCode doFirst(DexCode code, DexMethod method) { return code; }
+	public DexCodeElement doFirst(DexCodeElement element, DexCode code, DexMethod method) { return element; }
 	
 	public void doLast(Dex dex) { }
 	public void doLast(DexClass clazz) { }
 	public DexMethod doLast(DexMethod method) { return method; }
-	public DexCode doLast(DexCode code) { return code; }
-	public DexCodeElement doLast(DexCodeElement element, DexCode code) { return element; }
+	public DexCode doLast(DexCode code, DexMethod method) { return code; }
+	public DexCodeElement doLast(DexCodeElement element, DexCode code, DexMethod method) { return element; }
 	
 	private void progressUpdate(int finished, int outOf) {
 		if (this.progressCallback != null)

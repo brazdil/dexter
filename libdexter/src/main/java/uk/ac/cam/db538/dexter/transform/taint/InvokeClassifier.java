@@ -18,10 +18,7 @@ public class InvokeClassifier {
 
 	private InvokeClassifier() { }
 	
-	public static Pair<DexCode, ? extends Map<DexInstruction_Invoke, CallDestinationType>> classifyMethodCalls(DexCode code) {
-		DexCodeAnalyzer analyzedCode = new DexCodeAnalyzer(code);
-		analyzedCode.analyze();
-		
+	public static Pair<DexCode, ? extends Map<DexInstruction_Invoke, CallDestinationType>> classifyMethodCalls(DexCode code, DexCodeAnalyzer codeAnalysis) {
 		val classification = new HashMap<DexInstruction_Invoke, CallDestinationType>();
 		
 		// analyze each invoke instruction
@@ -41,7 +38,7 @@ public class InvokeClassifier {
 				// is invoked on
 				
 				if (calledOpcode == Opcode_Invoke.Virtual || calledOpcode == Opcode_Invoke.Interface) {
-					val analyzedInsn = analyzedCode.reverseLookup(invokeInsn);
+					val analyzedInsn = codeAnalysis.reverseLookup(invokeInsn);
 					val thisArgReg = invokeInsn.getArgumentRegisters().get(0);
 					val calledClassRopType = analyzedInsn.getUsedRegisterType(thisArgReg);
 					if (calledClassRopType.category == Category.Reference)

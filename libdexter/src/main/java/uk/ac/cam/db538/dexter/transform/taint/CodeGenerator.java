@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
@@ -154,6 +155,9 @@ public final class CodeGenerator {
 	}
 
 	public DexMacro initPrimitiveTaints(List<DexTaintRegister> taintRegs) {
+		if (taintRegs.isEmpty())
+			return empty();
+		
 		DexSingleAuxiliaryRegister auxParamArray = auxReg();
 		
 		return new DexMacro(
@@ -161,10 +165,17 @@ public final class CodeGenerator {
 			getIntsFromArray(auxParamArray, taintRegs));
 	}
 	
-	public DexMacro initReferenceTaints(List<Parameter> params, DexSingleRegister regInitialTaint) {
+	public DexMacro initReferenceTaints(DexCode code, DexSingleRegister regInitialTaint) {
+		List<Parameter> params = code.getParameters();
+		boolean skip = code.isConstructor();
 		List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
 		
 		for (Parameter param : params) {
+			if (skip) {
+				skip = false;
+				continue;
+			}
+			
 			if (isPrimitive(param.getType()))
 				continue;
 			
@@ -395,6 +406,12 @@ public final class CodeGenerator {
 			new DexInstruction_MoveResult(regObject.getTaintRegister(), true, hierarchy));
 	}
 	
+	public DexCodeElement assigner_NewInternal(DexSingleRegister regObject) {
+		return new DexMacro(
+			new DexInstruction_Invoke(dexAux.getMethod_Assigner_NewInternal(), Arrays.asList(regObject), hierarchy),
+			new DexInstruction_MoveResult(regObject.getTaintRegister(), true, hierarchy));
+	}
+
 	public DexCodeElement assigner_Lookup(DexSingleRegister regObject, DexSingleRegister regAddedTaint, DexReferenceType type) {
 		DexMethod lookupMethod;
 		switch (hierarchy.classifyType(type)) {

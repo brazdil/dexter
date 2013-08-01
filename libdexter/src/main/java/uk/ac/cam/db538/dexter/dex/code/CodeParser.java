@@ -78,7 +78,9 @@ public abstract class CodeParser {
 		val params = parseParameters(methodDef, codeItem, parserCache);
 		val returnType = parseReturnType(methodDef);
 		
-		return new DexCode(instructionList, params, returnType, hierarchy);
+		val isConstructor = methodDef.isConstructor();
+		
+		return new DexCode(instructionList, params, returnType, isConstructor, hierarchy);
 	}
 	
 	private static DexType parseReturnType(MethodDefinition methodDef) {
