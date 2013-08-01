@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 13
+    const v0, 14
     new-array v0, v0, [Luk/ac/cam/db538/dexter/tests/TestExerciser;
 
     const v1, 0x0
@@ -100,6 +100,13 @@
     aput-object v2, v0, v1
 
     const v1, 0xC
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_External;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_External;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    const v1, 0xD
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_ArrayPrimitive_Length;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_ArrayPrimitive_Length;-><init>()V

@@ -6,13 +6,13 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 
 import uk.ac.cam.db538.dexter.aux.InvokeTaintStore;
-import uk.ac.cam.db538.dexter.aux.SafeHashMap;
-import uk.ac.cam.db538.dexter.aux.TaintConstants;
 import uk.ac.cam.db538.dexter.aux.anno.InternalClass;
 import uk.ac.cam.db538.dexter.aux.anno.InternalMethod;
+import uk.ac.cam.db538.dexter.aux.struct.Assigner;
 import uk.ac.cam.db538.dexter.aux.struct.Taint;
 import uk.ac.cam.db538.dexter.aux.struct.TaintArray;
 import uk.ac.cam.db538.dexter.aux.struct.TaintArrayPrimitive;
+import uk.ac.cam.db538.dexter.aux.struct.TaintInternal;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
@@ -25,12 +25,6 @@ import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class AuxiliaryDex extends Dex {
 
-//	@Getter private final DexMethod method_TaintGet;
-//	@Getter private final DexMethod method_TaintSet;
-//
-//	@Getter private final DexMethod method_QueryTaint;
-//	@Getter private final DexMethod method_ServiceTaint;
-	
 	@Getter private final DexStaticField field_CallParamTaint;
 	@Getter private final DexStaticField field_CallResultTaint;
 	
@@ -40,50 +34,52 @@ public class AuxiliaryDex extends Dex {
 	@Getter private final DexClass type_Taint;
 	@Getter private final DexMethod method_Taint_Get;
 	@Getter private final DexMethod method_Taint_Set;
+
+	@Getter private final DexMethod method_TaintInternal_ClearVisited;
 	
-	@Getter private final DexClass type_TaintArray;
 	@Getter private final DexInstanceField field_TaintArray_TLength;
 	
-	@Getter private final DexClass type_TaintArrayPrimitive;
 	@Getter private final DexMethod method_TaintArrayPrimitive_Constructor;
 	@Getter private final DexInstanceField field_TaintArrayPrimitive_TArray;
 	
+	@Getter private final DexMethod method_Assigner_NewExternal;
+	@Getter private final DexMethod method_Assigner_LookupExternal;
+	@Getter private final DexMethod method_Assigner_LookupInternal;
+	@Getter private final DexMethod method_Assigner_LookupUndecidable;
+
 	public AuxiliaryDex(DexFile dexAux, RuntimeHierarchy hierarchy, ClassRenamer renamer) {
 		super(dexAux, hierarchy, null, renamer);
 		
-//		// ObjectTaintStorage class
-//		val clsObjTaint = getDexClass(hierarchy, renamer, CLASS_OBJTAINT);
-//
-//		this.method_TaintGet = findStaticMethodByName(clsObjTaint, "get");
-//		this.method_TaintSet = findStaticMethodByName(clsObjTaint, "set");
-//
-//		// TaintConstants class
-//		val clsTaintConsts = getDexClass(hierarchy, renamer, CLASS_TAINTCONSTANTS);
-//
-//		this.method_QueryTaint = findStaticMethodByName(clsTaintConsts, "queryTaint");
-//		this.method_ServiceTaint = findStaticMethodByName(clsTaintConsts, "serviceTaint");
-		
 		// InvokeTaintStore class
-		val clsInvokeTaintStore = getDexClass(hierarchy, renamer, CLASS_INVOKETAINTSTORE);
-		
+		val clsInvokeTaintStore = getDexClass(InvokeTaintStore.class, hierarchy, renamer);
 		this.field_CallParamTaint = findStaticFieldByName(clsInvokeTaintStore, "ARGS");
 		this.field_CallResultTaint = findStaticFieldByName(clsInvokeTaintStore, "RES");
 		
 		// Annotations
-		this.anno_InternalClass = getIfaceDef(hierarchy, renamer, CLASS_INTERNALCLASS);
-		this.anno_InternalMethod = getIfaceDef(hierarchy, renamer, CLASS_INTERNALMETHOD);
+		this.anno_InternalClass = getIfaceDef(InternalClass.class, hierarchy, renamer);
+		this.anno_InternalMethod = getIfaceDef(InternalMethod.class, hierarchy, renamer);
 		
 		// Taint types
-		this.type_Taint = getDexClass(hierarchy, renamer, CLASS_TAINT);
+		this.type_Taint = getDexClass(Taint.class, hierarchy, renamer);
 		this.method_Taint_Get = findInstanceMethodByName(type_Taint, "get");
 		this.method_Taint_Set = findInstanceMethodByName(type_Taint, "set");
 		
-		this.type_TaintArray = getDexClass(hierarchy, renamer, CLASS_TAINT_ARRAY);
-		this.field_TaintArray_TLength = findInstanceFieldByName(type_TaintArray, "t_length");
+		val clsTaintInternal = getDexClass(TaintInternal.class, hierarchy, renamer);
+		this.method_TaintInternal_ClearVisited = findStaticMethodByName(clsTaintInternal, "clearVisited");
+
+		val clsTaintArray = getDexClass(TaintArray.class, hierarchy, renamer);
+		this.field_TaintArray_TLength = findInstanceFieldByName(clsTaintArray, "t_length");
 		
-		this.type_TaintArrayPrimitive = getDexClass(hierarchy, renamer, CLASS_TAINT_ARRAY_PRIMITIVE);
-		this.method_TaintArrayPrimitive_Constructor = findInstanceMethodByName(type_TaintArrayPrimitive, "<init>");
-		this.field_TaintArrayPrimitive_TArray = findInstanceFieldByName(type_TaintArrayPrimitive, "t_array");
+		val clsTaintArrayPrimitive = getDexClass(TaintArrayPrimitive.class, hierarchy, renamer);
+		this.method_TaintArrayPrimitive_Constructor = findInstanceMethodByName(clsTaintArrayPrimitive, "<init>");
+		this.field_TaintArrayPrimitive_TArray = findInstanceFieldByName(clsTaintArrayPrimitive, "t_array");
+		
+		// Assigner
+		val clsAssigner = getDexClass(Assigner.class, hierarchy, renamer);
+		this.method_Assigner_NewExternal = findStaticMethodByName(clsAssigner, "newExternal");
+		this.method_Assigner_LookupExternal = findStaticMethodByName(clsAssigner, "lookupExternal");
+		this.method_Assigner_LookupInternal = findStaticMethodByName(clsAssigner, "lookupInternal");
+		this.method_Assigner_LookupUndecidable = findStaticMethodByName(clsAssigner, "lookupUndecidable");
 	}
 	
 	private static DexMethod findStaticMethodByName(DexClass clsDef, String name) {
@@ -91,7 +87,7 @@ public class AuxiliaryDex extends Dex {
 			if (method.getMethodDef().getMethodId().getName().equals(name) &&
 				method.getMethodDef().isStatic())
 				return method;
-		throw new Error("Failed to locate an auxiliary method");
+		throw new Error("Failed to locate an auxiliary method " + name);
 	}
 	
 	private static DexMethod findInstanceMethodByName(DexClass clsDef, String name) {
@@ -99,7 +95,7 @@ public class AuxiliaryDex extends Dex {
 			if (method.getMethodDef().getMethodId().getName().equals(name) &&
 				!method.getMethodDef().isStatic())
 				return method;
-		throw new Error("Failed to locate an auxiliary method");
+		throw new Error("Failed to locate an auxiliary method" + name);
 	}
 
 	private static DexStaticField findStaticFieldByName(DexClass clsDef, String name) {
@@ -116,33 +112,17 @@ public class AuxiliaryDex extends Dex {
 		throw new Error("Failed to locate an auxiliary instance field");
 	}
 
-	private DexClass getDexClass(RuntimeHierarchy hierarchy, ClassRenamer classRenamer, String className) {
+	private DexClass getDexClass(Class<?> clazz, RuntimeHierarchy hierarchy, ClassRenamer classRenamer) {
+		val className = DexClassType.jvm2dalvik(clazz.getName());
 		val classDef = hierarchy.getBaseClassDefinition(new DexClassType(classRenamer.applyRules(className)));
 		for (val cls : this.getClasses())
 			if (classDef.equals(cls.getClassDef()))
 				return cls;
-		throw new Error("Auxiliary class was not found");
+		throw new Error("Auxiliary class " + className + " was not found");
 	}
 	
-	private InterfaceDefinition getIfaceDef(RuntimeHierarchy hierarchy, ClassRenamer classRenamer, String className) {
+	private InterfaceDefinition getIfaceDef(Class<?> clazz, RuntimeHierarchy hierarchy, ClassRenamer classRenamer) {
+		val className = DexClassType.jvm2dalvik(clazz.getName());
 		return hierarchy.getInterfaceDefinition(new DexClassType(classRenamer.applyRules(className)));
 	}
-
-	private static final String CLASS_OBJTAINT = 
-			DexClassType.jvm2dalvik(SafeHashMap.class.getName());
-	private static final String CLASS_INVOKETAINTSTORE = 
-			DexClassType.jvm2dalvik(InvokeTaintStore.class.getName());
-	private static final String CLASS_INTERNALCLASS = 
-			DexClassType.jvm2dalvik(InternalClass.class.getName());
-	private static final String CLASS_INTERNALMETHOD =
-			DexClassType.jvm2dalvik(InternalMethod.class.getName());
-	private static final String CLASS_TAINTCONSTANTS =
-			DexClassType.jvm2dalvik(TaintConstants.class.getName());
-
-	private static final String CLASS_TAINT =
-			DexClassType.jvm2dalvik(Taint.class.getName());
-	private static final String CLASS_TAINT_ARRAY =
-			DexClassType.jvm2dalvik(TaintArray.class.getName());
-	private static final String CLASS_TAINT_ARRAY_PRIMITIVE =
-			DexClassType.jvm2dalvik(TaintArrayPrimitive.class.getName());
 }

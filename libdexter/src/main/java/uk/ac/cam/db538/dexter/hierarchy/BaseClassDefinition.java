@@ -119,6 +119,17 @@ public abstract class BaseClassDefinition implements Serializable {
 		return null != iterateThroughParentsAndInterfaces(iface, extractorImplementedInterface, acceptorAlwaysTrue, false);
 	}
 	
+	public boolean hasInternalChildren() {
+		if (isInternal())
+			return true;
+
+		for (val child : this.children)
+			if (child.hasInternalChildren())
+				return true;
+		
+		return false;
+	}
+	
 	public MethodDefinition getMethod(DexMethodId methodId) {
 		for (val methodDef : this.methods)
 			if (methodDef.getMethodId().equals(methodId))

@@ -76,8 +76,7 @@ public class DexCodeGeneration {
 		
 		if (INFO) {
 			System.out.println("==================================================================================");
-			System.out.println(String.format("%s param reg: %d", methodId.getName()  + methodId.getPrototype().toString(), 
-				inWords));
+			System.out.println(String.format("%s param reg: %d", method.getMethodDef().toString(), inWords));
 		}
     	
 		dexOptions = new DexOptions();

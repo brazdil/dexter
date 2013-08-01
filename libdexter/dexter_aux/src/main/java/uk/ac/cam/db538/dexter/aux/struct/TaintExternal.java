@@ -1,8 +1,14 @@
 package uk.ac.cam.db538.dexter.aux.struct;
 
+import uk.ac.cam.db538.dexter.aux.TaintConstants;
+
 public class TaintExternal implements Taint {
 
 	private int taint;
+	
+	public TaintExternal() {
+		this.taint = TaintConstants.TAINT_EMPTY;
+	}
 	
 	public TaintExternal(int taint) {
 		this.taint = taint;

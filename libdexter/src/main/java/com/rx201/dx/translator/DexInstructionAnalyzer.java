@@ -207,7 +207,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	@Override
 	public void visit(DexInstruction_NewInstance instruction) {
-		RopType type = RopType.getRopType(instruction.getValue());
+		RopType type = RopType.getRopType(instruction.getTypeDef().getType());
 		defineFreezedRegister(instruction.getRegTo(), type);
 	}
 	@Override

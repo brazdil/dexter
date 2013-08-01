@@ -22,34 +22,33 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_NewInstance extends DexInstruction {
 
-  @Getter private final DexRegister regTo;
-  @Getter private final DexClassType value;
+  @Getter private final DexSingleRegister regTo;
+  @Getter private final BaseClassDefinition typeDef;
 
-  public DexInstruction_NewInstance(DexSingleRegister to, DexClassType value, RuntimeHierarchy hierarchy) {
+  public DexInstruction_NewInstance(DexSingleRegister to, BaseClassDefinition typeDef, RuntimeHierarchy hierarchy) {
 	super(hierarchy);
     this.regTo = to;
-    this.value = value;
+    this.typeDef = typeDef;
   }
 
   public DexInstruction_NewInstance(DexSingleRegister to, DexClass value, RuntimeHierarchy hierarchy) {
     this(to, value.getClassDef(), hierarchy);
   }
   
-  public DexInstruction_NewInstance(DexSingleRegister to, BaseClassDefinition value, RuntimeHierarchy hierarchy) {
-    this(to, value.getType(), hierarchy);
-  }
-
   public static DexInstruction_NewInstance parse(Instruction insn, CodeParserState parsingState) {
     if (insn instanceof Instruction21c && insn.opcode == Opcode.NEW_INSTANCE) {
 
       val hierarchy = parsingState.getHierarchy();
-    	
+
       val insnNewInstance = (Instruction21c) insn;
+      val typeDef = hierarchy.getClassDefinition(    		  
+    		  DexClassType.parse(
+    				  ((TypeIdItem) insnNewInstance.getReferencedItem()).getTypeDescriptor(),
+    				  hierarchy.getTypeCache()));
+      
       return new DexInstruction_NewInstance(
     		  parsingState.getSingleRegister(insnNewInstance.getRegisterA()),
-    		  DexClassType.parse(
-                ((TypeIdItem) insnNewInstance.getReferencedItem()).getTypeDescriptor(),
-                hierarchy.getTypeCache()),
+    		  typeDef,
     		  hierarchy);
 
     } else
@@ -58,7 +57,7 @@ public class DexInstruction_NewInstance extends DexInstruction {
 
   @Override
   public String toString() {
-    return "new-instance " + regTo.toString() + ", " + value.getDescriptor();
+    return "new-instance " + regTo.toString() + ", " + typeDef.getType().getDescriptor();
   }
 
   @Override

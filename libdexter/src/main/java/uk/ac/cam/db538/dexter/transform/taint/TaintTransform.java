@@ -28,10 +28,12 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleAuxiliaryRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
@@ -121,6 +123,9 @@ public class TaintTransform extends Transform {
 		if (element instanceof DexInstruction_UnaryOp)
 			return instrument_UnaryOp((DexInstruction_UnaryOp) element);
 		
+		if (element instanceof DexInstruction_NewInstance)
+			return instrument_NewInstance((DexInstruction_NewInstance) element);
+
 		if (element instanceof DexInstruction_NewArray)
 			return instrument_NewArray((DexInstruction_NewArray) element);
 
@@ -134,39 +139,43 @@ public class TaintTransform extends Transform {
 
 	@Override
 	public DexCode doLast(DexCode code) {
-
-		if (hasPrimitiveArgument(code)) {
-			
-			// insert taint register initialization
-			
-			DexSingleRegister regAnnotation = codeGen.auxReg();
-			DexSingleRegister regCallerName = codeGen.auxReg();
-			
-			DexLabel labelExternal = codeGen.label();
-			DexLabel labelEnd = codeGen.label();
-			
-			List<DexTaintRegister> primitiveTaints = filterPrimitiveTaintRegisters(code.getParameters());
-			
-			DexMacro init = new DexMacro(
-				codeGen.getMethodCaller(regCallerName),
-				codeGen.ifZero(regCallerName, labelExternal),
-					codeGen.getClassAnnotation(regAnnotation, regCallerName, dexAux.getAnno_InternalClass().getType()),
-					codeGen.ifZero(regAnnotation, labelExternal),
-						codeGen.getParamTaints(primitiveTaints),
-						codeGen.jump(labelEnd),
-				labelExternal,
-					codeGen.setAllTo(primitiveTaints, 0),
-				labelEnd);
-			
-			// insert at the beginning of the method
-			code = new DexCode(code, new InstructionList(concat(init.getInstructions(), code.getInstructionList())));
-			
-		}
 		
-		// get rid of the method call classification
-		invokeClassification = null;
+		code = insertTaintInit(code);
+		invokeClassification = null; // get rid of the method call classification
 		
 		return super.doLast(code);
+	}
+	
+	private DexCode insertTaintInit(DexCode code) {
+		DexSingleRegister regAnnotation = codeGen.auxReg();
+		DexSingleRegister regCallerName = codeGen.auxReg();
+		DexSingleRegister regInitTaint = codeGen.auxReg();
+		
+		DexLabel labelExternal = codeGen.label();
+		DexLabel labelEnd = codeGen.label();
+		
+		List<Parameter> params = code.getParameters();
+		List<DexTaintRegister> primitiveTaints = filterPrimitiveTaintRegisters(params);
+		
+		
+		DexMacro init = new DexMacro(
+			codeGen.getMethodCaller(regCallerName),
+			codeGen.ifZero(regCallerName, labelExternal),
+				codeGen.getClassAnnotation(regAnnotation, regCallerName, dexAux.getAnno_InternalClass().getType()),
+				codeGen.ifZero(regAnnotation, labelExternal),
+					// INTERNAL ORIGIN
+					codeGen.initPrimitiveTaints(primitiveTaints),
+					codeGen.setEmptyTaint(regInitTaint),
+					codeGen.initReferenceTaints(params, regInitTaint),
+					codeGen.jump(labelEnd),
+			labelExternal,
+				// EXTERNAL ORIGIN
+				codeGen.setEmptyTaint(regInitTaint),
+				codeGen.setAllTo(primitiveTaints, regInitTaint),
+				codeGen.initReferenceTaints(params, regInitTaint),
+			labelEnd);
+		
+		return new DexCode(code, new InstructionList(concat(init.getInstructions(), code.getInstructionList())));
 	}
 	
 	@Override
@@ -208,17 +217,11 @@ public class TaintTransform extends Transform {
 	}
 
 	private DexCodeElement instrument_Invoke_External(DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult) {
-		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
-		
-		// NEED TO FINISH THIS!!! ASSIGNS ZERO TAINT TO RESULT!!!
-		
-		DexCodeElement macroGetResultTaint;
-		if (insnMoveResult != null && prototype.getReturnType() instanceof DexPrimitiveType)
-			macroGetResultTaint = codeGen.setEmptyTaint(insnMoveResult.getRegTo().getTaintRegister()); 
-		else
-			macroGetResultTaint = codeGen.empty();
-		
-		return new DexMacro(generateInvoke(insnInvoke, insnMoveResult), macroGetResultTaint);
+		DexSingleAuxiliaryRegister regCombineTaint = codeGen.auxReg();
+		return new DexMacro(
+			codeGen.prepareExternalCall(regCombineTaint, insnInvoke),
+			generateInvoke(insnInvoke, insnMoveResult),
+			codeGen.finishExternalCall(regCombineTaint, insnInvoke, insnMoveResult));
 	}
 	
 	private DexCodeElement instrument_Return(DexInstruction_Return insnReturn) {
@@ -267,6 +270,12 @@ public class TaintTransform extends Transform {
 		return new DexMacro(
 			codeGen.combineTaint(insn.getRegTo(), insn.getRegFrom()),
 			insn);
+	}
+
+	private DexCodeElement instrument_NewInstance(DexInstruction_NewInstance insn) {
+		// nothing happening here...
+		// taint initialization handled as the constructor returns
+		return insn;
 	}
 
 	private DexCodeElement instrument_NewArray(DexInstruction_NewArray insn) {

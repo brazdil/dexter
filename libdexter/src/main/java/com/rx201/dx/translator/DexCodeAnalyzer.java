@@ -73,21 +73,32 @@ public class DexCodeAnalyzer {
             return;
         }
 
-        // Collect use/def information; initialise all TypeResolver sites.
-        buildUseDefSets();
-        
-        // Initialise TypeResolver of StartOfMethod, add constraints from function declaration
-        analyzeParameters();
+        try {
+        	
+            // Collect use/def information; initialise all TypeResolver sites.
+            buildUseDefSets();
+            
+            // Initialise TypeResolver of StartOfMethod, add constraints from function declaration
+            analyzeParameters();
+        	
+            time = System.currentTimeMillis();
+            
+            // Compute all use-def chains and link TypeSolver together accordingly
+        	livenessAnalysis();
 
-        time = System.currentTimeMillis();
-        // Compute all use-def chains and link TypeSolver together accordingly
-        livenessAnalysis();
-        time  = System.currentTimeMillis() - time;
-        
-        // Add constraints from uses and defs to TypeSolver
-        typeConstraintAnalysis();
-        
-        analyzerState = ANALYZED;
+            time  = System.currentTimeMillis() - time;
+            
+            // Add constraints from uses and defs to TypeSolver
+            typeConstraintAnalysis();
+            
+            analyzerState = ANALYZED;
+            
+        } catch (Throwable ex) {
+        	ex.printStackTrace();
+        	System.err.println("CODE DUMP:");
+        	code.getInstructionList().dump();
+        	throw new Error(ex);
+        }
     }
 
 

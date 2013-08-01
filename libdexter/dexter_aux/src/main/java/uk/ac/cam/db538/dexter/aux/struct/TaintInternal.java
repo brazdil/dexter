@@ -49,6 +49,8 @@ public class TaintInternal implements Taint {
 	static { visitedSet = new VisitedSet(); }
 	
 	// MUST BE CALLED BEFORE A TRAVERSAL IS INITIATED !!!
+	// traversal is every call of Taint.get or Taint.set
+	// but that can be initiated even from Assigner.lookup* methods! 
 	
 	public static void clearVisited() {
 		visitedSet.get().clear();

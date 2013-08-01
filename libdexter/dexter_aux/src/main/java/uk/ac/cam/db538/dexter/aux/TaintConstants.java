@@ -1,5 +1,8 @@
 package uk.ac.cam.db538.dexter.aux;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 public class TaintConstants {
 
   public static final int TAINT_EMPTY = 0;
@@ -44,4 +47,19 @@ public class TaintConstants {
       return TAINT_SOURCE_DEVICE_ID;
     return 0;
   }
+  
+  public static final Class<?>[] IMMUTABLES = new Class[] {
+	  String.class,
+	  Integer.class,
+	  Boolean.class,
+	  Byte.class,
+	  Character.class,
+	  Double.class,
+	  Float.class,
+	  Long.class,
+	  Short.class,
+	  Void.class,
+	  BigDecimal.class,
+	  BigInteger.class,
+  };
 }

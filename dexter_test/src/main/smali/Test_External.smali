@@ -1,4 +1,4 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_BinOp_DivZero;
+.class public Luk/ac/cam/db538/dexter/tests/Test_External;
 .super Ljava/lang/Object;
 
 # interfaces
@@ -19,7 +19,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "BinOp: div zero"
+    const-string v0, "External"
     return-object v0
     
 .end method
@@ -27,7 +27,7 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "div-int rX, [+], rZero"
+    const-string v0, "new ArrayList([+])"
     return-object v0
     
 .end method
@@ -35,20 +35,11 @@
 .method public propagate(I)I
     .registers 3
 
-#    :try_start
-#        const v1, 0x0
-#        div-int v0, p1, v1
-#        return v0
-#    :try_end
-#    .catch Ljava/lang/ArithmeticException; {:try_start .. :try_end} :handler
-#
-#    :handler
-#    move-exception v0
-#    invoke-virtual {v0}, Ljava/lang/Object;->hashCode()I
-#    move-result v0
-#    return v0
+    new-instance v1, Ljava/util/ArrayList;
+    invoke-direct {v1, p1}, Ljava/util/ArrayList;-><init>(I)V
 
-    const v0, 0
+    invoke-virtual {v1}, Ljava/util/ArrayList;->size()I
+    move-result v0
     return v0
     
 .end method

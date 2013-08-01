@@ -575,7 +575,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	@Override
 	public void visit(DexInstruction_NewInstance instruction) {
-		doThrowingCstInsn(Rops.NEW_INSTANCE, makeCstType(instruction.getValue()));
+		doThrowingCstInsn(Rops.NEW_INSTANCE, makeCstType(instruction.getTypeDef().getType()));
 		doPseudoMoveResult(instruction.getRegTo());
 	}
 
