@@ -29,6 +29,10 @@ public class InvokeClassifier {
 		for (val insn : code.getInstructionList()) {
 			if (insn instanceof DexInstruction_Invoke) {
 				val invokeInsn = (DexInstruction_Invoke) insn;
+				
+				if (invokeInsn.getMethodId().getName().equals("getDescription"))
+					System.console();
+				
 				DexReferenceType calledClassType = invokeInsn.getClassType();
 				Opcode_Invoke calledOpcode = invokeInsn.getCallType();
 				

@@ -241,7 +241,7 @@ public abstract class BaseClassDefinition implements Serializable {
 			
 			val list = new ArrayList<MethodDefinition>();
 			for (val implementor : ((InterfaceDefinition) this).getImplementors())
-				list.addAll(implementor.iterateThroughChildren(methodId, extractorMethod, acceptorVirtualCall));
+				list.addAll(implementor.callableMethodImplementations_VirtualInterface(methodId));
 			return list;
 		} else
 			throw new HierarchyException("Invalid method call");
