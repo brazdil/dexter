@@ -243,18 +243,12 @@ public class TaintTransform extends Transform {
 	}
 
 	private DexCodeElement instrument_Invoke_External(DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult, DexCode code, MethodDefinition methodDef) {
-		// REMOVE THIS! eventually...
-		if (insnInvoke.getMethodId().getName().equals("d"))
-			return generateInvoke(insnInvoke, insnMoveResult);
-		
 		DexSingleAuxiliaryRegister regCombinedTaint = codeGen.auxReg();
-		
 		if (isCallToSuperclassConstructor(insnInvoke, code, methodDef)) {
 			
-			assert(insnMoveResult == null);
-
 			// Handle calls to external superclass constructor
 			
+			assert(insnMoveResult == null);
 			DexSingleRegister regThis = (DexSingleRegister) code.getParameters().get(0).getRegister();
 			
 			return new DexMacro(

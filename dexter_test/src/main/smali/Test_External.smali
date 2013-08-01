@@ -27,7 +27,7 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "new ArrayList([+])"
+    const-string v0, "rX = new ArrayList([+]); return rX.size();"
     return-object v0
     
 .end method
