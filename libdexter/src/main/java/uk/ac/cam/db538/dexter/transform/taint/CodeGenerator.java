@@ -321,59 +321,112 @@ public final class CodeGenerator {
 			new DexInstruction_MoveResult(regTo, true, hierarchy));
 	}
 	
-	public DexCodeElement prepareExternalCall(DexSingleAuxiliaryRegister regCombinedTaint, DexInstruction_Invoke insnInvoke) {
-		DexReferenceType clazz = insnInvoke.getClassType();
-		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
-		List<DexRegister> regArgs = insnInvoke.getArgumentRegisters();
-		boolean isStatic = isStatic(insnInvoke);
-		boolean isConstructor = isConstructor(insnInvoke);
-		
-		for (DexRegister regArg : regArgs)
+	public DexCodeElement prepareExternalCall(final DexSingleAuxiliaryRegister regCombinedTaint, DexInstruction_Invoke insnInvoke) {
+		for (DexRegister regArg : insnInvoke.getArgumentRegisters())
 			if (regArg.equals(regCombinedTaint) || regArg.getTaintRegister().equals(regCombinedTaint))
 				throw new Error("Conflicting registers used");
 		
-		List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
-		DexSingleAuxiliaryRegister regAux = auxReg();
+		final List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
+		final DexSingleAuxiliaryRegister regAux = auxReg();
 
 		// COMBINE TAINT OF ALL PARAMETERS
-		
-		// Clear the TaintInternal VisitedSet (only needs to be done once per traversal)
-		insns.add(new DexInstruction_Invoke(dexAux.getMethod_TaintInternal_ClearVisited(), null, hierarchy));
 		
 		// Initialize the combined taint variable
 		insns.add(setEmptyTaint(regCombinedTaint));
 		
-		// Get and combine the taint of each parameter
-		// (skip the first argument if method a constructor)
-		for (int paramId = isConstructor ? 1 : 0; paramId < regArgs.size(); paramId++) {
-			DexTaintRegister regArgTaint = regArgs.get(paramId).getTaintRegister();
-			DexRegisterType argType = prototype.getParameterType(paramId, isStatic, clazz);
-			if (isPrimitive(argType))
-				insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regArgTaint));
-			else {
-				insns.add(getTaint(regAux, regArgTaint));
-				insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regAux));
-			}
-		}
-
-		// DISTRIBUTE TAINT TO ALL MUTABLE PARAMETERS
+		if (countValidParameters(insnInvoke) > 0) {
 		
-		// Clear the TaintInternal VisitedSet (only needs to be done once per traversal)
-		insns.add(new DexInstruction_Invoke(dexAux.getMethod_TaintInternal_ClearVisited(), null, hierarchy));
-		
-		// Set the taint to each mutable parameter
-		// (skip the first argument if method a constructor)
-		for (int paramId = isConstructor ? 1 : 0; paramId < regArgs.size(); paramId++) {
-			DexRegisterType argType = prototype.getParameterType(paramId, isStatic, clazz);
-			if (isMutable(argType)) {
-				DexTaintRegister regArgTaint = regArgs.get(paramId).getTaintRegister();
-				insns.add(setTaint(regCombinedTaint, regArgTaint));
+			// Clear the TaintInternal VisitedSet (only needs to be done once per traversal)
+			insns.add(new DexInstruction_Invoke(dexAux.getMethod_TaintInternal_ClearVisited(), null, hierarchy));
+			
+			// Get and combine the taint of each parameter
+			// (skip the first argument if method a constructor)
+			forEachValidParameter(insnInvoke, new ParamCallback() {
+				@Override
+				public void apply(DexRegister regParam, DexRegisterType typeParam) {
+					DexTaintRegister regArgTaint = regParam.getTaintRegister();
+					if (isPrimitive(typeParam))
+						insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regArgTaint));
+					else {
+						insns.add(getTaint(regAux, regArgTaint));
+						insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regAux));
+					}
+				}
+			});
+	
+			// DISTRIBUTE TAINT TO ALL MUTABLE PARAMETERS
+			
+			if (countMutableParameters(insnInvoke) > 0) {
+			
+				// Clear the TaintInternal VisitedSet (only needs to be done once per traversal)
+				insns.add(new DexInstruction_Invoke(dexAux.getMethod_TaintInternal_ClearVisited(), null, hierarchy));
+				
+				// Set the taint to each mutable parameter
+				// (skip the first argument if method a constructor)
+				forEachValidParameter(insnInvoke, new ParamCallback() {
+					@Override
+					public void apply(DexRegister regParam, DexRegisterType typeParam) {
+						if (isMutable(typeParam))
+							insns.add(setTaint(regCombinedTaint, regParam.getTaintRegister()));
+					}
+				});
+			
 			}
+		
 		}
 		
 		return new DexMacro(insns);
 	}
 	
+	private static interface ParamCallback {
+		public void apply(DexRegister regParam, DexRegisterType typeParam);
+	}
+	
+	private void forEachValidParameter(DexInstruction_Invoke insnInvoke, ParamCallback callback) {
+		DexReferenceType clazz = insnInvoke.getClassType();
+		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
+		List<DexRegister> regArgs = insnInvoke.getArgumentRegisters();
+		boolean isStatic = isStatic(insnInvoke);
+		
+		int startParamId = (isConstructor(insnInvoke) ? 1 : 0);
+		
+		for (int paramId = startParamId; paramId < regArgs.size(); paramId++) {
+			DexRegister regArg = regArgs.get(paramId);
+			DexRegisterType argType = prototype.getParameterType(paramId, isStatic, clazz);
+			
+			callback.apply(regArg, argType);
+		}
+	}
+	
+	private static abstract class ParamCounter implements ParamCallback {
+		private int count = 0;
+		protected void inc() { count++; };
+		public int getCount() { return count; }
+	}
+	
+	private int countValidParameters(DexInstruction_Invoke insnInvoke) {
+		ParamCounter counter = new ParamCounter() {
+			@Override
+			public void apply(DexRegister regParam, DexRegisterType typeParam) {
+				inc();
+			}
+		};
+		forEachValidParameter(insnInvoke, counter);
+		return counter.getCount();
+	}
+	
+	private int countMutableParameters(DexInstruction_Invoke insnInvoke) {
+		ParamCounter counter = new ParamCounter() {
+			@Override
+			public void apply(DexRegister regParam, DexRegisterType typeParam) {
+				if (isMutable(typeParam))
+					inc();
+			}
+		};
+		forEachValidParameter(insnInvoke, counter);
+		return counter.getCount();
+	}
+
 	public DexCodeElement finishExternalCall(DexSingleAuxiliaryRegister regCombinedTaint, DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult) {
 		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
 		List<DexRegister> regArgs = insnInvoke.getArgumentRegisters();

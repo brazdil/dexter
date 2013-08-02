@@ -9,10 +9,6 @@ import lombok.val;
 
 import org.jf.dexlib.AnnotationVisibility;
 
-import com.rx201.dx.translator.AnalyzedDexInstruction;
-import com.rx201.dx.translator.DexCodeAnalyzer;
-import com.rx201.dx.translator.TypeSolver;
-
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
@@ -22,7 +18,6 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
@@ -50,6 +45,9 @@ import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.transform.Transform;
+
+import com.rx201.dx.translator.DexCodeAnalyzer;
+import com.rx201.dx.translator.TypeSolver;
 
 public class TaintTransform extends Transform {
 
