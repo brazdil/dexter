@@ -385,28 +385,34 @@ public class TaintTransform extends Transform {
 	}
 
 	private DexCodeElement instrument_NewArray(DexInstruction_NewArray insn) {
-		return insn;
-//		DexSingleRegister regTo = insn.getRegTo();
-//		DexSingleRegister regSize = insn.getRegSize();
-//		
-//		DexSingleRegister regTaintObject;
-//		if (regTo.equals(regSize))
-//			regTaintObject = codeGen.auxReg();
-//		else
-//			regTaintObject = regTo.getTaintRegister();
-//
-//		if (insn.getValue().getElementType() instanceof DexPrimitiveType)
-//			return new DexMacro(
-//				codeGen.newTaint_ArrayPrimitive(regTaintObject, regSize),
-//				insn,
-//				codeGen.moveObj(regTo.getTaintRegister(), regTaintObject));
-//		else
-//			// WRONG!!! Change to TaintArrayReference
-//			// Only here to be able to compile the unit tests
-//			return new DexMacro(
-//					codeGen.newTaint_ArrayPrimitive(regTaintObject, regSize),
-//					insn,
-//					codeGen.moveObj(regTo.getTaintRegister(), regTaintObject));
+		DexSingleRegister regTo = insn.getRegTo();
+		DexSingleRegister regSize = insn.getRegSize();
+		
+		DexSingleRegister auxSize;
+		DexSingleRegister auxSizeTaint;
+		
+		// We need to be careful if the instruction overwrites the size register
+		
+		if (regTo.equals(regSize)) {
+			auxSize = codeGen.auxReg();
+			auxSizeTaint = codeGen.auxReg();
+		} else {
+			auxSize = regSize;
+			auxSizeTaint = regSize.getTaintRegister();
+		}
+
+		if (insn.getValue().getElementType() instanceof DexPrimitiveType)
+			return new DexMacro(
+				codeGen.movePrim(auxSize, regSize),
+				codeGen.movePrim(auxSizeTaint, regSize.getTaintRegister()),
+				insn,
+				codeGen.assigner_NewArrayPrimitive(regTo, auxSize, auxSizeTaint));
+		else
+			return new DexMacro(
+				codeGen.movePrim(auxSize, regSize),
+				codeGen.movePrim(auxSizeTaint, regSize.getTaintRegister()),
+				insn,
+				codeGen.assigner_NewArrayReference(regTo, auxSize, auxSizeTaint));
 	}
 
 	private DexCodeElement instrument_CheckCast(DexInstruction_CheckCast insn) {

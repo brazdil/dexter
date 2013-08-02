@@ -49,9 +49,13 @@ public class AuxiliaryDex extends Dex {
 
 	@Getter private final DexMethod method_Assigner_NewExternal;
 	@Getter private final DexMethod method_Assigner_NewInternal;
+	@Getter private final DexMethod method_Assigner_NewArrayPrimitive;
+	@Getter private final DexMethod method_Assigner_NewArrayReference;
 	@Getter private final DexMethod method_Assigner_LookupExternal;
 	@Getter private final DexMethod method_Assigner_LookupInternal;
 	@Getter private final DexMethod method_Assigner_LookupUndecidable;
+	@Getter private final DexMethod method_Assigner_LookupArrayPrimitive;
+	@Getter private final DexMethod method_Assigner_LookupArrayReference;
 
 	public AuxiliaryDex(DexFile dexAux, RuntimeHierarchy hierarchy, ClassRenamer renamer) {
 		super(dexAux, hierarchy, null, renamer);
@@ -87,9 +91,13 @@ public class AuxiliaryDex extends Dex {
 		val clsAssigner = getDexClass(Assigner.class, hierarchy, renamer);
 		this.method_Assigner_NewExternal = findStaticMethodByName(clsAssigner, "newExternal");
 		this.method_Assigner_NewInternal = findStaticMethodByName(clsAssigner, "newInternal");
+		this.method_Assigner_NewArrayPrimitive = findStaticMethodByName(clsAssigner, "newArrayPrimitive");
+		this.method_Assigner_NewArrayReference = findStaticMethodByName(clsAssigner, "newArrayReference");
 		this.method_Assigner_LookupExternal = findStaticMethodByName(clsAssigner, "lookupExternal");
 		this.method_Assigner_LookupInternal = findStaticMethodByName(clsAssigner, "lookupInternal");
 		this.method_Assigner_LookupUndecidable = findStaticMethodByName(clsAssigner, "lookupUndecidable");
+		this.method_Assigner_LookupArrayPrimitive = findStaticMethodByName(clsAssigner, "lookupArrayPrimitive");
+		this.method_Assigner_LookupArrayReference = findStaticMethodByName(clsAssigner, "lookupArrayReference");
 	}
 	
 	private static DexMethod findStaticMethodByName(DexClass clsDef, String name) {

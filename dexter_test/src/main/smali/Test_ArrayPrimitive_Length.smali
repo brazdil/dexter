@@ -36,7 +36,7 @@
     .registers 3
 
     rem-int/lit8 p1, p1, 0x4     # param as length (mod 4)
-    new-array v1, p1, [S         # array short[]
+    new-array v1, p1, [S         # array short[]; try this out with new-array p1, p1
     array-length v0, v1
     return v0
     

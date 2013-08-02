@@ -21,7 +21,19 @@ public final class Assigner {
 		Cache.set(obj, tobj);
 		return tobj;
 	}
+
+	public static final TaintArrayPrimitive newArrayPrimitive(Object obj, int length, int lengthTaint) {
+		TaintArrayPrimitive tobj = new TaintArrayPrimitive(length, lengthTaint);
+		Cache.insert(obj, tobj);
+		return tobj;
+	}
 	
+	public static final TaintArrayReference newArrayReference(Object obj, int length, int lengthTaint) {
+		TaintArrayReference tobj = new TaintArrayReference(length, lengthTaint);
+		Cache.insert(obj, tobj);
+		return tobj;
+	}
+
 	public static final TaintExternal lookupExternal(Object obj) {
 		TaintExternal tobj = (TaintExternal) Cache.get(obj);
 		if (tobj == null) {
@@ -47,6 +59,24 @@ public final class Assigner {
 			return lookupExternal(obj);
 	}
 	
+	public static final TaintArrayPrimitive lookupArrayPrimitive(Object obj) {
+		TaintArrayPrimitive tobj = (TaintArrayPrimitive) Cache.get(obj);
+		if (tobj == null) {
+			System.err.println("Array of primitives is not initialized");
+			System.exit(1);
+		}
+		return tobj;
+	}
+	
+	public static final TaintArrayReference lookupArrayReference(Object obj) {
+		TaintArrayReference tobj = (TaintArrayReference) Cache.get(obj);
+		if (tobj == null) {
+			System.err.println("Array of references is not initialized");
+			System.exit(1);
+		}
+		return tobj;
+	}
+
 //	private static final boolean isImmutable(Object obj) {
 //      LIST OF IMMUTABLES IN TaintConstants CLASS
 //		return

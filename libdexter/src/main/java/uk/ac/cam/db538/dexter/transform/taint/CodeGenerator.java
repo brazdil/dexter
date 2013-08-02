@@ -472,13 +472,21 @@ public final class CodeGenerator {
 			new DexInstruction_MoveResult(regObject.getTaintRegister(), true, hierarchy));
 	}
 
+	public DexCodeElement assigner_NewArrayPrimitive(DexSingleRegister regObject, DexSingleRegister regLength, DexSingleRegister regLengthTaint) {
+		return new DexMacro(
+			new DexInstruction_Invoke(dexAux.getMethod_Assigner_NewArrayPrimitive(), Arrays.asList(regObject, regLength, regLengthTaint), hierarchy),
+			new DexInstruction_MoveResult(regObject.getTaintRegister(), true, hierarchy));
+	}
+
+	public DexCodeElement assigner_NewArrayReference(DexSingleRegister regObject, DexSingleRegister regLength, DexSingleRegister regLengthTaint) {
+		return new DexMacro(
+			new DexInstruction_Invoke(dexAux.getMethod_Assigner_NewArrayReference(), Arrays.asList(regObject, regLength, regLengthTaint), hierarchy),
+			new DexInstruction_MoveResult(regObject.getTaintRegister(), true, hierarchy));
+	}
+
 	public DexCodeElement assigner_Lookup(DexSingleRegister regObject, DexReferenceType type) {
 		DexMethod lookupMethod;
 		switch (hierarchy.classifyType(type)) {
-		case ARRAY_PRIMITIVE:
-		case ARRAY_REFERENCE:
-			// TODO: finish
-			throw new UnsupportedOperationException();
 		case REF_EXTERNAL:
 			lookupMethod = dexAux.getMethod_Assigner_LookupExternal();
 			break;
@@ -487,6 +495,12 @@ public final class CodeGenerator {
 			break;
 		case REF_UNDECIDABLE:
 			lookupMethod = dexAux.getMethod_Assigner_LookupUndecidable();
+			break;
+		case ARRAY_PRIMITIVE:
+			lookupMethod = dexAux.getMethod_Assigner_LookupArrayPrimitive();
+			break;
+		case ARRAY_REFERENCE:
+			lookupMethod = dexAux.getMethod_Assigner_LookupArrayReference();
 			break;
 		default:
 			throw new Error();
@@ -630,6 +644,20 @@ public final class CodeGenerator {
 		if (to.equals(from))
 			return empty();
 		return new DexInstruction_Move(to, from, true, hierarchy);
+	}
+
+	public DexCodeElement movePrim(DexSingleRegister to, DexSingleRegister from) {
+		if (to.equals(from))
+			return empty();
+		return new DexInstruction_Move(to, from, false, hierarchy);
+	}
+
+	public DexCodeElement movePrimWithTaint(DexSingleRegister to, DexSingleRegister from) {
+		if (to.equals(from))
+			return empty();
+		return new DexMacro(
+			movePrim(to, from),
+			movePrim(to.getTaintRegister(), from.getTaintRegister()));
 	}
 	
 	public DexCodeElement iput(DexRegister from, DexSingleRegister obj, InstanceFieldDefinition fieldDef) {
