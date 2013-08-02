@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.cam.db538.dexter.ProgressCallback;
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -20,6 +21,12 @@ public class TestingTaintTransform extends TaintTransform {
 
 	public TestingTaintTransform(ProgressCallback progressCallback) {
 		super(progressCallback);
+	}
+
+	@Override
+	public boolean exclude(DexClass clazz) {
+		String name = clazz.getClassDef().getType().getDescriptor();
+		return name.equals("Luk/ac/cam/db538/dexter/tests/TestList;");
 	}
 
 	@Override

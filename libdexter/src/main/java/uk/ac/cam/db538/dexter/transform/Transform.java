@@ -43,6 +43,9 @@ public abstract class Transform {
 		 *  to store a constant reference to their parent) 
 		 */
 		for (DexClass clazz : dex.getClasses()) {
+			if (exclude(clazz))
+				continue;
+			
 			doFirst(clazz);
 
 			clazz.replaceMethods(apply(clazz.getMethods()));
@@ -56,6 +59,8 @@ public abstract class Transform {
 		
 		progressUpdate(count, count);
 	}
+	
+	public boolean exclude(DexClass clazz) { return false; }
 	
 	private List<DexMethod> apply(List<DexMethod> oldMethods) {
 		List<DexMethod> newMethods = new ArrayList<DexMethod>(oldMethods.size()); 
