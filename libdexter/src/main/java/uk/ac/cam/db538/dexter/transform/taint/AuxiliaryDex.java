@@ -12,6 +12,7 @@ import uk.ac.cam.db538.dexter.aux.struct.Assigner;
 import uk.ac.cam.db538.dexter.aux.struct.Taint;
 import uk.ac.cam.db538.dexter.aux.struct.TaintArray;
 import uk.ac.cam.db538.dexter.aux.struct.TaintArrayPrimitive;
+import uk.ac.cam.db538.dexter.aux.struct.TaintExternal;
 import uk.ac.cam.db538.dexter.aux.struct.TaintInternal;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -34,14 +35,18 @@ public class AuxiliaryDex extends Dex {
 	@Getter private final DexClass type_Taint;
 	@Getter private final DexMethod method_Taint_Get;
 	@Getter private final DexMethod method_Taint_Set;
-
+	
+	@Getter private final DexClass type_TaintExternal;
+	@Getter private final DexMethod method_TaintExternal_Constructor;
+	
+	@Getter private final DexClass type_TaintInternal;
 	@Getter private final DexMethod method_TaintInternal_ClearVisited;
 	
 	@Getter private final DexInstanceField field_TaintArray_TLength;
 	
 	@Getter private final DexMethod method_TaintArrayPrimitive_Constructor;
 	@Getter private final DexInstanceField field_TaintArrayPrimitive_TArray;
-	
+
 	@Getter private final DexMethod method_Assigner_NewExternal;
 	@Getter private final DexMethod method_Assigner_NewInternal;
 	@Getter private final DexMethod method_Assigner_LookupExternal;
@@ -65,8 +70,11 @@ public class AuxiliaryDex extends Dex {
 		this.method_Taint_Get = findInstanceMethodByName(type_Taint, "get");
 		this.method_Taint_Set = findInstanceMethodByName(type_Taint, "set");
 		
-		val clsTaintInternal = getDexClass(TaintInternal.class, hierarchy, renamer);
-		this.method_TaintInternal_ClearVisited = findStaticMethodByName(clsTaintInternal, "clearVisited");
+		this.type_TaintExternal = getDexClass(TaintExternal.class, hierarchy, renamer);
+		this.method_TaintExternal_Constructor = findInstanceMethodByName(type_TaintExternal, "<init>");
+		
+		this.type_TaintInternal = getDexClass(TaintInternal.class, hierarchy, renamer);
+		this.method_TaintInternal_ClearVisited = findStaticMethodByName(type_TaintInternal, "clearVisited");
 
 		val clsTaintArray = getDexClass(TaintArray.class, hierarchy, renamer);
 		this.field_TaintArray_TLength = findInstanceFieldByName(clsTaintArray, "t_length");

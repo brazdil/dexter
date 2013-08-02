@@ -21,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
@@ -47,6 +48,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
@@ -182,7 +184,8 @@ public final class CodeGenerator {
 			DexReferenceType paramType = (DexReferenceType) param.getType();
 			DexSingleRegister paramReg = (DexSingleRegister) param.getRegister();
 		
-			insns.add(assigner_Lookup(paramReg, regInitialTaint, paramType));
+			insns.add(assigner_Lookup(paramReg, paramType));
+			insns.add(setTaint(regInitialTaint, paramReg));
 		}
 		
 		return new DexMacro(insns);
@@ -449,8 +452,12 @@ public final class CodeGenerator {
 		
 		if (isPrimitive((DexRegisterType) prototype.getReturnType()))
 			return combineTaint(insnMoveResult.getRegTo(), regCombinedTaint);
-		else
-			return assigner_Lookup((DexSingleRegister) insnMoveResult.getRegTo(), regCombinedTaint, (DexReferenceType) prototype.getReturnType());
+		else {
+			DexSingleRegister regTo = (DexSingleRegister) insnMoveResult.getRegTo();
+			return new DexMacro(
+				assigner_Lookup(regTo, (DexReferenceType) prototype.getReturnType()),
+				setTaint(regCombinedTaint, regTo));
+		}
 	}
 	
 	public DexCodeElement assigner_NewExternal(DexSingleRegister regObject, DexSingleRegister regTaint) {
@@ -465,7 +472,7 @@ public final class CodeGenerator {
 			new DexInstruction_MoveResult(regObject.getTaintRegister(), true, hierarchy));
 	}
 
-	public DexCodeElement assigner_Lookup(DexSingleRegister regObject, DexSingleRegister regAddedTaint, DexReferenceType type) {
+	public DexCodeElement assigner_Lookup(DexSingleRegister regObject, DexReferenceType type) {
 		DexMethod lookupMethod;
 		switch (hierarchy.classifyType(type)) {
 		case ARRAY_PRIMITIVE:
@@ -486,7 +493,7 @@ public final class CodeGenerator {
 		}
 		
 		return new DexMacro(
-				new DexInstruction_Invoke(lookupMethod, Arrays.asList(regObject, regAddedTaint), hierarchy),
+				new DexInstruction_Invoke(lookupMethod, Arrays.asList(regObject), hierarchy),
 				new DexInstruction_MoveResult(regObject.getTaintRegister(), true, hierarchy));
 	}
 	
@@ -519,8 +526,8 @@ public final class CodeGenerator {
 			new DexInstruction_MoveResult(regTo, false, hierarchy));
 	}
 	
-	private DexCodeElement setTaint(DexSingleRegister regFrom, DexTaintRegister regTaint) {
-		return new DexInstruction_Invoke(dexAux.getMethod_Taint_Set(), Arrays.asList(regTaint, regFrom), hierarchy);
+	private DexCodeElement setTaint(DexSingleRegister regFrom, DexSingleRegister regTaint) {
+		return new DexInstruction_Invoke(dexAux.getMethod_Taint_Set(), Arrays.asList(taint(regTaint), regFrom), hierarchy);
 	}
 
 	/*
@@ -608,6 +615,13 @@ public final class CodeGenerator {
 		return new DexInstruction_Const(regTo, TaintConstants.TAINT_EMPTY, hierarchy);
 	}
 
+	public DexCodeElement newEmptyExternalTaint(DexSingleRegister regObject) {
+		DexSingleRegister taint = regObject.getTaintRegister();
+		return new DexMacro(
+			new DexInstruction_NewInstance(taint, dexAux.getType_TaintExternal().getClassDef(), hierarchy),
+			new DexInstruction_Invoke(dexAux.getMethod_TaintExternal_Constructor(), Arrays.asList(taint), hierarchy));
+	}
+
 	public DexCodeElement ifZero(DexSingleRegister reg, DexLabel target) {
 		return new DexInstruction_IfTestZero(reg, target, Opcode_IfTestZero.eqz, hierarchy);		
 	}
@@ -618,6 +632,18 @@ public final class CodeGenerator {
 		return new DexInstruction_Move(to, from, true, hierarchy);
 	}
 	
+	public DexCodeElement iput(DexRegister from, DexSingleRegister obj, InstanceFieldDefinition fieldDef) {
+		return new DexInstruction_InstancePut(from, obj, fieldDef, hierarchy);
+	}
+	
+	public DexCodeElement iget(DexRegister to, DexSingleRegister obj, InstanceFieldDefinition fieldDef) {
+		return new DexInstruction_InstanceGet(to, obj, fieldDef, hierarchy);
+	}
+	
+	public DexCodeElement cast(DexSingleRegister obj, DexReferenceType type) {
+		return new DexInstruction_CheckCast(obj, type, hierarchy);
+	}
+
 	public DexMacro empty() {
 		return DexMacro.empty();
 	}

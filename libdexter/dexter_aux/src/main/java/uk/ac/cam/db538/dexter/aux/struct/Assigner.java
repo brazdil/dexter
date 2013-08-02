@@ -22,32 +22,29 @@ public final class Assigner {
 		return tobj;
 	}
 	
-	public static final TaintExternal lookupExternal(Object obj, int addTaint) {
+	public static final TaintExternal lookupExternal(Object obj) {
 		TaintExternal tobj = (TaintExternal) Cache.get(obj);
 		if (tobj == null) {
-			tobj = new TaintExternal(addTaint);
+			tobj = new TaintExternal();
 			Cache.insert(obj, tobj);
-		} else
-			tobj.set(addTaint);
+		}
 		return tobj;
 	}
 	
-	public static final TaintInternal lookupInternal(Object obj, int addTaint) {
+	public static final TaintInternal lookupInternal(Object obj) {
 		TaintInternal tobj = (TaintInternal) Cache.get(obj);
 		if (tobj == null) {
 			System.err.println("Internal object is not initialized");
 			System.exit(1);
 		}
-		
-		tobj.set(addTaint);
 		return tobj;
 	}
 
-	public static final Taint lookupUndecidable(Object obj, int addTaint) {
+	public static final Taint lookupUndecidable(Object obj) {
 		if (obj instanceof InternalDataStructure)
-			return lookupInternal((InternalDataStructure) obj, addTaint);
+			return lookupInternal((InternalDataStructure) obj);
 		else
-			return lookupExternal(obj, addTaint);
+			return lookupExternal(obj);
 	}
 	
 //	private static final boolean isImmutable(Object obj) {

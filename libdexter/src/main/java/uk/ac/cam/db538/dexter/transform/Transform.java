@@ -44,7 +44,7 @@ public abstract class Transform {
 		 */
 		for (DexClass clazz : dex.getClasses()) {
 			doFirst(clazz);
-		
+
 			clazz.replaceMethods(apply(clazz.getMethods()));
 						
 			doLast(clazz);

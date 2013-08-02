@@ -37,6 +37,13 @@ public class ClassDefinition extends BaseClassDefinition {
 		return null;
 	}
 	
+	public InstanceFieldDefinition getInstanceField(String fieldName) {
+		for (val fieldDef : this.instanceFields)
+			if (fieldDef.getFieldId().getName().equals(fieldName))
+				return fieldDef;
+		return null;
+	}
+
 	public InstanceFieldDefinition getAccessedInstanceField(DexFieldId fieldId) {
 		// Application can access an instance field on class X, but
 		// the field might actually be defined in one of X's parents

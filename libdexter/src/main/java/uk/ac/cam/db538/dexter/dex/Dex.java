@@ -14,6 +14,7 @@ import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
 
@@ -90,6 +91,13 @@ public class Dex {
   private void progressUpdate(int finished, int outOf) {
       if (this.progressCallback != null)
           this.progressCallback.update(finished, outOf);
+  }
+  
+  public DexClass getClass(ClassDefinition classDef) {
+	  for (DexClass clazz : classes)
+		  if (clazz.getClassDef().equals(classDef))
+			  return clazz;
+	  return null;
   }
 
 //  private List<DexClass> generateExtraClasses() {

@@ -2,6 +2,7 @@ package uk.ac.cam.db538.dexter.transform.taint;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
@@ -21,9 +23,13 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Compare;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
@@ -38,12 +44,19 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleAuxiliaryRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
+import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
+import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.transform.Transform;
 
 import com.rx201.dx.translator.DexCodeAnalyzer;
@@ -57,15 +70,25 @@ public class TaintTransform extends Transform {
 		super(progressCallback);
 	}
 
+	private Dex dex;
 	private AuxiliaryDex dexAux;
 	private CodeGenerator codeGen;
+	private RuntimeHierarchy hierarchy;
+	private DexTypeCache typeCache;
+
+	private Map<DexInstanceField, DexInstanceField> taintInstanceFields;
 
 	@Override
 	public void doFirst(Dex dex) {
 		super.doFirst(dex);
 		
+		this.dex = dex;
 		dexAux = dex.getAuxiliaryDex();
 		codeGen = new CodeGenerator(dexAux);
+		hierarchy = dexAux.getHierarchy();
+		typeCache = hierarchy.getTypeCache();
+
+		taintInstanceFields = new HashMap<DexInstanceField, DexInstanceField>();
 	}
 
 	private DexCodeAnalyzer codeAnalysis;
@@ -94,6 +117,9 @@ public class TaintTransform extends Transform {
 		if (element instanceof DexInstruction_Const)
 			return instrument_Const((DexInstruction_Const) element);
 		
+		if (element instanceof DexInstruction_ConstString)
+			return instrument_ConstString((DexInstruction_ConstString) element);
+
 		if (element instanceof DexInstruction_Invoke) {
 			
 			DexCodeElement nextElement = code.getInstructionList().getNextInstruction(element);
@@ -102,7 +128,7 @@ public class TaintTransform extends Transform {
 			
 			CallDestinationType type = invokeClassification.get(element);
 			if (type == CallDestinationType.Internal)
-				return instrument_Invoke_Internal((DexInstruction_Invoke) element, (DexInstruction_MoveResult) nextElement);
+				return instrument_Invoke_Internal((DexInstruction_Invoke) element, (DexInstruction_MoveResult) nextElement, code, method.getMethodDef());
 			else if (type == CallDestinationType.External)
 				return instrument_Invoke_External((DexInstruction_Invoke) element, (DexInstruction_MoveResult) nextElement, code, method.getMethodDef());
 			else
@@ -139,9 +165,18 @@ public class TaintTransform extends Transform {
 		if (element instanceof DexInstruction_NewArray)
 			return instrument_NewArray((DexInstruction_NewArray) element);
 
+		if (element instanceof DexInstruction_CheckCast)
+			return instrument_CheckCast((DexInstruction_CheckCast) element);
+
 		if (element instanceof DexInstruction_ArrayLength)
 			return instrument_ArrayLength((DexInstruction_ArrayLength) element);
 		
+		if (element instanceof DexInstruction_InstancePut)
+			return instrument_InstancePut((DexInstruction_InstancePut) element);
+		
+		if (element instanceof DexInstruction_InstanceGet)
+			return instrument_InstanceGet((DexInstruction_InstanceGet) element);
+
 		return element;
 		
 		// TODO: throw an exception here to make sure all cases are taken care of
@@ -219,25 +254,50 @@ public class TaintTransform extends Transform {
 				insn);
 	}
 
-	private DexCodeElement instrument_Invoke_Internal(DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult) {
+	private DexCodeElement instrument_ConstString(DexInstruction_ConstString insn) {
+		return new DexMacro(
+				insn,
+				codeGen.newEmptyExternalTaint(insn.getRegTo()));
+	}
+
+	private DexCodeElement instrument_Invoke_Internal(DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult, DexCode code, MethodDefinition methodDef) {
 		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
 		
-		// need to store taints in the ThreadLocal ARGS array?
-		DexMacro macroSetParamTaints;
+		// Need to store taints in the ThreadLocal ARGS array ?
+		
+		DexCodeElement macroSetParamTaints;
 		if (prototype.hasPrimitiveArgument())
 			macroSetParamTaints = codeGen.setParamTaints(filterPrimitiveTaintRegisters(insnInvoke));
 		else
 			macroSetParamTaints = codeGen.empty();
 		
-		// need to retrieve taint from the ThreadLocal RES field?
-		DexMacro macroGetResultTaint;
+		
+		DexCodeElement macroHandleResult;
+		
+		// Need to retrieve taint from the ThreadLocal RES field ?
+		
 		if (insnMoveResult != null && prototype.getReturnType() instanceof DexPrimitiveType)
-			macroGetResultTaint = codeGen.getResultTaint(insnMoveResult.getRegTo().getTaintRegister()); 
-		else
-			macroGetResultTaint = codeGen.empty();
+			macroHandleResult = codeGen.getResultTaint(insnMoveResult.getRegTo().getTaintRegister());
+		
+		// Was this a call to a constructor ?
+		
+		else if (insnInvoke.getMethodId().isConstructor()) {
+
+			assert(insnMoveResult == null);
+			DexSingleRegister regThis = (DexSingleRegister) insnInvoke.getArgumentRegisters().get(0);
+			
+			if (isCallToSuperclassConstructor(insnInvoke, code, methodDef))
+				// Handle calls to internal superclass constructor
+				macroHandleResult = codeGen.assigner_NewInternal(regThis);
+			else
+				// Handle call to a standard internal constructor
+				macroHandleResult = codeGen.assigner_Lookup(regThis, insnInvoke.getClassType()); 
+			
+		} else
+			macroHandleResult = codeGen.empty();
 		
 		// generate instrumentation
-		return new DexMacro(macroSetParamTaints, generateInvoke(insnInvoke, insnMoveResult), macroGetResultTaint);
+		return new DexMacro(macroSetParamTaints, generateInvoke(insnInvoke, insnMoveResult), macroHandleResult);
 	}
 
 	private DexCodeElement instrument_Invoke_External(DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult, DexCode code, MethodDefinition methodDef) {
@@ -349,6 +409,12 @@ public class TaintTransform extends Transform {
 //					codeGen.moveObj(regTo.getTaintRegister(), regTaintObject));
 	}
 
+	private DexCodeElement instrument_CheckCast(DexInstruction_CheckCast insn) {
+		return new DexMacro(
+			codeGen.cast(insn.getRegObject().getTaintRegister(), (DexReferenceType) taintType(insn.getValue())),
+			insn);
+	}
+	
 	private DexCodeElement instrument_ArrayLength(DexInstruction_ArrayLength insn) {
 		return new DexMacro(
 			codeGen.setZero(insn.getRegTo().getTaintRegister()),
@@ -357,6 +423,44 @@ public class TaintTransform extends Transform {
 //		return new DexMacro(
 //			codeGen.getTaint_Array_Length(insn.getRegTo().getTaintRegister(), insn.getRegArray().getTaintRegister()),
 //			insn);
+	}
+	
+	private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput) {
+		InstanceFieldDefinition fieldDef = insnIput.getFieldDef();
+		ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
+		
+		if (classDef.isInternal()) {
+		
+			DexClass parentClass = dex.getClass(classDef);
+			DexInstanceField field = parentClass.getInstanceField(fieldDef);
+			DexInstanceField taintField = getTaintField(field);
+			DexTaintRegister regFromTaint = insnIput.getRegFrom().getTaintRegister(); 
+			
+			return new DexMacro(
+				codeGen.iput(regFromTaint, insnIput.getRegObject(), taintField.getFieldDef()),	
+				insnIput);
+		
+		} else 
+			throw new UnsupportedOperationException();
+	}
+
+	private DexCodeElement instrument_InstanceGet(DexInstruction_InstanceGet insnIget) {
+		InstanceFieldDefinition fieldDef = insnIget.getFieldDef();
+		ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
+		
+		if (classDef.isInternal()) {
+		
+			DexClass parentClass = dex.getClass(classDef);
+			DexInstanceField field = parentClass.getInstanceField(fieldDef);
+			DexInstanceField taintField = getTaintField(field);
+			DexTaintRegister regToTaint = insnIget.getRegTo().getTaintRegister(); 
+			
+			return new DexMacro(
+				codeGen.iget(regToTaint, insnIget.getRegObject(), taintField.getFieldDef()),	
+				insnIget);
+		
+		} else 
+			throw new UnsupportedOperationException();
 	}
 
 	// UTILS
@@ -436,5 +540,61 @@ public class TaintTransform extends Transform {
 		TypeSolver solverRefPoint = codeAnalysis.reverseLookup(insnInvoke).getUsedRegisterSolver(firstInsnParam);
 		
 		return solverStart.areUnified(solverRefPoint);
+	}
+	
+	private DexInstanceField getTaintField(DexInstanceField field) {
+		
+		// Check if it has been already created
+		
+		DexInstanceField cachedTaintField = taintInstanceFields.get(field);
+		if (cachedTaintField != null)
+			return cachedTaintField;
+
+		// It hasn't, so let's create a new one...
+		
+		ClassDefinition classDef = (ClassDefinition) field.getParentClass().getClassDef();
+		
+		// Figure out a non-conflicting name for the new field
+		
+		String newName = "t_" + field.getFieldDef().getFieldId().getName();
+		String suffix = "";
+		long suffixNumber = 0L;
+		while (classDef.getInstanceField(newName + suffix) != null)
+			suffix = "$" + Long.toString(++suffixNumber); // this needs to be reflected in the name conflict test
+		newName += suffix;
+
+		// Generate the new taint field
+		
+		DexFieldId fieldId = DexFieldId.parseFieldId(newName, taintType(field.getFieldDef().getFieldId().getType()), typeCache);
+		int fieldAccessFlags = DexUtils.assembleAccessFlags(field.getFieldDef().getAccessFlags());
+		InstanceFieldDefinition fieldDef = new InstanceFieldDefinition(classDef, fieldId, fieldAccessFlags);
+		classDef.addDeclaredInstanceField(fieldDef);
+		
+		DexClass parentClass = field.getParentClass();
+		DexInstanceField taintField = new DexInstanceField(parentClass, fieldDef);
+		parentClass.replaceInstanceFields(concat(parentClass.getInstanceFields(), taintField));
+		
+		// Cache it
+		
+		taintInstanceFields.put(field, taintField);
+		
+		// Return
+		
+		return taintField;
+	}
+	
+	private DexRegisterType taintType(DexRegisterType type) {
+		switch(hierarchy.classifyType(type)) {
+		case PRIMITIVE:
+			return typeCache.getCachedType_Integer();
+		case REF_EXTERNAL:
+			return dexAux.getType_TaintExternal().getClassDef().getType();
+		case REF_INTERNAL:
+			return dexAux.getType_TaintInternal().getClassDef().getType();
+		case REF_UNDECIDABLE:
+			return dexAux.getType_Taint().getClassDef().getType();
+		default:
+			throw new UnsupportedOperationException();
+		}
 	}
 }

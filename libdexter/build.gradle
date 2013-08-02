@@ -46,5 +46,6 @@ task aggregate_libs (dependsOn: ':libdexter:compileJava') {
 classes.dependsOn copy_dexter_aux
 jar.dependsOn aggregate_libs
 
-compileJava.options.deprecation = false
-compileJava.options.warnings = false
+// compileJava.options.deprecation = false
+// compileJava.options.warnings = true
+// compileJava.options.compilerArgs << '-XDignore.symbol.file'

@@ -27,6 +27,7 @@ import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
 import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexClass {
@@ -99,6 +100,13 @@ public class DexClass {
 			return Collections.emptyList();
 		else
 			return DexAnnotation.parseAll(annoDir.getClassAnnotations(), parent.getTypeCache());
+	}
+	
+	public DexInstanceField getInstanceField(InstanceFieldDefinition fieldDef) {
+		for (DexInstanceField field : instanceFields)
+			if (field.getFieldDef().equals(fieldDef))
+				return field;
+		return null;
 	}
 	
 	public List<DexClassType> getInterfaceTypes() {
