@@ -422,13 +422,13 @@ public class TaintTransform extends Transform {
 	}
 	
 	private DexCodeElement instrument_ArrayLength(DexInstruction_ArrayLength insn) {
-		return new DexMacro(
-			codeGen.setZero(insn.getRegTo().getTaintRegister()),
-			insn);
-			
 //		return new DexMacro(
-//			codeGen.getTaint_Array_Length(insn.getRegTo().getTaintRegister(), insn.getRegArray().getTaintRegister()),
+//			codeGen.setZero(insn.getRegTo().getTaintRegister()),
 //			insn);
+			
+		return new DexMacro(
+			codeGen.getTaint_Array_Length(insn.getRegTo().getTaintRegister(), insn.getRegArray().getTaintRegister()),
+			insn);
 	}
 	
 	private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput) {

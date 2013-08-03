@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 0x13
+    const v0, 0x14
     new-array v0, v0, [Luk/ac/cam/db538/dexter/tests/TestExerciser;
 
     const v1, 0x0
@@ -115,33 +115,40 @@
 
     const v1, 0xE
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_ArrayReference_Length;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_ArrayReference_Length;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    const v1, 0xF
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_NameConflict;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_NameConflict;-><init>()V
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
-    const v1, 0xF
+    const v1, 0x10
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Primitive;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Primitive;-><init>()V
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
-    const v1, 0x10
+    const v1, 0x11
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;-><init>()V
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
-    const v1, 0x11
+    const v1, 0x12
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Internal;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Internal;-><init>()V
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
-    const v1, 0x12
+    const v1, 0x13
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;-><init>()V
