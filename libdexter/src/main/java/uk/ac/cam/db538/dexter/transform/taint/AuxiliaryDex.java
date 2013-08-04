@@ -12,6 +12,7 @@ import uk.ac.cam.db538.dexter.aux.struct.Assigner;
 import uk.ac.cam.db538.dexter.aux.struct.Taint;
 import uk.ac.cam.db538.dexter.aux.struct.TaintArray;
 import uk.ac.cam.db538.dexter.aux.struct.TaintArrayPrimitive;
+import uk.ac.cam.db538.dexter.aux.struct.TaintArrayReference;
 import uk.ac.cam.db538.dexter.aux.struct.TaintExternal;
 import uk.ac.cam.db538.dexter.aux.struct.TaintInternal;
 import uk.ac.cam.db538.dexter.dex.Dex;
@@ -44,8 +45,8 @@ public class AuxiliaryDex extends Dex {
 	
 	@Getter private final DexInstanceField field_TaintArray_TLength;
 	
-	@Getter private final DexMethod method_TaintArrayPrimitive_Constructor;
-	@Getter private final DexInstanceField field_TaintArrayPrimitive_TArray;
+	@Getter private final DexClass type_TaintArrayPrimitive;
+	@Getter private final DexClass type_TaintArrayReference;
 
 	@Getter private final DexMethod method_Assigner_NewExternal;
 	@Getter private final DexMethod method_Assigner_NewInternal;
@@ -83,9 +84,8 @@ public class AuxiliaryDex extends Dex {
 		val clsTaintArray = getDexClass(TaintArray.class, hierarchy, renamer);
 		this.field_TaintArray_TLength = findInstanceFieldByName(clsTaintArray, "t_length");
 		
-		val clsTaintArrayPrimitive = getDexClass(TaintArrayPrimitive.class, hierarchy, renamer);
-		this.method_TaintArrayPrimitive_Constructor = findInstanceMethodByName(clsTaintArrayPrimitive, "<init>");
-		this.field_TaintArrayPrimitive_TArray = findInstanceFieldByName(clsTaintArrayPrimitive, "t_array");
+		this.type_TaintArrayPrimitive = getDexClass(TaintArrayPrimitive.class, hierarchy, renamer);
+		this.type_TaintArrayReference = getDexClass(TaintArrayReference.class, hierarchy, renamer);
 		
 		// Assigner
 		val clsAssigner = getDexClass(Assigner.class, hierarchy, renamer);

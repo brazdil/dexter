@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 0x14
+    const v0, 0x16
     new-array v0, v0, [Luk/ac/cam/db538/dexter/tests/TestExerciser;
 
     const v1, 0x0
@@ -149,6 +149,20 @@
     aput-object v2, v0, v1
 
     const v1, 0x13
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayPrimitive;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayPrimitive;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    const v1, 0x14
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    const v1, 0x15
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;-><init>()V

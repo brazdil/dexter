@@ -597,6 +597,10 @@ public class TaintTransform extends Transform {
 			return dexAux.getType_TaintExternal().getClassDef().getType();
 		case REF_INTERNAL:
 			return dexAux.getType_TaintInternal().getClassDef().getType();
+		case ARRAY_PRIMITIVE:
+			return dexAux.getType_TaintArrayPrimitive().getClassDef().getType();
+		case ARRAY_REFERENCE:
+			return dexAux.getType_TaintArrayReference().getClassDef().getType();
 		case REF_UNDECIDABLE:
 			return dexAux.getType_Taint().getClassDef().getType();
 		default:
