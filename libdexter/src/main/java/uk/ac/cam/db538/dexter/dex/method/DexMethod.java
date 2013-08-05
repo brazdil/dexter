@@ -64,6 +64,10 @@ public class DexMethod {
 		this(toClone.parentClass, toClone.methodDef, newMethodBody);
 	}
 	
+	public DexMethod(DexMethod toClone, MethodDefinition newDef) {
+		this(toClone.parentClass, newDef, toClone.methodBody);
+	}
+
 	private static MethodDefinition init_FindMethodDefinition(DexClass parentClass, EncodedMethod methodItem) {
 		val hierarchy = parentClass.getParentFile().getHierarchy();
 		val classDef = parentClass.getClassDef();

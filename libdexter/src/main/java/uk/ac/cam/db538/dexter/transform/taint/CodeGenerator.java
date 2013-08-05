@@ -26,6 +26,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
@@ -534,13 +536,13 @@ public final class CodeGenerator {
 		return !(isPrimitive(type) || isImmutable(type));
 	}
 	
-	private DexCodeElement getTaint(DexSingleRegister regTo, DexTaintRegister regTaint) {
+	public DexCodeElement getTaint(DexSingleRegister regTo, DexSingleRegister regTaint) {
 		return new DexMacro(
 			new DexInstruction_Invoke(dexAux.getMethod_Taint_Get(), Arrays.asList(regTaint), hierarchy),
 			new DexInstruction_MoveResult(regTo, false, hierarchy));
 	}
 	
-	private DexCodeElement setTaint(DexSingleRegister regFrom, DexSingleRegister regTaint) {
+	public DexCodeElement setTaint(DexSingleRegister regFrom, DexSingleRegister regTaint) {
 		return new DexInstruction_Invoke(dexAux.getMethod_Taint_Set(), Arrays.asList(taint(regTaint), regFrom), hierarchy);
 	}
 
@@ -640,20 +642,28 @@ public final class CodeGenerator {
 		return new DexInstruction_IfTestZero(reg, target, Opcode_IfTestZero.eqz, hierarchy);		
 	}
 	
-	public DexCodeElement moveObj(DexSingleRegister to, DexSingleRegister from) {
+	public DexCodeElement move_obj(DexSingleRegister to, DexSingleRegister from) {
 		if (to.equals(from))
 			return empty();
 		return new DexInstruction_Move(to, from, true, hierarchy);
 	}
 
-	public DexCodeElement moveTaintObj(DexSingleRegister to, DexSingleRegister from) {
-		return moveObj(taint(to), taint(from));
+	public DexCodeElement move_tobj(DexSingleRegister to, DexSingleRegister from) {
+		return move_obj(taint(to), taint(from));
 	}
 
-	public DexCodeElement movePrim(DexSingleRegister to, DexSingleRegister from) {
+	public DexCodeElement move_prim(DexSingleRegister to, DexSingleRegister from) {
 		if (to.equals(from))
 			return empty();
 		return new DexInstruction_Move(to, from, false, hierarchy);
+	}
+	
+	public DexCodeElement retrn() {
+		return new DexInstruction_ReturnVoid(hierarchy);
+	}
+
+	public DexCodeElement return_prim(DexSingleRegister regTotalTaint) {
+		return new DexInstruction_Return(regTotalTaint, false, hierarchy);
 	}
 	
 	public DexCodeElement iput(DexRegister from, DexSingleRegister obj, InstanceFieldDefinition fieldDef) {

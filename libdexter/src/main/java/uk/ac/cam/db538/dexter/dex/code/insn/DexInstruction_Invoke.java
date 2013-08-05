@@ -75,6 +75,14 @@ public class DexInstruction_Invoke extends DexInstruction {
          toClone.hierarchy);
   }
 
+  public DexInstruction_Invoke(DexInstruction_Invoke toClone, DexMethodId newMid) {
+    this(toClone.classType,
+         newMid,
+         toClone.argumentRegisters,
+         toClone.callType,
+         toClone.hierarchy);
+  }
+
   public DexInstruction_Invoke(MethodDefinition methodDef, List<? extends DexRegister> argumentRegisters, RuntimeHierarchy hierarchy) {
 	  this(methodDef.getParentClass().getType(),
 	       methodDef.getMethodId(),

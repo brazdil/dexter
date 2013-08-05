@@ -71,6 +71,14 @@ public abstract class BaseClassDefinition implements Serializable {
 		this._methods.add(method);
 	}
 	
+	public void replaceDeclaredMethod(MethodDefinition oldDef, MethodDefinition newDef) {
+		assert oldDef.getParentClass() == this;
+		assert newDef.getParentClass() == this;
+		
+		this._methods.remove(oldDef);
+		this._methods.add(newDef);
+	}
+	
 	public void addDeclaredStaticField(StaticFieldDefinition field) {
 		assert field.isStatic(); 
 		assert field.getParentClass() == this;

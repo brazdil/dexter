@@ -13,4 +13,16 @@ public abstract class Utils {
 			return Collections.unmodifiableList(new ArrayList<T>(list));
 	}
 
+	public static interface NameAcceptor {
+		public boolean accept(String name);
+	}
+	
+	public static String generateName(String oldPrefix, String oldSuffix, NameAcceptor acceptor) {
+		long id = 0L;
+		String infix = "";
+		while (!acceptor.accept(oldPrefix + infix + oldSuffix))
+			infix = "$$" + Long.toString(++id);
+		
+		return oldPrefix + infix + oldSuffix;
+	}
 }

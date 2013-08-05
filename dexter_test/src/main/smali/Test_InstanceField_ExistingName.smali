@@ -7,9 +7,9 @@
 # instance fields
 .field private X:I
 .field private t_X:Ljava/lang/Object;
-.field private t_X$0:Ljava/lang/Object;
-.field private t_X$1:Ljava/lang/Object;
-.field private t_X$2:Ljava/lang/Object;
+.field private t_X$$0:Ljava/lang/Object;
+.field private t_X$$1:Ljava/lang/Object;
+.field private t_X$$2:Ljava/lang/Object;
 
 # direct methods
 .method public constructor <init>()V

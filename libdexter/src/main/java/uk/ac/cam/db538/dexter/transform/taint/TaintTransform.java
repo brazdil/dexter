@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.transform.taint;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Map;
 import lombok.val;
 
 import org.jf.dexlib.AnnotationVisibility;
+import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.Dex;
@@ -47,17 +49,23 @@ import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
 import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy.TypeClassification;
 import uk.ac.cam.db538.dexter.transform.Transform;
+import uk.ac.cam.db538.dexter.utils.Utils;
+import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
 import com.rx201.dx.translator.DexCodeAnalyzer;
 import com.rx201.dx.translator.TypeSolver;
@@ -192,6 +200,30 @@ public class TaintTransform extends Transform {
 		return super.doLast(code, method);
 	}
 	
+	@Override
+	public void doLast(DexClass clazz) {
+
+		// add InternalClassAnnotation
+		clazz.replaceAnnotations(concat(
+				clazz.getAnnotations(),
+				new DexAnnotation(dexAux.getAnno_InternalClass().getType(), AnnotationVisibility.RUNTIME)));
+		
+		// implement the InternalDataStructure interface
+		clazz.getClassDef().addImplementedInterface((InterfaceDefinition) dexAux.getType_InternalStructure().getClassDef());
+		generateGetTaint(clazz);
+		generateSetTaint(clazz);
+		
+		super.doLast(clazz);
+	}
+
+	@Override
+	public void doLast(Dex dex) {
+		super.doLast(dex);
+		
+		// insert classes from dexAux to the resulting DEX
+		dex.addClasses(dexAux.getClasses());
+	}
+
 	private boolean canBeCalledFromExternalOrigin(MethodDefinition methodDef) {
 		return methodDef.isVirtual();
 	}
@@ -237,25 +269,6 @@ public class TaintTransform extends Transform {
 		return new DexCode(code, new InstructionList(concat(init.getInstructions(), code.getInstructionList())));
 	}
 	
-	@Override
-	public void doLast(DexClass clazz) {
-
-		// add InternalClassAnnotation
-		clazz.replaceAnnotations(concat(
-				clazz.getAnnotations(),
-				new DexAnnotation(dexAux.getAnno_InternalClass().getType(), AnnotationVisibility.RUNTIME)));
-		
-		super.doLast(clazz);
-	}
-	
-	@Override
-	public void doLast(Dex dex) {
-		super.doLast(dex);
-		
-		// insert classes from dexAux to the resulting DEX
-		dex.addClasses(dexAux.getClasses());
-	}
-
 	private DexCodeElement instrument_Const(DexInstruction_Const insn) {
 		return new DexMacro(
 				codeGen.setEmptyTaint(insn.getRegTo().getTaintRegister()),
@@ -350,7 +363,7 @@ public class TaintTransform extends Transform {
 	private DexCodeElement instrument_Move(DexInstruction_Move insn) {
 		if (insn.getType() == RegisterType.REFERENCE)
 			return new DexMacro(
-				codeGen.moveTaintObj((DexSingleRegister) insn.getRegTo(), (DexSingleRegister) insn.getRegFrom()),
+				codeGen.move_tobj((DexSingleRegister) insn.getRegTo(), (DexSingleRegister) insn.getRegFrom()),
 				insn);
 		else
 			return new DexMacro(
@@ -413,14 +426,14 @@ public class TaintTransform extends Transform {
 
 		if (insn.getValue().getElementType() instanceof DexPrimitiveType)
 			return new DexMacro(
-				codeGen.movePrim(auxSize, regSize),
-				codeGen.movePrim(auxSizeTaint, regSize.getTaintRegister()),
+				codeGen.move_prim(auxSize, regSize),
+				codeGen.move_prim(auxSizeTaint, regSize.getTaintRegister()),
 				insn,
 				codeGen.assigner_NewArrayPrimitive(regTo, auxSize, auxSizeTaint));
 		else
 			return new DexMacro(
-				codeGen.movePrim(auxSize, regSize),
-				codeGen.movePrim(auxSizeTaint, regSize.getTaintRegister()),
+				codeGen.move_prim(auxSize, regSize),
+				codeGen.move_prim(auxSizeTaint, regSize.getTaintRegister()),
 				insn,
 				codeGen.assigner_NewArrayReference(regTo, auxSize, auxSizeTaint));
 	}
@@ -473,6 +486,113 @@ public class TaintTransform extends Transform {
 		
 		} else 
 			throw new UnsupportedOperationException();
+	}
+	
+	private void generateGetTaint(DexClass clazz) {
+		DexTypeCache cache = hierarchy.getTypeCache();
+		
+		// generate bytecode
+		
+		DexSingleRegister regTotalTaint = new DexSingleAuxiliaryRegister(0);
+		DexSingleRegister regFieldTaint = new DexSingleAuxiliaryRegister(1);
+		DexSingleRegister regObject = new DexSingleAuxiliaryRegister(2);
+		
+		List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
+		insns.add(codeGen.setEmptyTaint(regTotalTaint));
+		
+		for (DexInstanceField ifield : clazz.getInstanceFields()) {
+			if (!hasTaintField(ifield))
+				continue;
+
+			DexInstanceField tfield = getTaintField(ifield);
+			
+			insns.add(codeGen.iget(regFieldTaint, regObject, tfield.getFieldDef()));
+			
+			if (hierarchy.classifyType(ifield.getFieldDef().getFieldId().getType()) != TypeClassification.PRIMITIVE)
+				insns.add(codeGen.getTaint(regFieldTaint, regFieldTaint));
+
+			insns.add(codeGen.combineTaint(regTotalTaint, regTotalTaint, regFieldTaint));
+		}
+		
+		insns.add(codeGen.return_prim(regTotalTaint));
+		
+		InstructionList insnlist = new InstructionList(insns);
+		
+		// generate parameters
+		
+		Parameter paramThis = new Parameter(clazz.getClassDef().getType(), regObject);
+		List<Parameter> params = Arrays.asList(paramThis);
+		
+		// generate DexCode
+		
+		DexCode methodBody = new DexCode(insnlist, params, cache.getCachedType_Integer(), false, hierarchy);
+	
+		// generate method and insert into the class
+		
+		implementMethod(clazz, dexAux.getMethod_InternalStructure_GetTaint(), methodBody);
+	}
+
+	private void generateSetTaint(DexClass clazz) {
+		DexTypeCache cache = hierarchy.getTypeCache();
+		
+		// generate bytecode
+		
+		DexSingleRegister regFieldTaint = new DexSingleAuxiliaryRegister(0);
+		DexSingleRegister regAddedTaint = new DexSingleAuxiliaryRegister(1);
+		DexSingleRegister regObject = new DexSingleAuxiliaryRegister(2);
+		
+		List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
+		
+		for (DexInstanceField ifield : clazz.getInstanceFields()) {
+			if (!hasTaintField(ifield))
+				continue;
+			
+			DexInstanceField tfield = getTaintField(ifield);
+
+			insns.add(codeGen.iget(regFieldTaint, regObject, tfield.getFieldDef()));				
+
+			if (hierarchy.classifyType(ifield.getFieldDef().getFieldId().getType()) == TypeClassification.PRIMITIVE) {
+				insns.add(codeGen.combineTaint(regFieldTaint, regFieldTaint, regAddedTaint));
+				insns.add(codeGen.iput(regFieldTaint, regObject, tfield.getFieldDef()));
+			} else
+				insns.add(codeGen.setTaint(regAddedTaint, regFieldTaint));
+		}
+		
+		insns.add(codeGen.retrn());
+
+		InstructionList insnlist = new InstructionList(insns);
+		
+		// generate parameters
+		
+		Parameter paramThis = new Parameter(clazz.getClassDef().getType(), regObject);
+		Parameter paramAddedTaint = new Parameter(cache.getCachedType_Integer(), regAddedTaint);
+		List<Parameter> params = Arrays.asList(paramThis, paramAddedTaint);
+		
+		// generate DexCode
+		
+		DexCode methodBody = new DexCode(insnlist, params, cache.getCachedType_Void(), false, hierarchy);
+	
+		// generate method and insert into the class
+		
+		implementMethod(clazz, dexAux.getMethod_InternalStructure_SetTaint(), methodBody);
+	}
+	
+	private void implementMethod(DexClass clazz, DexMethod implementationOf, DexCode methodBody) {
+		// generate method definition
+		
+		BaseClassDefinition classDef = clazz.getClassDef();
+		DexMethodId methodId = implementationOf.getMethodDef().getMethodId();
+		int accessFlags = DexUtils.assembleAccessFlags(AccessFlags.PUBLIC);
+		MethodDefinition methodDef = new MethodDefinition(classDef, methodId, accessFlags);
+		classDef.addDeclaredMethod(methodDef);
+		
+		// generate method
+		
+		DexMethod method = new DexMethod(clazz, methodDef, methodBody);
+		
+		// add it to the class
+		
+		clazz.replaceMethods(concat(clazz.getMethods(), method));
 	}
 
 	// UTILS
@@ -547,6 +667,10 @@ public class TaintTransform extends Transform {
 		return solverStart.areUnified(solverRefPoint);
 	}
 	
+	private boolean hasTaintField(DexInstanceField field) {
+		return taintInstanceFields.containsKey(field);
+	}
+	
 	private DexInstanceField getTaintField(DexInstanceField field) {
 		
 		// Check if it has been already created
@@ -557,17 +681,19 @@ public class TaintTransform extends Transform {
 
 		// It hasn't, so let's create a new one...
 		
-		ClassDefinition classDef = (ClassDefinition) field.getParentClass().getClassDef();
+		final ClassDefinition classDef = (ClassDefinition) field.getParentClass().getClassDef();
 		
 		// Figure out a non-conflicting name for the new field
 		
-		String newName = "t_" + field.getFieldDef().getFieldId().getName();
-		String suffix = "";
-		long suffixNumber = 0L;
-		while (classDef.getInstanceField(newName + suffix) != null)
-			suffix = "$" + Long.toString(++suffixNumber); // this needs to be reflected in the name conflict test
-		newName += suffix;
-
+		// there is a test that tests this - need to change the names of methods if name generation changes!
+		String newPrefix = "t_" + field.getFieldDef().getFieldId().getName();
+		String newName = Utils.generateName(newPrefix, "", new NameAcceptor() {
+			@Override
+			public boolean accept(String name) {
+				return classDef.getInstanceField(name) == null;
+			}
+		});
+		
 		// Generate the new taint field
 		
 		DexFieldId fieldId = DexFieldId.parseFieldId(newName, taintType(field.getFieldDef().getFieldId().getType()), typeCache);

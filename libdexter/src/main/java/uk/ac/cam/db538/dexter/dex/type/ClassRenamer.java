@@ -4,11 +4,13 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.val;
+
 import org.jf.dexlib.DexFile;
 
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
-
-import lombok.val;
+import uk.ac.cam.db538.dexter.utils.Utils;
+import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
 
 public class ClassRenamer implements Serializable {
@@ -22,37 +24,25 @@ public class ClassRenamer implements Serializable {
 	 * Scans all its classes and if classes of the same name are already present
 	 * in the builder, it generates a new name.
 	 */
-	public ClassRenamer(DexFile file, HierarchyBuilder builder) {
+	public ClassRenamer(DexFile file, final HierarchyBuilder builder) {
 		rules = new HashMap<String, String>();
 		
 		for (val clsItem : file.ClassDefsSection.getItems()) {
-			val typeCache = builder.getTypeCache();
-			val clsDesc = clsItem.getClassType().getTypeDescriptor();
+			final DexTypeCache typeCache = builder.getTypeCache();
+			String oldDesc = clsItem.getClassType().getTypeDescriptor();
 			
-			long i = 0;
-			while (builder.hasClass(DexClassType.parse(addSuffix(clsDesc, i), typeCache)))
-				i++;
+			final String namePrefix = oldDesc.substring(0, oldDesc.length() -1);
+			final String nameSuffix = ";";
 			
-			if (i != 0)
-				addRule(clsDesc, addSuffix(clsDesc, i));
-		}
-	}
-	
-	/*
-	 * Takes a class descriptor in format 'Lpackage/classname;'
-	 * and appends a suffix, forming 'Lpackage/classname$$suffix;'.
-	 * Returns the original descriptor if (suffix == 0).
-	 */
-	private static String addSuffix(String desc, long suffix) {
-		if (suffix == 0)
-			return desc;
-		else {
-			val str = new StringBuilder();
-			str.append(desc.substring(0, desc.length() -1)); // remove the semicolon
-			str.append("$$");
-			str.append(suffix);
-			str.append(";");
-			return str.toString();
+			String newDesc = Utils.generateName(namePrefix, nameSuffix, new NameAcceptor() {
+				@Override
+				public boolean accept(String name) {
+					return !builder.hasClass(DexClassType.parse(name, typeCache));
+				}
+			});
+			
+			if (!oldDesc.equals(newDesc))
+				addRule(oldDesc, newDesc);
 		}
 	}
 	

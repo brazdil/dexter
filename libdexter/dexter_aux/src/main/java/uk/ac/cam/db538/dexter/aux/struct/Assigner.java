@@ -17,7 +17,12 @@ public final class Assigner {
 			System.exit(1);
 		}
 		
-		TaintInternal tobj = new TaintInternal(obj, t_super);
+		if (!(obj instanceof InternalDataStructure)) {
+			System.err.println("Given object is not internal");
+			System.exit(1);
+		}
+		
+		TaintInternal tobj = new TaintInternal((InternalDataStructure) obj, t_super);
 		Cache.set(obj, tobj);
 		return tobj;
 	}

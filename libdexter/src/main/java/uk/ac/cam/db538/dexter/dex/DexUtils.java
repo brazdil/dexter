@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex;
 
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Collection;
 
 import lombok.val;
 
@@ -29,11 +30,15 @@ import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class DexUtils {
 
-  public static int assembleAccessFlags(Set<AccessFlags> accessFlags) {
+  public static int assembleAccessFlags(Collection<AccessFlags> accessFlags) {
     int result = 0;
     for (val flag : accessFlags)
       result |= flag.getValue();
     return result;
+  }
+  
+  public static int assembleAccessFlags(AccessFlags ... accessFlags) {
+	  return assembleAccessFlags(Arrays.asList(accessFlags));
   }
 
   public static DexField getInstanceField(Dex dex, DexClassType fieldClass, String fieldName, DexRegisterType fieldType) {

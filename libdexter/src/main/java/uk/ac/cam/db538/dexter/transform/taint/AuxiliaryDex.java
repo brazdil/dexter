@@ -18,13 +18,23 @@ import uk.ac.cam.db538.dexter.aux.struct.TaintExternal;
 import uk.ac.cam.db538.dexter.aux.struct.TaintInternal;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.transform.Transform;
+import uk.ac.cam.db538.dexter.utils.Utils;
+import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
 public class AuxiliaryDex extends Dex {
 
@@ -35,6 +45,8 @@ public class AuxiliaryDex extends Dex {
 	@Getter private final InterfaceDefinition anno_InternalMethod;
 	
 	@Getter private final DexClass type_InternalStructure;
+	@Getter private final DexMethod method_InternalStructure_GetTaint;
+	@Getter private final DexMethod method_InternalStructure_SetTaint;
 	
 	@Getter private final DexClass type_Taint;
 	@Getter private final DexMethod method_Taint_Get;
@@ -75,6 +87,8 @@ public class AuxiliaryDex extends Dex {
 
 		// InternalStructure interface
 		this.type_InternalStructure = getDexClass(InternalDataStructure.class, hierarchy, renamer);
+		this.method_InternalStructure_GetTaint = renameUnique(findInstanceMethodByName(type_InternalStructure, "getTaint"));
+		this.method_InternalStructure_SetTaint = renameUnique(findInstanceMethodByName(type_InternalStructure, "setTaint"));
 		
 		// Taint types
 		this.type_Taint = getDexClass(Taint.class, hierarchy, renamer);
@@ -106,6 +120,68 @@ public class AuxiliaryDex extends Dex {
 		this.method_Assigner_LookupArrayReference = findStaticMethodByName(clsAssigner, "lookupArrayReference");
 	}
 	
+	/*
+	 * Renames a method so that its name is unique in the whole hierarchy,
+	 * and updates all INVOKE methods referencing it. Be careful that
+	 * the class type must match precisely, i.e. won't fix an INVOKE 
+	 * if it is called on a child or parent of the method.
+	 */
+	private DexMethod renameUnique(final DexMethod oldMethod) {
+		final MethodDefinition oldDef = oldMethod.getMethodDef();
+		final DexReferenceType classType = oldDef.getParentClass().getType();
+		final DexMethodId oldMid = oldDef.getMethodId();
+		String oldName = oldMid.getName();
+		final DexTypeCache cache = getTypeCache();
+		
+		// find first non-conflicting method name
+
+		String newName = Utils.generateName(oldName, "", new NameAcceptor() {
+			@Override
+			public boolean accept(String name) {
+				return !cache.methodNameExists(name);
+			}
+		});
+
+		// create new method definition
+		
+		final DexMethodId newMid = DexMethodId.parseMethodId(newName, oldMid.getPrototype(), cache);
+		final MethodDefinition newDef = new MethodDefinition(oldDef, newMid);
+		final DexMethod newMethod = new DexMethod(oldMethod, newDef);
+		
+		// replace the MethodId in the method definition
+		
+		oldDef.getParentClass().replaceDeclaredMethod(oldDef, newDef);
+				
+		// apply transform that renames the method in the whole Dex
+		
+		Transform renameMethod = new Transform() {
+			
+			@Override
+			public DexMethod doFirst(DexMethod method) {
+				if (method == oldMethod)
+					return newMethod;
+				else
+					return method;
+			}
+
+			@Override
+			public DexCodeElement doFirst(DexCodeElement element, DexCode code, DexMethod method) {
+				if (element instanceof DexInstruction_Invoke) {
+
+					DexInstruction_Invoke invoke = (DexInstruction_Invoke) element;
+					if (invoke.getClassType().equals(classType) && invoke.getMethodId().equals(oldMid))
+						return new DexInstruction_Invoke(invoke, newMid);
+					
+				}
+				
+				return element;
+			}
+		};
+		renameMethod.apply(this);
+		
+		return newMethod;
+	}
+
 	private static DexMethod findStaticMethodByName(DexClass clsDef, String name) {
 		for (val method : clsDef.getMethods())
 			if (method.getMethodDef().getMethodId().getName().equals(name) &&

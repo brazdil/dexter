@@ -22,6 +22,10 @@ public class MethodDefinition implements Serializable {
 		this.methodId = methodId;
 		this.accessFlags = accessFlags;
 	}
+	
+	public MethodDefinition(MethodDefinition methodDef, DexMethodId mid) {
+		this(methodDef.parentClass, mid, methodDef.accessFlags);
+	}
 
 	public EnumSet<AccessFlags> getAccessFlags() {
 		AccessFlags[] flags = AccessFlags.getAccessFlagsForMethod(accessFlags);

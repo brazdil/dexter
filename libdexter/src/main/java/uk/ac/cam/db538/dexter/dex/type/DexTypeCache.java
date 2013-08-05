@@ -133,4 +133,11 @@ TYPE_Throwable = DexClassType.parse("Ljava/lang/Throwable;", this);
 	  } else
 		  return cached;
   }
+  
+  public boolean methodNameExists(String name) {
+	  for (DexMethodId mid : cachedMethodIds.keySet())
+		  if (mid.getName().equals(name))
+			  return true;
+	  return false;
+  }
 }
