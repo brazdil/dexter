@@ -247,6 +247,14 @@ public class TaintTransform extends Transform {
 		
 		super.doLast(clazz);
 	}
+	
+	@Override
+	public void doLast(Dex dex) {
+		super.doLast(dex);
+		
+		// insert classes from dexAux to the resulting DEX
+		dex.addClasses(dexAux.getClasses());
+	}
 
 	private DexCodeElement instrument_Const(DexInstruction_Const insn) {
 		return new DexMacro(
