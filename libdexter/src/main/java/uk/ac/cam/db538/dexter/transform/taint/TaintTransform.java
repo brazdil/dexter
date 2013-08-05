@@ -341,7 +341,9 @@ public class TaintTransform extends Transform {
 
 	private DexCodeElement instrument_Move(DexInstruction_Move insn) {
 		if (insn.getType() == RegisterType.REFERENCE)
-			return insn;
+			return new DexMacro(
+				codeGen.moveTaintObj((DexSingleRegister) insn.getRegTo(), (DexSingleRegister) insn.getRegFrom()),
+				insn);
 		else
 			return new DexMacro(
 				codeGen.combineTaint(insn.getRegTo(), insn.getRegFrom()),
@@ -422,10 +424,6 @@ public class TaintTransform extends Transform {
 	}
 	
 	private DexCodeElement instrument_ArrayLength(DexInstruction_ArrayLength insn) {
-//		return new DexMacro(
-//			codeGen.setZero(insn.getRegTo().getTaintRegister()),
-//			insn);
-			
 		return new DexMacro(
 			codeGen.getTaint_Array_Length(insn.getRegTo().getTaintRegister(), insn.getRegArray().getTaintRegister()),
 			insn);
@@ -492,13 +490,6 @@ public class TaintTransform extends Transform {
 		return result;
 	}
 
-	private static boolean hasPrimitiveArgument(DexCode code) {
-		for (Parameter param : code.getParameters())
-			if (param.getType() instanceof DexPrimitiveType)
-				return true;
-		return false;
-	}
-	
 	private static List<DexTaintRegister> filterPrimitiveTaintRegisters(DexInstruction_Invoke insnInvoke) {
 		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
 		boolean isStatic = insnInvoke.getCallType() == Opcode_Invoke.Static;

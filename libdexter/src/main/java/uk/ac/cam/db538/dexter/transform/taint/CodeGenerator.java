@@ -646,6 +646,10 @@ public final class CodeGenerator {
 		return new DexInstruction_Move(to, from, true, hierarchy);
 	}
 
+	public DexCodeElement moveTaintObj(DexSingleRegister to, DexSingleRegister from) {
+		return moveObj(taint(to), taint(from));
+	}
+
 	public DexCodeElement movePrim(DexSingleRegister to, DexSingleRegister from) {
 		if (to.equals(from))
 			return empty();
