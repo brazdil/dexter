@@ -9,6 +9,7 @@ import uk.ac.cam.db538.dexter.aux.InvokeTaintStore;
 import uk.ac.cam.db538.dexter.aux.anno.InternalClass;
 import uk.ac.cam.db538.dexter.aux.anno.InternalMethod;
 import uk.ac.cam.db538.dexter.aux.struct.Assigner;
+import uk.ac.cam.db538.dexter.aux.struct.InternalDataStructure;
 import uk.ac.cam.db538.dexter.aux.struct.Taint;
 import uk.ac.cam.db538.dexter.aux.struct.TaintArray;
 import uk.ac.cam.db538.dexter.aux.struct.TaintArrayPrimitive;
@@ -32,6 +33,8 @@ public class AuxiliaryDex extends Dex {
 	
 	@Getter private final InterfaceDefinition anno_InternalClass;
 	@Getter private final InterfaceDefinition anno_InternalMethod;
+	
+	@Getter private final DexClass type_InternalStructure;
 	
 	@Getter private final DexClass type_Taint;
 	@Getter private final DexMethod method_Taint_Get;
@@ -69,6 +72,9 @@ public class AuxiliaryDex extends Dex {
 		// Annotations
 		this.anno_InternalClass = getIfaceDef(InternalClass.class, hierarchy, renamer);
 		this.anno_InternalMethod = getIfaceDef(InternalMethod.class, hierarchy, renamer);
+
+		// InternalStructure interface
+		this.type_InternalStructure = getDexClass(InternalDataStructure.class, hierarchy, renamer);
 		
 		// Taint types
 		this.type_Taint = getDexClass(Taint.class, hierarchy, renamer);

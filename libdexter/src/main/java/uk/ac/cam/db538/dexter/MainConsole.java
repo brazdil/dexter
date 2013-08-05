@@ -47,6 +47,9 @@ public class MainConsole {
     System.out.println("Scanning application");
     val fileApp = new DexFile(apkFile);
     val fileAux = new DexFile("dexter_aux/build/libs/dexter_aux.dex");
+
+    System.out.println("Importing aux");
+    hierarchyBuilder.importDex(fileAux, false);
     
     System.out.println("Building hierarchy");
     val buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);

@@ -16,9 +16,14 @@ public class DexArrayType extends DexReferenceType {
 		if (!typeDescriptor.startsWith("["))
 			throw new UnknownTypeException(typeDescriptor);
 		
-		DexArrayType type = cache.getCachedType_Array(typeDescriptor);
+		DexRegisterType elementType = DexRegisterType.parse(typeDescriptor.substring(1), cache);
+
+		// need to use the recursively parsed descriptor, because otherwise class renaming 
+		// rules would not have been applied
+		DexArrayType type = cache.getCachedType_Array("[" + elementType.getDescriptor());
+		
 		if (type == null) {
-			type = new DexArrayType(DexRegisterType.parse(typeDescriptor.substring(1), cache));
+			type = new DexArrayType(elementType);
 			cache.putCachedType_Array(typeDescriptor, type);
 		}
 		

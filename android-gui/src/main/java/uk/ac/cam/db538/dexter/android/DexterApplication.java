@@ -1,6 +1,8 @@
 package uk.ac.cam.db538.dexter.android;
 
 import android.app.Application;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.rx201.dx.translator.DexCodeGeneration;
@@ -141,10 +143,21 @@ public class DexterApplication extends Application {
         }
     }
 
+    public void importInternalDex(DexFile file) {
+        waitForHierarchy();
+        synchronized (hierarchyBuilder) {
+            hierarchyBuilder.importDex(file, true);
+        }
+    }
+
     @Override
     public void onLowMemory() {
         super.onLowMemory();
 
         Log.d(APP_NAME, "Being asked to free memory");
+    }
+
+    public static String getOwnPackageName() {
+        return DexterApplication.class.getPackage().getName();
     }
 }

@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -146,12 +147,18 @@ public class Dex {
   public byte[] writeToFile() {
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();
+    
+    val thisClasses = getClasses();
+    val auxClasses = auxiliaryDex.getClasses();
+    val allClasses = new ArrayList<DexClass>(thisClasses.size() + auxClasses.size());
+    allClasses.addAll(thisClasses);
+    allClasses.addAll(auxClasses);
 
     int i = 0;
-    int count = _classes.size();
+    int count = allClasses.size();
     progressUpdate(0, count);
     val asmCache = new DexAssemblingCache(outFile, hierarchy);
-    for (val cls : _classes) {
+    for (val cls : allClasses) {
       cls.writeToFile(outFile, asmCache);
       progressUpdate(++i, count);
     }

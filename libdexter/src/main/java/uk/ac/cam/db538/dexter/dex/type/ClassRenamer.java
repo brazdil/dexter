@@ -40,7 +40,7 @@ public class ClassRenamer implements Serializable {
 	
 	/*
 	 * Takes a class descriptor in format 'Lpackage/classname;'
-	 * and appends a suffix, forming 'Lpackage/classname$suffix;'.
+	 * and appends a suffix, forming 'Lpackage/classname$$suffix;'.
 	 * Returns the original descriptor if (suffix == 0).
 	 */
 	private static String addSuffix(String desc, long suffix) {
@@ -49,7 +49,7 @@ public class ClassRenamer implements Serializable {
 		else {
 			val str = new StringBuilder();
 			str.append(desc.substring(0, desc.length() -1)); // remove the semicolon
-			str.append("$");
+			str.append("$$");
 			str.append(suffix);
 			str.append(";");
 			return str.toString();

@@ -216,8 +216,15 @@ public class UnitTestActivity extends Activity {
                     DexFile fileAux = new DexFileFromMemory(
                             UnitTestActivity.this.getAssets().open("dexter_aux.dex"));
 
-                    setMessage("Building hierarchy...");
+                    setMessage("Waiting for framework...");
+                    thisApp.waitForHierarchy();
 
+                    // The point of this is to force the instrumentor to rename the aux classes.
+                    // Otherwise they'd exist twice when the instrumented DEX is loaded.
+                    setMessage("Loading aux...");
+                    thisApp.importInternalDex(fileAux);
+
+                    setMessage("Building hierarchy...");
                     Pair<RuntimeHierarchy, ClassRenamer> buildData =
                             thisApp.getRuntimeHierarchy(fileTestApp, fileAux);
                     RuntimeHierarchy hierarchy = buildData.getValA();
