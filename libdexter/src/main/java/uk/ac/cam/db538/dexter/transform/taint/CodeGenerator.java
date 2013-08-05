@@ -655,14 +655,6 @@ public final class CodeGenerator {
 			return empty();
 		return new DexInstruction_Move(to, from, false, hierarchy);
 	}
-
-	public DexCodeElement movePrimWithTaint(DexSingleRegister to, DexSingleRegister from) {
-		if (to.equals(from))
-			return empty();
-		return new DexMacro(
-			movePrim(to, from),
-			movePrim(to.getTaintRegister(), from.getTaintRegister()));
-	}
 	
 	public DexCodeElement iput(DexRegister from, DexSingleRegister obj, InstanceFieldDefinition fieldDef) {
 		return new DexInstruction_InstancePut(from, obj, fieldDef, hierarchy);
