@@ -209,11 +209,9 @@ public class TaintTransform extends Transform {
 				new DexAnnotation(dexAux.getAnno_InternalClass().getType(), AnnotationVisibility.RUNTIME)));
 		
 		// implement the InternalDataStructure interface
-		if (!clazz.getClassDef().isAbstract()) {
-			clazz.getClassDef().addImplementedInterface((InterfaceDefinition) dexAux.getType_InternalStructure().getClassDef());
-			generateGetTaint(clazz);
-			generateSetTaint(clazz);
-		}
+		clazz.getClassDef().addImplementedInterface((InterfaceDefinition) dexAux.getType_InternalStructure().getClassDef());
+		generateGetTaint(clazz);
+		generateSetTaint(clazz);
 		
 		super.doLast(clazz);
 	}
