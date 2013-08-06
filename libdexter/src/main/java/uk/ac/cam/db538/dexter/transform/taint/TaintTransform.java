@@ -515,10 +515,15 @@ public class TaintTransform extends Transform {
 			
 			insns.add(codeGen.iget(regFieldTaint, regObject, tfield.getFieldDef()));
 			
-			if (hierarchy.classifyType(ifield.getFieldDef().getFieldId().getType()) != TypeClassification.PRIMITIVE)
+			if (hierarchy.classifyType(ifield.getFieldDef().getFieldId().getType()) == TypeClassification.PRIMITIVE)
+				insns.add(codeGen.combineTaint(regTotalTaint, regTotalTaint, regFieldTaint));
+			else {
+				DexLabel label = codeGen.label();
+				insns.add(codeGen.ifZero(regFieldTaint, label));
 				insns.add(codeGen.getTaint(regFieldTaint, regFieldTaint));
-
-			insns.add(codeGen.combineTaint(regTotalTaint, regTotalTaint, regFieldTaint));
+				insns.add(codeGen.combineTaint(regTotalTaint, regTotalTaint, regFieldTaint));
+				insns.add(label);
+			}
 		}
 		
 		insns.add(codeGen.return_prim(regTotalTaint));
@@ -560,13 +565,17 @@ public class TaintTransform extends Transform {
 			
 			DexInstanceField tfield = getTaintField(ifield);
 
-			insns.add(codeGen.iget(regFieldTaint, regObject, tfield.getFieldDef()));				
+			insns.add(codeGen.iget(regFieldTaint, regObject, tfield.getFieldDef()));
 
 			if (hierarchy.classifyType(ifield.getFieldDef().getFieldId().getType()) == TypeClassification.PRIMITIVE) {
 				insns.add(codeGen.combineTaint(regFieldTaint, regFieldTaint, regAddedTaint));
 				insns.add(codeGen.iput(regFieldTaint, regObject, tfield.getFieldDef()));
-			} else
+			} else {
+				DexLabel label = codeGen.label();
+				insns.add(codeGen.ifZero(regFieldTaint, label));
 				insns.add(codeGen.setTaint(regAddedTaint, regFieldTaint));
+				insns.add(label);
+			}
 		}
 		
 		insns.add(codeGen.retrn());
