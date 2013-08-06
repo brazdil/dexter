@@ -12,10 +12,10 @@ public class TaintInternal implements Taint {
 	public TaintInternal(InternalDataStructure obj, Taint t_super) {
 		this.obj = obj;
 		
-		if (t_super instanceof TaintExternal)
-			this.t_super = (TaintExternal) t_super;
+		if (t_super instanceof TaintInternal)
+			this.t_super = ((TaintInternal) t_super).t_super;
 		else
-			this.t_super = null;
+			this.t_super = (TaintExternal) t_super;
 	}
 	
 	public int get() {
@@ -25,10 +25,7 @@ public class TaintInternal implements Taint {
 		else
 			visited.add(this);
 
-		if (this.t_super != null)
-			return this.obj.getTaint() | this.t_super.get();
-		else
-			return this.obj.getTaint();
+		return this.obj.getTaint() | this.t_super.get();
 	}
 	
 	public void set(int taint) {
@@ -37,8 +34,7 @@ public class TaintInternal implements Taint {
 			visited.add(this);
 			
 			this.obj.setTaint(taint);
-			if (this.t_super != null)
-				this.t_super.set(taint);
+			this.t_super.set(taint);
 		}
 	}
 	
