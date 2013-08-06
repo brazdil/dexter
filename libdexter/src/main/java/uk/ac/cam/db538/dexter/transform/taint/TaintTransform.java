@@ -492,7 +492,8 @@ public class TaintTransform extends Transform {
 	
 	private void generateGetTaint(DexClass clazz) {
 		DexTypeCache cache = hierarchy.getTypeCache();
-		
+		DexMethod implementationOf = dexAux.getMethod_InternalStructure_GetTaint();
+
 		// generate bytecode
 		
 		DexSingleRegister regTotalTaint = new DexSingleAuxiliaryRegister(0);
@@ -500,7 +501,11 @@ public class TaintTransform extends Transform {
 		DexSingleRegister regObject = new DexSingleAuxiliaryRegister(2);
 		
 		List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
-		insns.add(codeGen.setEmptyTaint(regTotalTaint));
+
+		if (clazz.getClassDef().getSuperclass().isInternal())
+			insns.add(codeGen.call_super_int(clazz, implementationOf, regTotalTaint, Arrays.asList(regObject)));
+		else
+			insns.add(codeGen.setEmptyTaint(regTotalTaint));
 		
 		for (DexInstanceField ifield : clazz.getInstanceFields()) {
 			if (!hasTaintField(ifield))
@@ -531,11 +536,12 @@ public class TaintTransform extends Transform {
 	
 		// generate method and insert into the class
 		
-		implementMethod(clazz, dexAux.getMethod_InternalStructure_GetTaint(), methodBody);
+		implementMethod(clazz, implementationOf, methodBody);
 	}
 
 	private void generateSetTaint(DexClass clazz) {
 		DexTypeCache cache = hierarchy.getTypeCache();
+		DexMethod implementationOf = dexAux.getMethod_InternalStructure_SetTaint();
 		
 		// generate bytecode
 		
@@ -544,6 +550,9 @@ public class TaintTransform extends Transform {
 		DexSingleRegister regObject = new DexSingleAuxiliaryRegister(2);
 		
 		List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
+		
+		if (clazz.getClassDef().getSuperclass().isInternal())
+			insns.add(codeGen.call_super_int(clazz, implementationOf, null, Arrays.asList(regObject, regAddedTaint)));
 		
 		for (DexInstanceField ifield : clazz.getInstanceFields()) {
 			if (!hasTaintField(ifield))
@@ -576,7 +585,7 @@ public class TaintTransform extends Transform {
 	
 		// generate method and insert into the class
 		
-		implementMethod(clazz, dexAux.getMethod_InternalStructure_SetTaint(), methodBody);
+		implementMethod(clazz, implementationOf, methodBody);
 	}
 	
 	private void implementMethod(DexClass clazz, DexMethod implementationOf, DexCode methodBody) {

@@ -36,7 +36,7 @@ public class DexInstruction_MoveResult extends DexInstruction {
     this.regTo = regTo;
     this.type = RegisterType.WIDE_PRIMITIVE;
   }
-
+  
   public DexInstruction_MoveResult(DexInstruction_MoveResult toClone) {
     super(toClone.hierarchy);
 	  

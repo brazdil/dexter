@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -676,6 +677,20 @@ public final class CodeGenerator {
 	
 	public DexCodeElement cast(DexSingleRegister obj, DexReferenceType type) {
 		return new DexInstruction_CheckCast(obj, type, hierarchy);
+	}
+	
+	/*
+	 * Call the implementation of the given method in its superclass.
+	 */
+	public DexCodeElement call_super_int(DexClass clazz, DexMethod method, DexSingleRegister to, List<? extends DexRegister> args) {
+		return new DexMacro(
+			new DexInstruction_Invoke(
+				clazz.getClassDef().getSuperclass().getType(),
+				method.getMethodDef().getMethodId(),
+				args,
+				Opcode_Invoke.Super,
+				hierarchy),
+			(to == null ? empty() : new DexInstruction_MoveResult(to, false, hierarchy)));
 	}
 
 	public DexMacro empty() {

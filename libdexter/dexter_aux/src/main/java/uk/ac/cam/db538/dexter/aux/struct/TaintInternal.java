@@ -7,11 +7,15 @@ import uk.ac.cam.db538.dexter.aux.TaintConstants;
 public class TaintInternal implements Taint {
 
 	private final InternalDataStructure obj;
-	private final Taint t_super;
+	private final TaintExternal t_super;
 	
 	public TaintInternal(InternalDataStructure obj, Taint t_super) {
 		this.obj = obj;
-		this.t_super = t_super;
+		
+		if (t_super instanceof TaintExternal)
+			this.t_super = (TaintExternal) t_super;
+		else
+			this.t_super = null;
 	}
 	
 	public int get() {
@@ -20,8 +24,11 @@ public class TaintInternal implements Taint {
 			return TaintConstants.TAINT_EMPTY;
 		else
 			visited.add(this);
-		
-		return this.obj.getTaint() | this.t_super.get();
+
+		if (this.t_super != null)
+			return this.obj.getTaint() | this.t_super.get();
+		else
+			return this.obj.getTaint();
 	}
 	
 	public void set(int taint) {
@@ -30,7 +37,8 @@ public class TaintInternal implements Taint {
 			visited.add(this);
 			
 			this.obj.setTaint(taint);
-			this.t_super.set(taint);
+			if (this.t_super != null)
+				this.t_super.set(taint);
 		}
 	}
 	
