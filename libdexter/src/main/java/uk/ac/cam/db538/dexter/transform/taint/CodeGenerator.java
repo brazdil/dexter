@@ -387,19 +387,33 @@ public final class CodeGenerator {
 	public DexCodeElement taintClearVisited() {
 		return new DexInstruction_Invoke(dexAux.getMethod_TaintInternal_ClearVisited(), null, hierarchy);
 	}
-
-	public DexCodeElement taintClearVisited(DexRegisterType type) {
+	
+	private boolean needsTaintClearVisited(DexRegisterType type) {
 		switch (hierarchy.classifyType(type)) {
 		case REF_UNDECIDABLE:
 		case REF_INTERNAL:
 		case ARRAY_REFERENCE:
-			return taintClearVisited();
+			return true;
 		case ARRAY_PRIMITIVE:
 		case REF_EXTERNAL:
-			return empty();
+			return false;
 		default:
 			throw new UnsupportedOperationException();
 		}
+	}
+
+	public DexCodeElement taintClearVisited(DexRegisterType type) {
+		if (needsTaintClearVisited(type))
+			return taintClearVisited();
+		else
+			return empty();
+	}
+
+	public DexCodeElement taintClearVisited(DexRegisterType type1, DexRegisterType type2) {
+		if (needsTaintClearVisited(type1) || needsTaintClearVisited(type2))
+			return taintClearVisited();
+		else
+			return empty();
 	}
 
 	private static interface ParamCallback {
@@ -454,7 +468,6 @@ public final class CodeGenerator {
 	public DexCodeElement finishExternalCall(DexSingleAuxiliaryRegister regCombinedTaint, DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult) {
 		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
 		List<DexRegister> regArgs = insnInvoke.getArgumentRegisters();
-		boolean isStatic = isStatic(insnInvoke);
 		boolean isConstructor = isConstructor(insnInvoke);
 		boolean hasResult = insnMoveResult != null;
 		
