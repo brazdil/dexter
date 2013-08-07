@@ -193,8 +193,8 @@ public class TaintTransform extends Transform {
 	@Override
 	public DexCode doLast(DexCode code, DexMethod method) {
 
-		if (method.getMethodDef().getParentClass().getType().getDescriptor().contains("MyClass_Point") ||
-			method.getMethodDef().getParentClass().getType().getDescriptor().contains("InheritedField"))
+		if (method.getMethodDef().getParentClass().getType().getDescriptor().contains("MyClass_Point3") ||
+			method.getMethodDef().getParentClass().getType().getDescriptor().contains("OnlyExternalPropagation"))
 			code.getInstructionList().dump();
 		
 		code = insertTaintInit(code, method);
@@ -479,18 +479,13 @@ public class TaintTransform extends Transform {
 		
 		} else {
 			
-			DexRegisterType resultType = insnIput.getFieldDef().getFieldId().getType();
-			DexRegisterType classType = classDef.getType();
-			
 			if (insnIput.getFieldDef().getFieldId().getType() instanceof DexPrimitiveType)
 				return new DexMacro(
-					codeGen.taintClearVisited(classType),
-					codeGen.setTaint(insnIput.getRegFrom().getTaintRegister(), insnIput.getRegObject()),
+					codeGen.setTaintExternal(insnIput.getRegFrom().getTaintRegister(), insnIput.getRegObject()),
 					insnIput);
 			else
 				return new DexMacro(
-					codeGen.taintClearVisited(classType, resultType),
-					codeGen.propagateTaint(insnIput.getRegObject(), (DexSingleRegister) insnIput.getRegFrom()),
+					codeGen.propagateTaintExternal(insnIput.getRegObject(), (DexSingleRegister) insnIput.getRegFrom()),
 					insnIput);
 			
 		}
@@ -515,13 +510,11 @@ public class TaintTransform extends Transform {
 		} else {
 
 			DexRegisterType resultType = insnIget.getFieldDef().getFieldId().getType();
-			DexRegisterType classType = classDef.getType();
 			
 			if (resultType instanceof DexPrimitiveType)
 				
 				return new DexMacro(
-					codeGen.taintClearVisited(classType),
-					codeGen.getTaint(insnIget.getRegTo().getTaintRegister(), insnIget.getRegObject()),
+					codeGen.getTaintExternal(insnIget.getRegTo().getTaintRegister(), insnIget.getRegObject()),
 					insnIget);
 			
 			else {
@@ -539,8 +532,7 @@ public class TaintTransform extends Transform {
 					codeGen.move_obj(regObjectTaintBackup, regObject.getTaintRegister()),
 					insnIget,
 					codeGen.assigner_Lookup(regTo, (DexReferenceType) resultType),
-					codeGen.taintClearVisited(classType, resultType),
-					codeGen.propagateTaint(regTo, regObjectTaintBackup));
+					codeGen.propagateTaintExternal(regTo, regObjectTaintBackup));
 				
 			}
 		}

@@ -1,6 +1,5 @@
-.class public Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+.class public Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;
 .super Luk/ac/cam/db538/dexter/tests/TestExerciser;
-.source "PropagationTestExerciser.java"
 
 
 # instance fields
@@ -12,7 +11,7 @@
     .registers 2
 
     invoke-direct {p0}, Luk/ac/cam/db538/dexter/tests/TestExerciser;-><init>()V
-    iput-object p1, p0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
+    iput-object p1, p0, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
     return-void
 
 .end method
@@ -22,7 +21,7 @@
 .method public getTest()Luk/ac/cam/db538/dexter/tests/Test;
     .registers 2
 
-    iget-object v0, p0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
+    iget-object v0, p0, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
     return-object v0
 
 .end method
@@ -33,7 +32,7 @@
     # First run with an untainted argument
 
     const/4 v0, 0x1
-    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
+    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
     invoke-interface {v1, v0}, Luk/ac/cam/db538/dexter/tests/PropagationTest;->propagate(I)I
     move-result v2
 
@@ -51,7 +50,7 @@
 
     # ... run again
 
-    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
+    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
     invoke-interface {v1, v0}, Luk/ac/cam/db538/dexter/tests/PropagationTest;->propagate(I)I
     move-result v3
 
@@ -60,10 +59,10 @@
     invoke-static {v3}, Luk/ac/cam/db538/dexter/tests/TaintChecker;->isTainted(I)Z
     move-result v3
 
-    # Need: v2 == false && v3 == true
+    # Need: v2 == false && v3 == false
 
     if-nez v2, :return_false
-    if-eqz v3, :return_false
+    if-nez v3, :return_false
 
     # All fine, return true
 
@@ -71,7 +70,7 @@
     return v0
 
     # Something not fine, return false
-    
+
     :return_false
     const/4 v0, 0x0
     return v0

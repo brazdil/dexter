@@ -28,6 +28,10 @@ public class TaintInternal implements Taint {
 		return this.obj.getTaint() | this.t_super.get();
 	}
 	
+	public int getExternal() {
+		return this.t_super.get();
+	}
+
 	public void set(int taint) {
 		HashSet<TaintInternal> visited = visitedSet.get();
 		if (!visited.contains(this)) {
@@ -38,6 +42,10 @@ public class TaintInternal implements Taint {
 		}
 	}
 	
+	public void setExternal(int taint) {
+		this.t_super.set(taint);
+	}
+
 	// THREAD-LOCAL SET OF VISITED NODES
 	// prevents infinite looping
 	

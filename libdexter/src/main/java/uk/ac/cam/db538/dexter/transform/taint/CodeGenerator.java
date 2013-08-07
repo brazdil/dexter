@@ -573,15 +573,32 @@ public final class CodeGenerator {
 			new DexInstruction_MoveResult(regTo, false, hierarchy));
 	}
 	
+	public DexCodeElement getTaintExternal(DexSingleRegister regTo, DexSingleRegister regTaint) {
+		return new DexMacro(
+			new DexInstruction_Invoke(dexAux.getMethod_Taint_GetExternal(), Arrays.asList(taint(regTaint)), hierarchy),
+			new DexInstruction_MoveResult(regTo, false, hierarchy));
+	}
+
 	public DexCodeElement setTaint(DexSingleRegister regFrom, DexSingleRegister regTaint) {
 		return new DexInstruction_Invoke(dexAux.getMethod_Taint_Set(), Arrays.asList(taint(regTaint), regFrom), hierarchy);
 	}
 	
+	public DexCodeElement setTaintExternal(DexSingleRegister regFrom, DexSingleRegister regTaint) {
+		return new DexInstruction_Invoke(dexAux.getMethod_Taint_SetExternal(), Arrays.asList(taint(regTaint), regFrom), hierarchy);
+	}
+
 	public DexCodeElement propagateTaint(DexSingleRegister regTo, DexSingleRegister regFrom) {
 		DexSingleAuxiliaryRegister regAux = auxReg();
 		return new DexMacro(
 			getTaint(regAux, regFrom), 
 			setTaint(regAux, regTo));
+	}
+
+	public DexCodeElement propagateTaintExternal(DexSingleRegister regTo, DexSingleRegister regFrom) {
+		DexSingleAuxiliaryRegister regAux = auxReg();
+		return new DexMacro(
+			getTaintExternal(regAux, regFrom), 
+			setTaintExternal(regAux, regTo));
 	}
 
 	/*

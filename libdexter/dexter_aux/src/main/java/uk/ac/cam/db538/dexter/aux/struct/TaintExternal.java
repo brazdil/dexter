@@ -21,4 +21,12 @@ public class TaintExternal implements Taint {
 	public void set(int taint) {
 		this.taint |= taint;
 	}
+
+	public int getExternal() { 
+		return this.taint; 
+	}
+	
+	public void setExternal(int taint) {
+		this.taint |= taint;
+	}
 }

@@ -19,9 +19,19 @@ public final class TaintArrayPrimitive extends TaintArray {
 	}
 
 	@Override
+	public int getExternal() {
+		return get();
+	}
+
+	@Override
 	public void set(int taint) {
 		// assign argument to all elements, not length (not modifiable)
 		for (int i = 0; i < t_array.length; i++)
 			t_array[i] |= taint;
+	}
+
+	@Override
+	public void setExternal(int taint) {
+		set(taint);
 	}
 }

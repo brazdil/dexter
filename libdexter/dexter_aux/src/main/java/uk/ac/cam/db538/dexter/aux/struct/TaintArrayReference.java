@@ -19,9 +19,25 @@ public final class TaintArrayReference extends TaintArray {
 	}
 
 	@Override
+	public int getExternal() {
+		// combine the taint of all elements and length
+		int combinedTaint = t_length;
+		for (int i = 0; i < t_array.length; i++)
+			combinedTaint |= t_array[i].getExternal();
+		return combinedTaint;
+	}
+
+	@Override
 	public void set(int taint) {
 		// assign argument to all elements, not length (not modifiable)
 		for (int i = 0; i < t_array.length; i++)
 			t_array[i].set(taint);
+	}
+
+	@Override
+	public void setExternal(int taint) {
+		// assign argument to all elements, not length (not modifiable)
+		for (int i = 0; i < t_array.length; i++)
+			t_array[i].setExternal(taint);
 	}
 }

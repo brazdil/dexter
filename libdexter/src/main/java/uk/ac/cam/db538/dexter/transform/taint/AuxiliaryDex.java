@@ -51,6 +51,8 @@ public class AuxiliaryDex extends Dex {
 	@Getter private final DexClass type_Taint;
 	@Getter private final DexMethod method_Taint_Get;
 	@Getter private final DexMethod method_Taint_Set;
+	@Getter private final DexMethod method_Taint_GetExternal;
+	@Getter private final DexMethod method_Taint_SetExternal;
 	
 	@Getter private final DexClass type_TaintExternal;
 	@Getter private final DexMethod method_TaintExternal_Constructor;
@@ -94,6 +96,8 @@ public class AuxiliaryDex extends Dex {
 		this.type_Taint = getDexClass(Taint.class, hierarchy, renamer);
 		this.method_Taint_Get = findInstanceMethodByName(type_Taint, "get");
 		this.method_Taint_Set = findInstanceMethodByName(type_Taint, "set");
+		this.method_Taint_GetExternal = findInstanceMethodByName(type_Taint, "getExternal");
+		this.method_Taint_SetExternal = findInstanceMethodByName(type_Taint, "setExternal");
 		
 		this.type_TaintExternal = getDexClass(TaintExternal.class, hierarchy, renamer);
 		this.method_TaintExternal_Constructor = findInstanceMethodByName(type_TaintExternal, "<init>");
