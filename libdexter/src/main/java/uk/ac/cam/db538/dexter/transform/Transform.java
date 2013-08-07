@@ -9,6 +9,8 @@ import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexEmpty;
+import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
 
@@ -77,7 +79,7 @@ public abstract class Transform {
 				List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>(oldInstructions.size());
 				for (DexCodeElement oldInsn : oldInstructions) {
 					DexCodeElement newInsn = doLast(doFirst(oldInsn, newMethodBody, newMethod), newMethodBody, newMethod);
-					newInstructions.add(newInsn);
+					newInstructions.add(new DexMacro(new DexEmpty(), newInsn));
 					instructionsChanged |= (newInsn != oldInsn);
 				}
 				if (instructionsChanged)

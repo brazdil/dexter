@@ -37,6 +37,6 @@ public abstract class FieldDefinition implements Serializable {
 	
 	@Override
 	public String toString() {
-		return parentClass.getType().getDescriptor() + "->" + fieldId.getName() + ":" + fieldId.getType().getDescriptor();
+		return parentClass.getType() + "->" + fieldId.toString();
 	}
 }

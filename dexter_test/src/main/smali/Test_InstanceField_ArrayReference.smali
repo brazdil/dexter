@@ -20,7 +20,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "InstanceField: references array"
+    const-string v0, "IField: references array"
     return-object v0
     
 .end method
@@ -43,8 +43,8 @@
     new-array v2, p1, [Ljava/lang/Object;
 
     # propagate
-    iput v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;->X:[Ljava/lang/Object;
-    iget v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;->X:[Ljava/lang/Object;
+    iput-object v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;->X:[Ljava/lang/Object;
+    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;->X:[Ljava/lang/Object;
 
     # retrieve some primitive from the object
     array-length v0, v1

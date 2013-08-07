@@ -1,11 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayPrimitive;
+.class public Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ExternalClass_PrimitiveField;
 .super Ljava/lang/Object;
 
 # interfaces
 .implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
-
-# instance fields
-.field private X:[S
 
 # direct methods
 .method public constructor <init>()V
@@ -20,7 +17,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "IField: primitives array"
+    const-string v0, "IField: ext. class, primitive field"
     return-object v0
     
 .end method
@@ -28,7 +25,7 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "this.X = new short[[+]]; return this.X.length;"
+    const-string v0, "public int field in android.graphics.Point"
     return-object v0
     
 .end method
@@ -36,18 +33,13 @@
 .method public propagate(I)I
     .registers 6
 
-    # size mod 4
-    rem-int/lit8 p1, p1, 4
-
     # create object
-    new-array v2, p1, [S
+    new-instance v2, Landroid/graphics/Point;
+    invoke-direct {v2}, Landroid/graphics/Point;-><init>()V
 
     # propagate
-    iput-object v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayPrimitive;->X:[S
-    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayPrimitive;->X:[S
-
-    # retrieve some primitive from the object
-    array-length v0, v1
+    iput p1, v2, Landroid/graphics/Point;->x:I
+    iget v0, v2, Landroid/graphics/Point;->x:I
 
     return v0
     

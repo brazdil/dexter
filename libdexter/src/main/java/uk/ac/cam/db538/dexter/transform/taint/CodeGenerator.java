@@ -343,7 +343,7 @@ public final class CodeGenerator {
 		if (countValidParameters(insnInvoke) > 0) {
 		
 			// Clear the TaintInternal VisitedSet (only needs to be done once per traversal)
-			insns.add(new DexInstruction_Invoke(dexAux.getMethod_TaintInternal_ClearVisited(), null, hierarchy));
+			insns.add(taintClearVisited());
 			
 			// Get and combine the taint of each parameter
 			// (skip the first argument if method a constructor)
@@ -384,6 +384,24 @@ public final class CodeGenerator {
 		return new DexMacro(insns);
 	}
 	
+	public DexCodeElement taintClearVisited() {
+		return new DexInstruction_Invoke(dexAux.getMethod_TaintInternal_ClearVisited(), null, hierarchy);
+	}
+
+	public DexCodeElement taintClearVisited(DexRegisterType type) {
+		switch (hierarchy.classifyType(type)) {
+		case REF_UNDECIDABLE:
+		case REF_INTERNAL:
+		case ARRAY_REFERENCE:
+			return taintClearVisited();
+		case ARRAY_PRIMITIVE:
+		case REF_EXTERNAL:
+			return empty();
+		default:
+			throw new UnsupportedOperationException();
+		}
+	}
+
 	private static interface ParamCallback {
 		public void apply(DexRegister regParam, DexRegisterType typeParam);
 	}
@@ -442,9 +460,6 @@ public final class CodeGenerator {
 		
 		assert(!isConstructor || !hasResult); // constructors cannot have a result
 		
-		if (isStatic)
-			return empty();
-		
 		if (isConstructor) {
 			DexSingleRegister regObject = (DexSingleOriginalRegister) regArgs.get(0);
 			return assigner_NewExternal(regObject, regCombinedTaint);
@@ -457,8 +472,10 @@ public final class CodeGenerator {
 			return combineTaint(insnMoveResult.getRegTo(), regCombinedTaint);
 		else {
 			DexSingleRegister regTo = (DexSingleRegister) insnMoveResult.getRegTo();
+			DexReferenceType returnType = (DexReferenceType) prototype.getReturnType();
 			return new DexMacro(
-				assigner_Lookup(regTo, (DexReferenceType) prototype.getReturnType()),
+				assigner_Lookup(regTo, returnType),
+				taintClearVisited(returnType),
 				setTaint(regCombinedTaint, regTo));
 		}
 	}
@@ -539,12 +556,19 @@ public final class CodeGenerator {
 	
 	public DexCodeElement getTaint(DexSingleRegister regTo, DexSingleRegister regTaint) {
 		return new DexMacro(
-			new DexInstruction_Invoke(dexAux.getMethod_Taint_Get(), Arrays.asList(regTaint), hierarchy),
+			new DexInstruction_Invoke(dexAux.getMethod_Taint_Get(), Arrays.asList(taint(regTaint)), hierarchy),
 			new DexInstruction_MoveResult(regTo, false, hierarchy));
 	}
 	
 	public DexCodeElement setTaint(DexSingleRegister regFrom, DexSingleRegister regTaint) {
 		return new DexInstruction_Invoke(dexAux.getMethod_Taint_Set(), Arrays.asList(taint(regTaint), regFrom), hierarchy);
+	}
+	
+	public DexCodeElement propagateTaint(DexSingleRegister regTo, DexSingleRegister regFrom) {
+		DexSingleAuxiliaryRegister regAux = auxReg();
+		return new DexMacro(
+			getTaint(regAux, regFrom), 
+			setTaint(regAux, regTo));
 	}
 
 	/*
@@ -575,19 +599,6 @@ public final class CodeGenerator {
 			return new DexMacro(insns);
 		}
 	}
-	
-//	public DexCodeElement newTaint_ArrayPrimitive(DexSingleRegister regTo, DexSingleRegister regOrigLength) {
-//		assert(regTo != regOrigLength);
-//		assert(regTo != regOrigLength.getTaintRegister());
-//		
-//		return new DexMacro(
-//				new DexInstruction_NewInstance(regTo, dexAux.getType_TaintArrayPrimitive(), hierarchy),
-//				new DexInstruction_Invoke(
-//					dexAux.getMethod_TaintArrayPrimitive_Constructor(),
-//					Arrays.asList(regTo, regOrigLength, regOrigLength.getTaintRegister()),
-//					hierarchy)
-//				);
-//	}
 	
 	public DexCodeElement getTaint_Array_Length(DexTaintRegister regTo, DexTaintRegister regArrayTaint) {
 		return new DexInstruction_InstanceGet(regTo, regArrayTaint, dexAux.getField_TaintArray_TLength(), hierarchy);

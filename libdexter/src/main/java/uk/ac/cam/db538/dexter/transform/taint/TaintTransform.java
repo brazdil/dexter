@@ -192,6 +192,9 @@ public class TaintTransform extends Transform {
 
 	@Override
 	public DexCode doLast(DexCode code, DexMethod method) {
+
+		if (method.getMethodDef().getParentClass().getType().getDescriptor().contains("ReferenceField"))
+			code.getInstructionList().dump();
 		
 		code = insertTaintInit(code, method);
 		invokeClassification = null; // get rid of the method call classification
@@ -456,6 +459,12 @@ public class TaintTransform extends Transform {
 		InstanceFieldDefinition fieldDef = insnIput.getFieldDef();
 		ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
 		
+		/*
+		 * The field definition points directly to the accessed field (looked up 
+		 * during parsing). Therefore we can check whether the containing class is 
+		 * internal/external.
+		 */
+		
 		if (classDef.isInternal()) {
 		
 			DexClass parentClass = dex.getClass(classDef);
@@ -467,10 +476,23 @@ public class TaintTransform extends Transform {
 				codeGen.iput(regFromTaint, insnIput.getRegObject(), taintField.getFieldDef()),	
 				insnIput);
 		
-		} else 
-			throw new UnsupportedOperationException();
+		} else {
+			
+			DexRegisterType type = insnIput.getFieldDef().getFieldId().getType();
+			if (insnIput.getFieldDef().getFieldId().getType() instanceof DexPrimitiveType)
+				return new DexMacro(
+					codeGen.setTaint(insnIput.getRegFrom().getTaintRegister(), insnIput.getRegObject()),
+					insnIput);
+			else
+				return new DexMacro(
+					codeGen.taintClearVisited(type),
+					codeGen.propagateTaint(insnIput.getRegObject(), (DexSingleRegister) insnIput.getRegFrom()),
+					insnIput);
+			
+		}
+			
 	}
-
+	
 	private DexCodeElement instrument_InstanceGet(DexInstruction_InstanceGet insnIget) {
 		InstanceFieldDefinition fieldDef = insnIget.getFieldDef();
 		ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
@@ -486,8 +508,35 @@ public class TaintTransform extends Transform {
 				codeGen.iget(regToTaint, insnIget.getRegObject(), taintField.getFieldDef()),	
 				insnIget);
 		
-		} else 
-			throw new UnsupportedOperationException();
+		} else {
+
+			DexRegisterType resultType = insnIget.getFieldDef().getFieldId().getType();
+			if (resultType instanceof DexPrimitiveType)
+				
+				return new DexMacro(
+					codeGen.getTaint(insnIget.getRegTo().getTaintRegister(), insnIget.getRegObject()),
+					insnIget);
+			
+			else {
+				
+				DexSingleRegister regObjectTaintBackup;
+				DexSingleRegister regTo = (DexSingleRegister) insnIget.getRegTo();
+				DexSingleRegister regObject = insnIget.getRegObject();
+				
+				if (regObject.equals(regTo))
+					regObjectTaintBackup = codeGen.auxReg();
+				else
+					regObjectTaintBackup = regObject.getTaintRegister();
+				
+				return new DexMacro(
+					codeGen.move_obj(regObjectTaintBackup, regObject.getTaintRegister()),
+					insnIget,
+					codeGen.assigner_Lookup(regTo, (DexReferenceType) resultType),
+					codeGen.taintClearVisited(resultType),
+					codeGen.propagateTaint(regTo, regObjectTaintBackup));
+				
+			}
+		}
 	}
 	
 	private void generateGetTaint(DexClass clazz) {

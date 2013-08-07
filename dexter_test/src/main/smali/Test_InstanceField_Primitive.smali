@@ -21,7 +21,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "InstanceField: primitive"
+    const-string v0, "IField: primitive"
     return-object v0
     
 .end method

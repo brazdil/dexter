@@ -20,7 +20,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "InstanceField: undecidable"
+    const-string v0, "IField: undecidable"
     return-object v0
     
 .end method
@@ -41,8 +41,8 @@
     invoke-direct {v2, p1}, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;-><init>(I)V
 
     # propagate
-    iput v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;->X:Ljava/lang/Object;
-    iget v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;->X:Ljava/lang/Object;
+    iput-object v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;->X:Ljava/lang/Object;
+    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;->X:Ljava/lang/Object;
 
     check-cast v1, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
 

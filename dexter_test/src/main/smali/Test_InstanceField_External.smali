@@ -20,7 +20,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "InstanceField: external"
+    const-string v0, "IField: external"
     return-object v0
     
 .end method
@@ -41,8 +41,8 @@
     invoke-direct {v2, p1}, Ljava/util/concurrent/Semaphore;-><init>(I)V
 
     # propagate
-    iput v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;->X:Ljava/util/concurrent/Semaphore;
-    iget v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;->X:Ljava/util/concurrent/Semaphore;
+    iput-object v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;->X:Ljava/util/concurrent/Semaphore;
+    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;->X:Ljava/util/concurrent/Semaphore;
 
     # retrieve some primitive from the object
     invoke-virtual {v1}, Ljava/util/concurrent/Semaphore;->getQueueLength()I

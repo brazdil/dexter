@@ -20,7 +20,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "InstanceField: internal"
+    const-string v0, "IField: internal"
     return-object v0
     
 .end method
@@ -41,8 +41,8 @@
     invoke-direct {v2, p1}, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;-><init>(I)V
 
     # propagate
-    iput v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Internal;->X:Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
-    iget v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Internal;->X:Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
+    iput-object v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Internal;->X:Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
+    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Internal;->X:Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
 
     # retrieve some primitive from the object
     invoke-virtual {v1}, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;->getX()I

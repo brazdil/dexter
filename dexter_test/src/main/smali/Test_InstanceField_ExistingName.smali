@@ -25,7 +25,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "InstanceField: name conflict"
+    const-string v0, "IField: name conflict"
     return-object v0
     
 .end method
