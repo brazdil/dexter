@@ -22,7 +22,9 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
@@ -39,6 +41,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
@@ -179,6 +182,12 @@ public class TaintTransform extends Transform {
 		if (element instanceof DexInstruction_ArrayLength)
 			return instrument_ArrayLength((DexInstruction_ArrayLength) element);
 		
+		if (element instanceof DexInstruction_ArrayPut)
+			return instrument_ArrayPut((DexInstruction_ArrayPut) element);
+
+		if (element instanceof DexInstruction_ArrayGet)
+			return instrument_ArrayGet((DexInstruction_ArrayGet) element);
+
 		if (element instanceof DexInstruction_InstancePut)
 			return instrument_InstancePut((DexInstruction_InstancePut) element);
 		
@@ -456,6 +465,45 @@ public class TaintTransform extends Transform {
 			insn);
 	}
 	
+	private DexCodeElement instrument_ArrayPut(DexInstruction_ArrayPut insn) {
+		DexTaintRegister regFromTaint = insn.getRegFrom().getTaintRegister();
+		DexTaintRegister regArrayTaint = insn.getRegArray().getTaintRegister();
+		
+		if (insn.getOpcode() == Opcode_GetPut.Object) {
+			return new DexMacro(
+				insn);
+		} else {
+			
+			// taint register contains a TaintArrayPrimitive instance
+			return new DexMacro(
+				codeGen.setTaint_ArrayPrimitive(regFromTaint, regArrayTaint, insn.getRegIndex()),
+				insn);
+		}
+	}
+
+	private DexCodeElement instrument_ArrayGet(DexInstruction_ArrayGet insn) {
+		DexTaintRegister regToTaint = insn.getRegTo().getTaintRegister();
+		DexTaintRegister regArrayTaint = insn.getRegArray().getTaintRegister();
+		
+		DexRegister regTo = insn.getRegTo();
+		DexSingleRegister regIndex = insn.getRegIndex();
+		DexSingleRegister regIndexBackup;
+		if (regTo.equals(regIndex))
+			regIndexBackup = codeGen.auxReg();
+		else
+			regIndexBackup = regIndex;
+
+		if (insn.getOpcode() == Opcode_GetPut.Object) {
+			return new DexMacro(
+				insn);
+		} else {
+			return new DexMacro(
+				codeGen.move_prim(regIndexBackup, regIndex),
+				insn,
+				codeGen.getTaint_ArrayPrimitive(regToTaint, regArrayTaint, regIndexBackup));
+		}
+	}
+
 	private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput) {
 		InstanceFieldDefinition fieldDef = insnIput.getFieldDef();
 		ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
@@ -781,6 +829,8 @@ public class TaintTransform extends Transform {
 		
 		return taintField;
 	}
+	
+	// TODO: test .get of every Taint class by passing it as an agrument of an external call
 	
 	private DexRegisterType taintType(DexRegisterType type) {
 		switch(hierarchy.classifyType(type)) {

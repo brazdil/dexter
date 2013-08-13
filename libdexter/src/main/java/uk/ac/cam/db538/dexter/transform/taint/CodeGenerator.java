@@ -634,6 +634,19 @@ public final class CodeGenerator {
 		return new DexInstruction_InstanceGet(regTo, regArrayTaint, dexAux.getField_TaintArray_TLength(), hierarchy);
 	}
 
+	public DexCodeElement getTaint_ArrayPrimitive(DexTaintRegister regTo, DexTaintRegister regArrayTaint, DexSingleRegister regIndex) {
+		return new DexMacro(
+			new DexInstruction_InstanceGet(regTo, regArrayTaint, dexAux.getField_TaintArrayPrimitive_TArray(), hierarchy),
+			new DexInstruction_ArrayGet(regTo, regTo, regIndex, Opcode_GetPut.IntFloat, hierarchy));
+	}
+
+	public DexCodeElement setTaint_ArrayPrimitive(DexTaintRegister regFromTaint, DexTaintRegister regArrayTaint, DexSingleRegister regIndex) {
+		DexSingleRegister regAux = auxReg();
+		return new DexMacro(
+			new DexInstruction_InstanceGet(regAux, regArrayTaint, dexAux.getField_TaintArrayPrimitive_TArray(), hierarchy),
+			new DexInstruction_ArrayPut(regFromTaint, regAux, regIndex, Opcode_GetPut.IntFloat, hierarchy));
+	}
+
 	private static DexSingleRegister taint(DexRegister reg) {
 		if (reg instanceof DexTaintRegister)
 			return (DexTaintRegister) reg;

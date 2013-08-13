@@ -63,7 +63,10 @@ public class AuxiliaryDex extends Dex {
 	@Getter private final DexInstanceField field_TaintArray_TLength;
 	
 	@Getter private final DexClass type_TaintArrayPrimitive;
+	@Getter private final DexInstanceField field_TaintArrayPrimitive_TArray;
+	
 	@Getter private final DexClass type_TaintArrayReference;
+	@Getter private final DexInstanceField field_TaintArrayReference_TArray;
 
 	@Getter private final DexMethod method_Assigner_NewExternal;
 	@Getter private final DexMethod method_Assigner_NewInternal;
@@ -109,7 +112,10 @@ public class AuxiliaryDex extends Dex {
 		this.field_TaintArray_TLength = findInstanceFieldByName(clsTaintArray, "t_length");
 		
 		this.type_TaintArrayPrimitive = getDexClass(TaintArrayPrimitive.class, hierarchy, renamer);
+		this.field_TaintArrayPrimitive_TArray = findInstanceFieldByName(type_TaintArrayPrimitive, "t_array");
+		
 		this.type_TaintArrayReference = getDexClass(TaintArrayReference.class, hierarchy, renamer);
+		this.field_TaintArrayReference_TArray = findInstanceFieldByName(type_TaintArrayReference, "t_array");
 		
 		// Assigner
 		val clsAssigner = getDexClass(Assigner.class, hierarchy, renamer);
