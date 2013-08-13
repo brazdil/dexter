@@ -17,14 +17,16 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="Test Name"
-                android:id="@+id/testName" />
+                android:id="@+id/testName"
+                android:singleLine="true"/>
 
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="Test Description"
-                android:id="@+id/testDescription" />
+                android:id="@+id/testDescription"
+                android:singleLine="true"/>
 
     </LinearLayout>
 

@@ -67,9 +67,9 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
+    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <method_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
-    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <breakpoint_rules />
     <ui_properties />
   </component>
@@ -79,30 +79,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="UnitTestActivity.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/UnitTestActivity.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="241" column="70" selection-start="8606" selection-end="8606" vertical-scroll-proportion="0.39011705" vertical-offset="3135" max-vertical-offset="4230">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
+      <file leaf-file-name="listitem_testcase.xml" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/layout/listitem_testcase.xml">
+          <provider selected="true" editor-type-id="android-designer">
+            <state />
           </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DexterApplication.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/DexterApplication.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="146" column="27" selection-start="4925" selection-end="4925" vertical-scroll-proportion="0.0" vertical-offset="2175" max-vertical-offset="2535">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="PackageAdapter.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageAdapter.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="40" column="60" selection-start="1294" selection-end="1294" vertical-scroll-proportion="0.0" vertical-offset="585" max-vertical-offset="1905">
+          <provider editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="825">
               <folding />
             </state>
           </provider>
@@ -198,7 +181,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/android-gui/src/main/res/layout/listitem_packages.xml" />
         <option value="$PROJECT_DIR$/android-gui/src/main/res/layout/activity_package_list.xml" />
         <option value="$PROJECT_DIR$/android-gui/src/main/res/layout/layout_instrument.xml" />
         <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/Utils.java" />
@@ -214,6 +196,7 @@
         <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageAdapter.java" />
         <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/DexterApplication.java" />
         <option value="$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/UnitTestActivity.java" />
+        <option value="$PROJECT_DIR$/android-gui/src/main/res/layout/listitem_testcase.xml" />
       </list>
     </option>
   </component>
@@ -249,6 +232,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -738,7 +722,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -756,8 +739,8 @@
     <property name="ANDROID_EXTENDED_DEVICE_CHOOSER_AVD" value="TabletJB" />
     <property name="OverrideImplement.overriding.sorted" value="false" />
     <property name="restartRequiresConfirmation" value="true" />
-    <property name="FullScreen" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
+    <property name="FullScreen" value="false" />
     <property name="GoToClass.includeLibraries" value="false" />
   </component>
   <component name="RecentsManager">
@@ -937,7 +920,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1" y="2" width="1594" height="1170" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -1027,14 +1010,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/layout/activity_package_list.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="39" selection-start="264" selection-end="264" vertical-scroll-proportion="0.15151516" vertical-offset="0" max-vertical-offset="396" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/layout/activity_package_twopane.xml">
       <provider editor-type-id="android-designer">
         <state />
@@ -1108,24 +1083,34 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/DexterApplication.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="146" column="27" selection-start="4925" selection-end="4925" vertical-scroll-proportion="0.0" vertical-offset="1446" max-vertical-offset="2220">
+        <state line="146" column="27" selection-start="4925" selection-end="4925" vertical-scroll-proportion="0.55136544" vertical-offset="1766" max-vertical-offset="2535">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/PackageAdapter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="40" column="60" selection-start="1294" selection-end="1294" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1530">
+        <state line="40" column="60" selection-start="1294" selection-end="1294" vertical-scroll-proportion="0.019505851" vertical-offset="585" max-vertical-offset="1905">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/android-gui/src/main/java/uk/ac/cam/db538/dexter/android/UnitTestActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="241" column="70" selection-start="8606" selection-end="8606" vertical-scroll-proportion="0.39011705" vertical-offset="3135" max-vertical-offset="4230">
+        <state line="241" column="70" selection-start="8606" selection-end="8606" vertical-scroll-proportion="0.18205461" vertical-offset="3475" max-vertical-offset="4500">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/android-gui/src/main/res/layout/listitem_testcase.xml">
+      <provider selected="true" editor-type-id="android-designer">
+        <state />
+      </provider>
+      <provider editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="795">
+          <folding />
         </state>
       </provider>
     </entry>
