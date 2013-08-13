@@ -71,6 +71,7 @@ import uk.ac.cam.db538.dexter.utils.Utils;
 import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
 import com.rx201.dx.translator.DexCodeAnalyzer;
+import com.rx201.dx.translator.RopType;
 import com.rx201.dx.translator.TypeSolver;
 
 public class TaintTransform extends Transform {
@@ -471,10 +472,9 @@ public class TaintTransform extends Transform {
 		
 		if (insn.getOpcode() == Opcode_GetPut.Object) {
 			return new DexMacro(
+				codeGen.setTaint_ArrayReference(regFromTaint, regArrayTaint, insn.getRegIndex()),
 				insn);
 		} else {
-			
-			// taint register contains a TaintArrayPrimitive instance
 			return new DexMacro(
 				codeGen.setTaint_ArrayPrimitive(regFromTaint, regArrayTaint, insn.getRegIndex()),
 				insn);
@@ -494,8 +494,15 @@ public class TaintTransform extends Transform {
 			regIndexBackup = regIndex;
 
 		if (insn.getOpcode() == Opcode_GetPut.Object) {
+			RopType returnType = codeAnalysis.reverseLookup(insn).getDefinedRegisterSolver(insn.getRegTo()).getType();
+			if (returnType.category != RopType.Category.Reference)
+				throw new RuntimeException("Unknown type of AGET return value");
+			
 			return new DexMacro(
-				insn);
+				codeGen.move_prim(regIndexBackup, regIndex),
+				insn,
+				codeGen.getTaint_ArrayReference(regToTaint, regArrayTaint, regIndexBackup),
+				codeGen.cast(regToTaint, (DexReferenceType) taintType(returnType.type)));
 		} else {
 			return new DexMacro(
 				codeGen.move_prim(regIndexBackup, regIndex),
