@@ -8,8 +8,11 @@ import uk.ac.cam.db538.dexter.aux.TaintConstants;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
@@ -18,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
@@ -26,6 +30,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
@@ -50,10 +55,12 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 
 public final class CodeGenerator {
 
@@ -63,17 +70,22 @@ public final class CodeGenerator {
 	
 	private final DexClassType typeObject;
 	private final DexClassType typeClass;
+	private final DexArrayType typeClassArray;
+	private final DexClassType typeMethod;
 	private final DexClassType typeAnnotation;
 	private final DexClassType typeInteger;
 	private final DexClassType typeString;
 	private final DexClassType typeThreadLocal;
 	private final DexClassType typeThrowable;
 	private final DexClassType typeStackTraceElement;
+	private final DexClassType typeLog;
+	private final DexClassType typeNoSuchMethodException;
 	private final DexArrayType typeIntArray;
 	private final DexArrayType typeStackTraceElementArray;
 	
 	private final ClassDefinition defThrowable;
 	
+	private final MethodDefinition method_Object_getClass;
 	private final MethodDefinition method_ThreadLocal_Get;
 	private final MethodDefinition method_ThreadLocal_Set;
 	private final MethodDefinition method_Integer_intValue;
@@ -83,9 +95,16 @@ public final class CodeGenerator {
 	private final MethodDefinition method_StackTraceElement_getClassName;
 	private final MethodDefinition method_Class_forName;
 	private final MethodDefinition method_Class_getAnnotation;
+	private final MethodDefinition method_Class_getMethod;
+	private final MethodDefinition method_Class_getDeclaredMethod;
+	private final MethodDefinition method_Class_getSuperclass;
+	private final MethodDefinition method_Method_getAnnotation;
+	private final MethodDefinition method_Log_d;
 	
 	private int regAuxId;
 	private int labelId;
+	private int catchId;
+	private int tryId;
 	
 	public CodeGenerator(AuxiliaryDex dexAux) {
 		this.dexAux = dexAux;
@@ -95,6 +114,8 @@ public final class CodeGenerator {
 		
 		this.typeObject = DexClassType.parse("Ljava/lang/Object;", cache);
 		this.typeClass = DexClassType.parse("Ljava/lang/Class;", cache);
+		this.typeClassArray = DexArrayType.parse("[Ljava/lang/Class;", cache);
+		this.typeMethod = DexClassType.parse("Ljava/lang/reflect/Method;", cache);
 		this.typeAnnotation = DexClassType.parse("Ljava/lang/annotation/Annotation;", cache);
 		this.typeInteger = DexClassType.parse("Ljava/lang/Integer;", cache);
 		this.typeString = DexClassType.parse("Ljava/lang/String;", cache);
@@ -103,11 +124,14 @@ public final class CodeGenerator {
 		this.typeStackTraceElement = DexClassType.parse("Ljava/lang/StackTraceElement;", cache);
 		this.typeIntArray = DexArrayType.parse("[I", cache);
 		this.typeStackTraceElementArray = DexArrayType.parse("[Ljava/lang/StackTraceElement;", cache);
+		this.typeLog = DexClassType.parse("Landroid/util/Log;", cache);
+		this.typeNoSuchMethodException = DexClassType.parse("Ljava/lang/NoSuchMethodException;", cache);
 		
 		this.defThrowable = hierarchy.getClassDefinition(typeThrowable);
 	
 		DexPrototype prototype_void_to_void = DexPrototype.parse(cache.getCachedType_Void(), null, cache);
 		DexPrototype prototype_void_to_Object = DexPrototype.parse(typeObject, null, cache);
+		DexPrototype prototype_void_to_Class = DexPrototype.parse(typeClass, null, cache);
 		DexPrototype prototype_void_to_String = DexPrototype.parse(typeString, null, cache);
 		DexPrototype prototype_void_to_TraceElemArray = DexPrototype.parse(typeStackTraceElementArray, null, cache);
 		DexPrototype prototype_Object_to_void = DexPrototype.parse(cache.getCachedType_Void(), Arrays.asList(typeObject), cache);
@@ -115,7 +139,11 @@ public final class CodeGenerator {
 		DexPrototype prototype_int_to_Integer = DexPrototype.parse(typeInteger, Arrays.asList(cache.getCachedType_Integer()), cache);
 		DexPrototype prototype_String_to_Class = DexPrototype.parse(typeClass, Arrays.asList(typeString), cache);
 		DexPrototype prototype_Class_to_Annotation = DexPrototype.parse(typeAnnotation, Arrays.asList(typeClass), cache);
+		DexPrototype prototype_String_ClassArray_to_Method = DexPrototype.parse(typeMethod, Arrays.asList(typeString, typeClassArray), cache);
+		DexPrototype prototype_String_String_to_int = DexPrototype.parse(cache.getCachedType_Integer(), Arrays.asList(typeString, typeString), cache);
 		
+		DexMethodId methodId_getClass_void_to_Class = DexMethodId.parseMethodId("getClass", prototype_void_to_Class, cache);
+		DexMethodId methodId_getSuperclass_void_to_Class = DexMethodId.parseMethodId("getSuperclass", prototype_void_to_Class, cache);
 		DexMethodId methodId_get_void_to_Object = DexMethodId.parseMethodId("get", prototype_void_to_Object, cache);
 		DexMethodId methodId_set_Object_to_void = DexMethodId.parseMethodId("set", prototype_Object_to_void, cache);
 		DexMethodId methodId_intValue_void_to_int = DexMethodId.parseMethodId("intValue", prototype_void_to_int, cache);
@@ -125,7 +153,11 @@ public final class CodeGenerator {
 		DexMethodId methodId_getClassName_void_to_String = DexMethodId.parseMethodId("getClassName", prototype_void_to_String, cache);
 		DexMethodId methodId_forName_String_to_Class = DexMethodId.parseMethodId("forName", prototype_String_to_Class, cache);
 		DexMethodId methodId_getAnnotation_Class_to_Annotation = DexMethodId.parseMethodId("getAnnotation", prototype_Class_to_Annotation, cache);
+		DexMethodId methodId_getMethod_String_ClassArray_to_Method = DexMethodId.parseMethodId("getMethod", prototype_String_ClassArray_to_Method, cache);
+		DexMethodId methodId_getDeclaredMethod_String_ClassArray_to_Method = DexMethodId.parseMethodId("getDeclaredMethod", prototype_String_ClassArray_to_Method, cache);
+		DexMethodId methodId_d_String_String_to_int = DexMethodId.parseMethodId("d", prototype_String_String_to_int, cache);
 		
+		this.method_Object_getClass = lookupMethod(typeObject, methodId_getClass_void_to_Class);
 		this.method_ThreadLocal_Get = lookupMethod(typeThreadLocal, methodId_get_void_to_Object);
 		this.method_ThreadLocal_Set = lookupMethod(typeThreadLocal, methodId_set_Object_to_void);
 		this.method_Integer_intValue = lookupMethod(typeInteger, methodId_intValue_void_to_int);
@@ -135,6 +167,11 @@ public final class CodeGenerator {
 		this.method_StackTraceElement_getClassName = lookupMethod(typeStackTraceElement, methodId_getClassName_void_to_String);
 		this.method_Class_forName = lookupMethod(typeClass, methodId_forName_String_to_Class);
 		this.method_Class_getAnnotation = lookupMethod(typeClass, methodId_getAnnotation_Class_to_Annotation);
+		this.method_Class_getMethod = lookupMethod(typeClass, methodId_getMethod_String_ClassArray_to_Method);
+		this.method_Class_getDeclaredMethod = lookupMethod(typeClass, methodId_getDeclaredMethod_String_ClassArray_to_Method);
+		this.method_Class_getSuperclass = lookupMethod(typeClass, methodId_getSuperclass_void_to_Class);
+		this.method_Method_getAnnotation = lookupMethod(typeMethod, methodId_getAnnotation_Class_to_Annotation);
+		this.method_Log_d = lookupMethod(typeLog, methodId_d_String_String_to_int);
 	}
 	
 	private MethodDefinition lookupMethod(DexReferenceType classType, DexMethodId methodId) {
@@ -149,6 +186,8 @@ public final class CodeGenerator {
 	public void resetAsmIds() {
 		regAuxId = 0;
 		labelId = 0;
+		catchId = 0;
+		tryId = 0;
 	}
 	
 	public DexSingleAuxiliaryRegister auxReg() {
@@ -157,6 +196,16 @@ public final class CodeGenerator {
 	
 	public DexLabel label() {
 		return new DexLabel(labelId++);
+	}
+
+	public DexCatch ctch(DexClassType exceptionType) {
+		return new DexCatch(catchId++, exceptionType, hierarchy);
+	}
+	
+	public DexTryStart tryBlock(DexCatch ctch) {
+		DexTryEnd tryEnd = new DexTryEnd(tryId++);
+		DexTryStart tryStart = new DexTryStart(tryEnd, null, Arrays.asList(ctch));
+		return tryStart;
 	}
 
 	public DexMacro initPrimitiveTaints(List<DexTaintRegister> taintRegs) {
@@ -493,6 +542,110 @@ public final class CodeGenerator {
 		}
 	}
 	
+	public DexCodeElement getClassObject(DexSingleRegister regTo, DexSingleRegister regObject) {
+		return invoke_result_obj(regTo, method_Object_getClass, regObject);
+	}
+	
+	public DexCodeElement getMethodObject(DexSingleRegister regTo, DexSingleRegister regObject, MethodCall methodCall) {
+		DexInstruction_Invoke insnInvoke = methodCall.getInvoke();
+		DexMethodId mid = insnInvoke.getMethodId();
+		DexPrototype prototype = mid.getPrototype();
+		
+		DexSingleRegister regClassObject = auxReg();
+		DexSingleRegister regMethodName = auxReg();
+		DexSingleRegister regTemp = auxReg();
+		DexSingleRegister regMethodArgumentsArray = auxReg();
+		DexSingleRegister regParamType = auxReg();
+		
+		// we're using TRUE everywhere for isStatic because the class argument 
+		// is not to be included in the parameter type list
+		
+		int paramCount = prototype.getParameterCount(true);  
+
+		// generate type array initialization
+		
+		List<DexCodeElement> paramTypeInit = new ArrayList<DexCodeElement>(paramCount * 3);
+	    for (int i = 0; i < paramCount; i++) {
+	    	DexRegisterType paramType = prototype.getParameterType(i, true, null);
+	    	
+	    	// load the index
+	    	paramTypeInit.add(new DexInstruction_Const(regTemp, i, hierarchy));
+	    	
+	    	// load the param type Class object
+	    	if (paramType instanceof DexPrimitiveType) {
+	    		StaticFieldDefinition fieldDef = ((DexPrimitiveType) paramType).getPrimitiveClassConstantField(hierarchy);
+	    		paramTypeInit.add(new DexInstruction_StaticGet(regParamType, fieldDef, hierarchy)); 
+	    	} else
+	    		paramTypeInit.add(new DexInstruction_ConstClass(regParamType, (DexReferenceType) paramType, hierarchy));
+	    	
+	    	// store it in the array
+	    	paramTypeInit.add(new DexInstruction_ArrayPut(regParamType, regMethodArgumentsArray, regTemp, Opcode_GetPut.Object, hierarchy));
+	    }
+	    
+	    // the implementation differs for public methods and the rest
+	    BaseClassDefinition classDef = hierarchy.getBaseClassDefinition(insnInvoke.getClassType());
+	    MethodDefinition methodDef = classDef.getSomeMethodImplementation(insnInvoke.getMethodId(), insnInvoke.getCallType());
+	    
+	    DexCodeElement invokeGetMethod;
+	    if (methodDef.isPublic())
+	    	invokeGetMethod = invoke_result_obj(regTo, method_Class_getMethod, regClassObject, regMethodName, regMethodArgumentsArray);
+	    else {
+	        DexCatch catchBlock = ctch(typeNoSuchMethodException);
+	        DexTryStart tryStart = tryBlock(catchBlock);
+	        DexLabel labelBefore = label();
+	        DexLabel labelAfter = label();
+
+	        DexSingleRegister regCurrentClassObject = auxReg();
+	        
+	        invokeGetMethod = new DexMacro(
+	        	// copy the object class reference
+        		move_obj(regCurrentClassObject, regClassObject),
+        		
+        		// try to acquire the Method object
+        		labelBefore,
+        		tryStart,
+        		invoke_result_obj(regTo, method_Class_getDeclaredMethod, regCurrentClassObject, regMethodName, regMethodArgumentsArray),
+        		goTo(labelAfter),
+        		tryStart.getEndMarker(),
+        		
+        		// move to superclass if failed and try again
+        		catchBlock,
+        		invoke_result_obj(regCurrentClassObject, method_Class_getSuperclass, regCurrentClassObject),
+        		goTo(labelBefore),
+        		
+        		labelAfter);
+	    }
+	    
+		return new DexMacro(
+			    // create method-argument array
+			    new DexInstruction_Const(regTemp, paramCount, hierarchy),
+			    new DexInstruction_NewArray(regMethodArgumentsArray, regTemp, typeClassArray, hierarchy),
+			    // fill it with argument types
+			    new DexMacro(paramTypeInit),
+			    // get the Class object
+			    getClassObject(regClassObject, regObject),
+			    // load the method name
+			    new DexInstruction_ConstString(regMethodName, insnInvoke.getMethodId().getName(), hierarchy),
+			    // find the method object
+			    invokeGetMethod);
+	}
+	
+	public DexCodeElement getMethodAnnotation(DexSingleRegister regTo, MethodCall methodCall) {
+		assert(methodCall.getInvoke().getCallType() != Opcode_Invoke.Static);
+		
+		DexSingleRegister regObject = (DexSingleRegister) methodCall.getInvoke().getArgumentRegisters().get(0);
+		DexSingleRegister regAnnoClass = auxReg();
+		DexSingleRegister regMethodObject = auxReg();
+		
+		return new DexMacro(
+			// lookup the Method object
+			getMethodObject(regMethodObject, regObject, methodCall),
+			// load the annotation class object
+			new DexInstruction_ConstClass(regAnnoClass, dexAux.getAnno_InternalMethod(), hierarchy),
+			// invoke the getAnnotation method
+			invoke_result_obj(regTo, method_Method_getAnnotation, regMethodObject, regAnnoClass));
+	}
+
 	public DexCodeElement assigner_NewExternal(DexSingleRegister regObject, DexSingleRegister regTaint) {
 		return new DexMacro(
 			new DexInstruction_Invoke(dexAux.getMethod_Assigner_NewExternal(), Arrays.asList(regObject, regTaint), hierarchy),
@@ -568,15 +721,11 @@ public final class CodeGenerator {
 	}
 	
 	public DexCodeElement getTaint(DexSingleRegister regTo, DexSingleRegister regTaint) {
-		return new DexMacro(
-			new DexInstruction_Invoke(dexAux.getMethod_Taint_Get(), Arrays.asList(taint(regTaint)), hierarchy),
-			new DexInstruction_MoveResult(regTo, false, hierarchy));
+		return invoke_result_prim(regTo, dexAux.getMethod_Taint_Get(), taint(regTaint));
 	}
 	
 	public DexCodeElement getTaintExternal(DexSingleRegister regTo, DexSingleRegister regTaint) {
-		return new DexMacro(
-			new DexInstruction_Invoke(dexAux.getMethod_Taint_GetExternal(), Arrays.asList(taint(regTaint)), hierarchy),
-			new DexInstruction_MoveResult(regTo, false, hierarchy));
+		return invoke_result_prim(regTo, dexAux.getMethod_Taint_GetExternal(), taint(regTaint));
 	}
 
 	public DexCodeElement setTaint(DexSingleRegister regFrom, DexSingleRegister regTaint) {
@@ -710,6 +859,10 @@ public final class CodeGenerator {
 		return new DexInstruction_IfTestZero(reg, target, Opcode_IfTestZero.eqz, hierarchy);		
 	}
 	
+	public DexCodeElement goTo(DexLabel target) {
+		return new DexInstruction_Goto(target, hierarchy);
+	}
+
 	public DexCodeElement move_obj(DexSingleRegister to, DexSingleRegister from) {
 		if (to.equals(from))
 			return empty();
@@ -744,6 +897,31 @@ public final class CodeGenerator {
 	
 	public DexCodeElement cast(DexSingleRegister obj, DexReferenceType type) {
 		return new DexInstruction_CheckCast(obj, type, hierarchy);
+	}
+	
+	public DexCodeElement invoke_result_prim(DexSingleRegister regTo, MethodDefinition method, DexRegister ... args) {
+		return new DexMacro(
+			new DexInstruction_Invoke(method, Arrays.asList(args), hierarchy),
+			new DexInstruction_MoveResult(regTo, false, hierarchy));
+	}
+	
+	public DexCodeElement invoke_result_prim(DexSingleRegister regTo, DexMethod method, DexRegister ... args) {
+		return invoke_result_prim(regTo, method.getMethodDef(), args);
+	}
+	
+	public DexCodeElement invoke_result_obj(DexSingleRegister regTo, MethodDefinition method, DexRegister ... args) {
+		return new DexMacro(
+			new DexInstruction_Invoke(method, Arrays.asList(args), hierarchy),
+			new DexInstruction_MoveResult(regTo, true, hierarchy));
+	}
+
+	public DexCodeElement log(String str) {
+		DexSingleRegister regAppName = auxReg();
+		DexSingleRegister regString = auxReg();
+		return new DexMacro(
+			new DexInstruction_ConstString(regAppName, "DEXTER_DEBUG", hierarchy),
+			new DexInstruction_ConstString(regString, str, hierarchy),
+			new DexInstruction_Invoke(method_Log_d, Arrays.asList(regAppName, regString), hierarchy));
 	}
 	
 	/*

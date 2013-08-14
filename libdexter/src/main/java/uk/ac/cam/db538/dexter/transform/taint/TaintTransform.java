@@ -2,10 +2,10 @@ package uk.ac.cam.db538.dexter.transform.taint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import lombok.val;
 
@@ -109,7 +109,8 @@ public class TaintTransform extends Transform {
 	}
 
 	private DexCodeAnalyzer codeAnalysis;
-	private Map<DexInstruction_Invoke, CallDestinationType> invokeClassification;
+	private Map<MethodCall, CallDestinationType> invokeClassification;
+	private Set<DexCodeElement> noninstrumentableElements;
 	
 	@Override
 	public DexCode doFirst(DexCode code, DexMethod method) {
@@ -120,9 +121,12 @@ public class TaintTransform extends Transform {
 		codeAnalysis = new DexCodeAnalyzer(code);
 		codeAnalysis.analyze();
 		
-		val classification = InvokeClassifier.classifyMethodCalls(code, codeAnalysis);
-		invokeClassification = classification.getValB();
+		code = InvokeClassifier.collapseCalls(code);
+		val classification = InvokeClassifier.classifyMethodCalls(code, codeAnalysis, codeGen);
+		
 		code = classification.getValA();
+		invokeClassification = classification.getValB();
+		noninstrumentableElements = classification.getValC();
 		
 		return code;
 	}
@@ -132,7 +136,11 @@ public class TaintTransform extends Transform {
 		element = super.doFirst(element, code, method);
 
 		// code elements (markers etc.) should be left alone
-		if (!(element instanceof DexInstruction))
+		if (!(element instanceof DexInstruction) && !(element instanceof MethodCall))
+			return element;
+		
+		// instructions added in preparation stage should be skipped over
+		if (noninstrumentableElements.contains(element))
 			return element;
 		
 		if (element instanceof DexInstruction_Const)
@@ -141,23 +149,19 @@ public class TaintTransform extends Transform {
 		if (element instanceof DexInstruction_ConstString)
 			return instrument_ConstString((DexInstruction_ConstString) element);
 
-		if (element instanceof DexInstruction_Invoke) {
-			
-			DexCodeElement nextElement = code.getInstructionList().getNextInstruction(element);
-			if (!(nextElement instanceof DexInstruction_MoveResult))
-				nextElement = null;
-			
+		if (element instanceof MethodCall) {
 			CallDestinationType type = invokeClassification.get(element);
 			if (type == CallDestinationType.Internal)
-				return instrument_Invoke_Internal((DexInstruction_Invoke) element, (DexInstruction_MoveResult) nextElement, code, method.getMethodDef());
+				return instrument_MethodCall_Internal((MethodCall) element, code, method.getMethodDef());
 			else if (type == CallDestinationType.External)
-				return instrument_Invoke_External((DexInstruction_Invoke) element, (DexInstruction_MoveResult) nextElement, code, method.getMethodDef());
+				return instrument_MethodCall_External((MethodCall) element, code, method.getMethodDef());
 			else
 				throw new Error("Calls should never be classified as undecidable by this point");
 		}
 		
-		if (element instanceof DexInstruction_MoveResult)
-			return DexMacro.empty(); // handled by Invoke and FillArray
+		if (element instanceof DexInstruction_Invoke ||
+			element instanceof DexInstruction_MoveResult)
+			throw new Error("All method calls should be collapsed at this point");
 
 		if (element instanceof DexInstruction_Return)
 			return instrument_Return((DexInstruction_Return) element);
@@ -217,18 +221,31 @@ public class TaintTransform extends Transform {
 	@Override
 	public DexCode doLast(DexCode code, DexMethod method) {
 
+		code = InvokeClassifier.expandCalls(code);
 		code = insertTaintInit(code, method);
-		invokeClassification = null; // get rid of the method call classification
+		invokeClassification = null;
+		noninstrumentableElements = null;
 		codeAnalysis = null;
 		
 		return super.doLast(code, method);
 	}
 	
 	@Override
+	public DexMethod doLast(DexMethod method) {
+		method = super.doLast(method);
+		if (method.getMethodBody() != null) {
+			DexAnnotation anno = new DexAnnotation(dexAux.getAnno_InternalMethod().getType(), AnnotationVisibility.RUNTIME);
+			method = new DexMethod(method, anno);
+		}
+		
+		return method;
+	}
+
+	@Override
 	public void doLast(DexClass clazz) {
 
 		// add InternalClassAnnotation
-		clazz.replaceAnnotations(concat(
+		clazz.replaceAnnotations(Utils.concat(
 				clazz.getAnnotations(),
 				new DexAnnotation(dexAux.getAnno_InternalClass().getType(), AnnotationVisibility.RUNTIME)));
 		
@@ -292,7 +309,7 @@ public class TaintTransform extends Transform {
 		else
 			init = initInternalOrigin;
 		
-		return new DexCode(code, new InstructionList(concat(init.getInstructions(), code.getInstructionList())));
+		return new DexCode(code, new InstructionList(Utils.concat(init.getInstructions(), code.getInstructionList())));
 	}
 	
 	private DexCodeElement instrument_Const(DexInstruction_Const insn) {
@@ -307,7 +324,10 @@ public class TaintTransform extends Transform {
 				codeGen.newEmptyExternalTaint(insn.getRegTo()));
 	}
 
-	private DexCodeElement instrument_Invoke_Internal(DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult, DexCode code, MethodDefinition methodDef) {
+	private DexCodeElement instrument_MethodCall_Internal(MethodCall methodCall, DexCode code, MethodDefinition methodDef) {
+		DexInstruction_Invoke insnInvoke = methodCall.getInvoke();
+		DexInstruction_MoveResult insnMoveResult = methodCall.getResult();
+		
 		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
 		
 		// Need to store taints in the ThreadLocal ARGS array ?
@@ -323,14 +343,14 @@ public class TaintTransform extends Transform {
 		
 		// Need to retrieve taint from the ThreadLocal RES field ?
 		
-		if (insnMoveResult != null && prototype.getReturnType() instanceof DexPrimitiveType)
+		if (methodCall.hasResult() && prototype.getReturnType() instanceof DexPrimitiveType)
 			macroHandleResult = codeGen.getResultTaint(insnMoveResult.getRegTo().getTaintRegister());
 		
 		// Was this a call to a constructor ?
 		
 		else if (insnInvoke.getMethodId().isConstructor()) {
 
-			assert(insnMoveResult == null);
+			assert(!methodCall.hasResult());
 			DexSingleRegister regThis = (DexSingleRegister) insnInvoke.getArgumentRegisters().get(0);
 			
 			if (isCallToSuperclassConstructor(insnInvoke, code, methodDef))
@@ -344,21 +364,24 @@ public class TaintTransform extends Transform {
 			macroHandleResult = codeGen.empty();
 		
 		// generate instrumentation
-		return new DexMacro(macroSetParamTaints, generateInvoke(insnInvoke, insnMoveResult), macroHandleResult);
+		return new DexMacro(macroSetParamTaints, methodCall, macroHandleResult);
 	}
 
-	private DexCodeElement instrument_Invoke_External(DexInstruction_Invoke insnInvoke, DexInstruction_MoveResult insnMoveResult, DexCode code, MethodDefinition methodDef) {
+	private DexCodeElement instrument_MethodCall_External(MethodCall methodCall, DexCode code, MethodDefinition methodDef) {
+		DexInstruction_Invoke insnInvoke = methodCall.getInvoke();
+		DexInstruction_MoveResult insnMoveResult = methodCall.getResult();
+		
 		DexSingleAuxiliaryRegister regCombinedTaint = codeGen.auxReg();
 		if (isCallToSuperclassConstructor(insnInvoke, code, methodDef)) {
 			
 			// Handle calls to external superclass constructor
 			
-			assert(insnMoveResult == null);
+			assert(!methodCall.hasResult());
 			DexSingleRegister regThis = (DexSingleRegister) code.getParameters().get(0).getRegister();
 			
 			return new DexMacro(
 					codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
-					generateInvoke(insnInvoke, insnMoveResult),
+					methodCall,
 					
 					// At this point, the object reference is valid
 					// Need to generate new TaintInternal object with it
@@ -371,7 +394,7 @@ public class TaintTransform extends Transform {
 			// Standard external call
 			return new DexMacro(
 				codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
-				generateInvoke(insnInvoke, insnMoveResult),
+				methodCall,
 				codeGen.finishExternalCall(regCombinedTaint, insnInvoke, insnMoveResult));
 			
 		}
@@ -725,32 +748,11 @@ public class TaintTransform extends Transform {
 		
 		// add it to the class
 		
-		clazz.replaceMethods(concat(clazz.getMethods(), method));
+		clazz.replaceMethods(Utils.concat(clazz.getMethods(), method));
 	}
 
 	// UTILS
 	
-	private static DexCodeElement generateInvoke(DexInstruction_Invoke invoke, DexInstruction_MoveResult moveResult) {
-		if (moveResult == null)
-			return invoke;
-		else
-			return new DexMacro(invoke, moveResult);
-	}
-	
-	protected static <T> List<? extends T> concat(Collection<? extends T> list1, Collection<? extends T> list2) {
-		List<T> result = new ArrayList<T>(list1.size() + list2.size());
-		result.addAll(list1);
-		result.addAll(list2);
-		return result;
-	}
-
-	protected static <T> List<? extends T> concat(Collection<? extends T> list1, T elem) {
-		List<T> result = new ArrayList<T>(list1.size() + 1);
-		result.addAll(list1);
-		result.add(elem);
-		return result;
-	}
-
 	private static List<DexTaintRegister> filterPrimitiveTaintRegisters(DexInstruction_Invoke insnInvoke) {
 		DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
 		boolean isStatic = insnInvoke.getCallType() == Opcode_Invoke.Static;
@@ -836,7 +838,7 @@ public class TaintTransform extends Transform {
 		
 		DexClass parentClass = field.getParentClass();
 		DexInstanceField taintField = new DexInstanceField(parentClass, fieldDef);
-		parentClass.replaceInstanceFields(concat(parentClass.getInstanceFields(), taintField));
+		parentClass.replaceInstanceFields(Utils.concat(parentClass.getInstanceFields(), taintField));
 		
 		// Cache it
 		

@@ -1,6 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
-import uk.ac.cam.db538.dexter.utils.Pair;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 
 public abstract class DexPrimitiveType extends DexRegisterType {
 
@@ -8,7 +10,17 @@ public abstract class DexPrimitiveType extends DexRegisterType {
 	
 	protected DexPrimitiveType() { }
   
-	public abstract Pair<DexClassType, String> getPrimitiveClassConstantField(DexTypeCache cache);
+	public StaticFieldDefinition getPrimitiveClassConstantField(RuntimeHierarchy hierarchy) {
+    	DexTypeCache cache = hierarchy.getTypeCache();
+    	DexClassType typePrimitiveClass = getPrimitiveClass(cache);
+    	DexClassType typeClass = DexClassType.parse("Ljava/lang/Class;", cache);
+    	BaseClassDefinition classDef = hierarchy.getBaseClassDefinition(typePrimitiveClass);
+    	DexFieldId fieldId = DexFieldId.parseFieldId("TYPE", typeClass, cache);
+
+    	return classDef.getStaticField(fieldId);
+	}
+	
+	protected abstract DexClassType getPrimitiveClass(DexTypeCache cache);
 
 	public static DexPrimitiveType parse(String typeDescriptor, DexTypeCache cache) {
 		// try parsing the descriptor as a primitive of each given type

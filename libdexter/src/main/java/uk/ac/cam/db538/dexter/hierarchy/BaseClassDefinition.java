@@ -175,6 +175,14 @@ public abstract class BaseClassDefinition implements Serializable {
 		else
 			return CallDestinationType.External;
 	}
+	
+	public MethodDefinition getSomeMethodImplementation(DexMethodId methodId, Opcode_Invoke opcode) {
+		List<MethodDefinition> implementations = getCallableMethodImplementations(methodId, opcode);
+		if (implementations.isEmpty())
+			throw new AssertionError("No implementation was found for given method call");
+		else
+			return implementations.get(0);
+	}
 
 	private List<MethodDefinition> getCallableMethodImplementations(DexMethodId methodId, Opcode_Invoke opcode) {
 		switch (opcode) {

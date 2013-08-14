@@ -51,4 +51,8 @@ public class Triple<A, B, C> {
       return false;
     return true;
   }
+  
+  public static <A, B, C> Triple<A, B, C> create(A valA, B valB, C valC) {
+	  return new Triple<A, B, C>(valA, valB, valC);
+  }
 }

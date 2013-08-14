@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 30
+    const v0, 32
     new-array v0, v0, [Luk/ac/cam/db538/dexter/tests/TestExerciser;
 
     const v1, 0x0
@@ -110,6 +110,20 @@
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_External;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_External;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    add-int/lit8 v1, v1, 1
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_UndecidableCall_Public;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_UndecidableCall_Public;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    add-int/lit8 v1, v1, 1
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_UndecidableCall_NonPublic;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_UndecidableCall_NonPublic;-><init>()V
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 

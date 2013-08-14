@@ -8,13 +8,11 @@ import lombok.Getter;
 
 public class DexTryStart extends DexCodeElement {
 
-  @Getter private final int id;
   @Getter private final DexTryEnd endMarker;
   @Getter private final List<DexCatch> catchHandlers;
   @Getter private final DexCatchAll catchAllHandler;
 
-  public DexTryStart(int id, DexTryEnd endMarker, DexCatchAll catchAllHandler, List<DexCatch> catchHandlers) {
-    this.id = id;
+  public DexTryStart(DexTryEnd endMarker, DexCatchAll catchAllHandler, List<DexCatch> catchHandlers) {
     this.endMarker = endMarker;
     this.catchAllHandler = catchAllHandler;
     if (catchHandlers == null)
@@ -25,7 +23,7 @@ public class DexTryStart extends DexCodeElement {
 
   @Override
   public String toString() {
-    return "TRYSTART" + Integer.toString(this.id);
+    return "TRYSTART" + Integer.toString(this.endMarker.getId());
   }
 
   @Override

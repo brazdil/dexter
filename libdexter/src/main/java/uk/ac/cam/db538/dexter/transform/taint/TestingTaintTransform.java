@@ -46,7 +46,7 @@ public class TestingTaintTransform extends TaintTransform {
 			method = new DexMethod(method, newCode);
 		}
 		
-		return super.doFirst(method);
+		return super.doLast(method);
 	}
 	
 	@Override

@@ -1,7 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
-import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexChar extends DexPrimitiveType {
 	
@@ -27,11 +26,6 @@ public class DexChar extends DexPrimitiveType {
 		return NAME;
 	}
 
-    @Override
-    public Pair<DexClassType, String> getPrimitiveClassConstantField(DexTypeCache cache) {
-      return new Pair<DexClassType, String>(DexClassType.parse("Ljava/lang/Character;", cache), "TYPE");
-    }
-
     public static DexChar parse(String typeDescriptor, DexTypeCache cache) {
     	if (!typeDescriptor.equals(DESCRIPTOR))
     		throw new UnknownTypeException(typeDescriptor);
@@ -45,4 +39,9 @@ public class DexChar extends DexPrimitiveType {
 		else
 			throw new UnknownTypeException(javaName);
 	}
+
+	@Override
+	protected DexClassType getPrimitiveClass(DexTypeCache cache) {
+		return DexClassType.parse("Ljava/lang/Character;", cache);	
+	};
 }

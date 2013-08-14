@@ -16,6 +16,7 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 import com.google.common.collect.Sets;
@@ -30,6 +31,10 @@ public class DexInstruction_ConstClass extends DexInstruction {
 
     this.regTo = to;
     this.value = value;
+  }
+
+  public DexInstruction_ConstClass(DexSingleRegister to, BaseClassDefinition classDef, RuntimeHierarchy hierarchy) {
+    this(to, classDef.getType(), hierarchy);
   }
 
   public static DexInstruction_ConstClass parse(Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {

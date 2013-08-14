@@ -52,7 +52,7 @@ public class DexInstruction_IfTest extends DexInstruction {
   @Override
   public String toString() {
     return "if-" + insnOpcode.name() + " " + regA.toString() +
-           ", " + regB.toString() + ", L" + target.toString();
+           ", " + regB.toString() + ", " + target.toString();
   }
 
   @Override

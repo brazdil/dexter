@@ -169,9 +169,8 @@ public abstract class CodeParser {
 			}
 			
 			// create TryStart and TryEnd
-			val tryEnd = new DexTryEnd(counter);
-			val tryStart = new DexTryStart(counter, tryEnd, catchallHandler, catchHandlers);
-			counter++;
+			val tryEnd = new DexTryEnd(counter++);
+			val tryStart = new DexTryStart(tryEnd, catchallHandler, catchHandlers);
 			
 			// add them to the fragments list
 			parsedTryStarts.add(new Fragment<DexTryStart>(startOffset, tryStart));

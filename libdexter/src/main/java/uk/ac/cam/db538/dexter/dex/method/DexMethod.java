@@ -32,6 +32,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.utils.Cache;
+import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexMethod {
 
@@ -42,13 +43,17 @@ public class DexMethod {
 	private final List<DexAnnotation> annotations;
 	private final List<List<DexAnnotation>> paramAnnotations;
   
-	public DexMethod(DexClass parent, MethodDefinition methodDef, DexCode methodBody) {
+	public DexMethod(DexClass parent, MethodDefinition methodDef, DexCode methodBody, List<? extends DexAnnotation> annotations, List<List<DexAnnotation>> paramAnnotations) {
 		this.parentClass = parent;
 		this.methodDef = methodDef;
 		this.methodBody = methodBody;
     
-		this.annotations = new ArrayList<DexAnnotation>();
-		this.paramAnnotations = new ArrayList<List<DexAnnotation>>();
+		this.annotations = Utils.finalList(annotations);
+		this.paramAnnotations = Utils.finalList(paramAnnotations);
+	}
+	
+	public DexMethod(DexClass parent, MethodDefinition methodDef, DexCode methodBody) {
+		this(parent, methodDef, methodBody, null, null);
 	}
 
 	public DexMethod(DexClass parentClass, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
@@ -56,8 +61,8 @@ public class DexMethod {
 		this.methodDef = init_FindMethodDefinition(parentClass, methodInfo);
 		this.methodBody = init_ParseMethodBody(parentClass, this.methodDef, methodInfo);
 		
-		this.annotations = new ArrayList<DexAnnotation>(init_ParseAnnotations(getParentFile(), methodInfo, annoDir));
-		this.paramAnnotations = init_ParseParamAnnotations(getParentFile(), methodInfo, annoDir);
+		this.annotations = Utils.finalList(init_ParseAnnotations(getParentFile(), methodInfo, annoDir));
+		this.paramAnnotations = Utils.finalList(init_ParseParamAnnotations(getParentFile(), methodInfo, annoDir));
 	}
 	
 	public DexMethod(DexMethod toClone, DexCode newMethodBody) {
@@ -66,6 +71,14 @@ public class DexMethod {
 	
 	public DexMethod(DexMethod toClone, MethodDefinition newDef) {
 		this(toClone.parentClass, newDef, toClone.methodBody);
+	}
+	
+	public DexMethod(DexMethod toClone, DexAnnotation addAnnotation) {
+		this(toClone.parentClass, 
+			 toClone.methodDef, 
+			 toClone.methodBody,
+			 Utils.concat(toClone.annotations, addAnnotation),
+			 toClone.paramAnnotations);
 	}
 
 	private static MethodDefinition init_FindMethodDefinition(DexClass parentClass, EncodedMethod methodItem) {
@@ -120,6 +133,10 @@ public class DexMethod {
 		
 		return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(methodDef.getAccessFlags()), codeItem);
 	}
+	
+	public void addAnnotation(DexAnnotation anno) {
+		annotations.add(anno);
+	}
 
 	// ASSEMBLING
 
@@ -136,7 +153,7 @@ public class DexMethod {
 			return null;
 		val annoSet = assembleAnnotationSetItem(outFile, cache, annotations);
 		val methodAnno = new MethodAnnotation(cache.getMethod(methodDef), annoSet);
-
+		
 		return methodAnno;
 	}
 
