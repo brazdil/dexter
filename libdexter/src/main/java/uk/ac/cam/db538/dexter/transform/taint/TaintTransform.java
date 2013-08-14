@@ -22,6 +22,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
@@ -32,6 +33,9 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Compare;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
@@ -40,6 +44,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
@@ -125,6 +130,10 @@ public class TaintTransform extends Transform {
 	@Override
 	public DexCodeElement doFirst(DexCodeElement element, DexCode code, DexMethod method) {
 		element = super.doFirst(element, code, method);
+
+		// code elements (markers etc.) should be left alone
+		if (!(element instanceof DexInstruction))
+			return element;
 		
 		if (element instanceof DexInstruction_Const)
 			return instrument_Const((DexInstruction_Const) element);
@@ -195,9 +204,14 @@ public class TaintTransform extends Transform {
 		if (element instanceof DexInstruction_InstanceGet)
 			return instrument_InstanceGet((DexInstruction_InstanceGet) element);
 
-		return element;
+		// instructions that do not require instrumentation
+		if (element instanceof DexInstruction_Goto || 
+			element instanceof DexInstruction_IfTest ||
+			element instanceof DexInstruction_IfTestZero ||
+			element instanceof DexInstruction_ReturnVoid)
+			return element;
 		
-		// TODO: throw an exception here to make sure all cases are taken care of
+		throw new UnsupportedOperationException("Unhandled code element " + element.getClass().getSimpleName());
 	}
 
 	@Override
@@ -836,8 +850,6 @@ public class TaintTransform extends Transform {
 		
 		return taintField;
 	}
-	
-	// TODO: test .get of every Taint class by passing it as an agrument of an external call
 	
 	private DexRegisterType taintType(DexRegisterType type) {
 		switch(hierarchy.classifyType(type)) {
