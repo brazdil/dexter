@@ -217,10 +217,6 @@ public class TaintTransform extends Transform {
 	@Override
 	public DexCode doLast(DexCode code, DexMethod method) {
 
-		if (method.getMethodDef().getParentClass().getType().getDescriptor().contains("MyClass_Point3") ||
-			method.getMethodDef().getParentClass().getType().getDescriptor().contains("OnlyExternalPropagation"))
-			code.getInstructionList().dump();
-		
 		code = insertTaintInit(code, method);
 		invokeClassification = null; // get rid of the method call classification
 		codeAnalysis = null;
