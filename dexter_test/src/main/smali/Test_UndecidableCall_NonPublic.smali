@@ -27,7 +27,7 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "two implementations of View.onMeasure"
+    const-string v0, "two implementations of Binder.onTransact"
     return-object v0
     
 .end method
