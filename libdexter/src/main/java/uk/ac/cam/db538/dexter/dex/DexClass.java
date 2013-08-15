@@ -28,6 +28,7 @@ import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexClass {
@@ -109,6 +110,13 @@ public class DexClass {
 		return null;
 	}
 	
+	public DexStaticField getStaticField(StaticFieldDefinition fieldDef) {
+		for (DexStaticField field : staticFields)
+			if (field.getFieldDef().equals(fieldDef))
+				return field;
+		return null;
+	}
+
 	public List<DexClassType> getInterfaceTypes() {
 		val ifaceDefs = classDef.getInterfaces();
 		if (ifaceDefs.isEmpty())

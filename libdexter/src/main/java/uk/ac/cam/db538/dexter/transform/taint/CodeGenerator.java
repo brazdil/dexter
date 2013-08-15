@@ -36,6 +36,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
@@ -62,8 +63,8 @@ import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
-import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy.TypeClassification;
+import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
 
 public final class CodeGenerator {
@@ -911,6 +912,14 @@ public final class CodeGenerator {
 		return new DexInstruction_InstanceGet(to, obj, fieldDef, hierarchy);
 	}
 	
+	public DexCodeElement sput(DexRegister from, StaticFieldDefinition fieldDef) {
+		return new DexInstruction_StaticPut(from, fieldDef, hierarchy);
+	}
+	
+	public DexCodeElement sget(DexRegister to, StaticFieldDefinition fieldDef) {
+		return new DexInstruction_StaticGet(to, fieldDef, hierarchy);
+	}
+
 	public DexCodeElement cast(DexSingleRegister obj, DexReferenceType type) {
 		return new DexInstruction_CheckCast(obj, type, hierarchy);
 	}

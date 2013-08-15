@@ -51,6 +51,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
@@ -63,6 +65,7 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
+import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
@@ -79,6 +82,7 @@ import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy.TypeClassification;
+import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 import uk.ac.cam.db538.dexter.transform.InvokeClassifier;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
 import uk.ac.cam.db538.dexter.transform.Transform;
@@ -105,6 +109,7 @@ public class TaintTransform extends Transform {
 	private DexTypeCache typeCache;
 
 	private Map<DexInstanceField, DexInstanceField> taintInstanceFields;
+	private Map<DexStaticField, DexStaticField> taintStaticFields;
 
 	@Override
 	public void doFirst(Dex dex) {
@@ -117,6 +122,7 @@ public class TaintTransform extends Transform {
 		typeCache = hierarchy.getTypeCache();
 
 		taintInstanceFields = new HashMap<DexInstanceField, DexInstanceField>();
+		taintStaticFields = new HashMap<DexStaticField, DexStaticField>();
 	}
 
 	private DexCodeAnalyzer codeAnalysis;
@@ -224,6 +230,12 @@ public class TaintTransform extends Transform {
 		
 		if (element instanceof DexInstruction_InstanceGet)
 			return instrument_InstanceGet((DexInstruction_InstanceGet) element);
+
+		if (element instanceof DexInstruction_StaticPut)
+			return instrument_StaticPut((DexInstruction_StaticPut) element);
+		
+		if (element instanceof DexInstruction_StaticGet)
+			return instrument_StaticGet((DexInstruction_StaticGet) element);
 
 		if (element instanceof DexInstruction_MoveException)
 			return instrument_MoveException((DexInstruction_MoveException) element);
@@ -711,6 +723,95 @@ public class TaintTransform extends Transform {
 		}
 	}
 	
+	private DexCodeElement instrument_StaticPut(DexInstruction_StaticPut insnSput) {
+		StaticFieldDefinition fieldDef = insnSput.getFieldDef();
+		ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
+		
+		/*
+		 * The field definition points directly to the accessed field (looked up 
+		 * during parsing). Therefore we can check whether the containing class is 
+		 * internal/external.
+		 */
+		
+		if (classDef.isInternal()) {
+		
+			DexClass parentClass = dex.getClass(classDef);
+			DexStaticField field = parentClass.getStaticField(fieldDef);
+			DexStaticField taintField = getTaintField(field);
+			DexTaintRegister regFromTaint = insnSput.getRegFrom().getTaintRegister(); 
+			
+			return new DexMacro(
+				codeGen.sput(regFromTaint, taintField.getFieldDef()),	
+				insnSput);
+		
+		} else {
+			
+//			if (insnSput.getFieldDef().getFieldId().getType() instanceof DexPrimitiveType)
+//				return new DexMacro(
+//					codeGen.setTaintExternal(insnSput.getRegFrom().getTaintRegister(), insnSput.getRegObject()),
+//					insnSput);
+//			else
+//				return new DexMacro(
+//					codeGen.propagateTaintExternal(insnSput.getRegObject(), (DexSingleRegister) insnSput.getRegFrom()),
+//					insnSput);
+
+			// TODO
+			throw new UnsupportedOperationException();
+			
+		}
+			
+	}
+	
+	private DexCodeElement instrument_StaticGet(DexInstruction_StaticGet insnSget) {
+		StaticFieldDefinition fieldDef = insnSget.getFieldDef();
+		ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
+		
+		if (classDef.isInternal()) {
+		
+			DexClass parentClass = dex.getClass(classDef);
+			DexStaticField field = parentClass.getStaticField(fieldDef);
+			DexStaticField taintField = getTaintField(field);
+			DexTaintRegister regToTaint = insnSget.getRegTo().getTaintRegister(); 
+			
+			return new DexMacro(
+				codeGen.sget(regToTaint, taintField.getFieldDef()),	
+				insnSget);
+		
+		} else {
+
+//			DexRegisterType resultType = insnSget.getFieldDef().getFieldId().getType();
+//			
+//			if (resultType instanceof DexPrimitiveType)
+//				
+//				return new DexMacro(
+//					codeGen.getTaintExternal(insnSget.getRegTo().getTaintRegister(), insnSget.getRegObject()),
+//					insnSget);
+//			
+//			else {
+//				
+//				DexSingleRegister regObjectTaintBackup;
+//				DexSingleRegister regTo = (DexSingleRegister) insnSget.getRegTo();
+//				DexSingleRegister regObject = insnSget.getRegObject();
+//				
+//				if (regObject.equals(regTo))
+//					regObjectTaintBackup = codeGen.auxReg();
+//				else
+//					regObjectTaintBackup = regObject.getTaintRegister();
+//				
+//				return new DexMacro(
+//					codeGen.move_obj(regObjectTaintBackup, regObject.getTaintRegister()),
+//					insnSget,
+//					codeGen.taintLookup(regTo, (DexReferenceType) resultType),
+//					codeGen.propagateTaintExternal(regTo, regObjectTaintBackup));
+//				
+//			}
+			
+			// TODO
+			throw new UnsupportedOperationException();
+
+		}
+	}
+
 	private DexCodeElement instrument_MoveException(DexInstruction_MoveException insn) {
 		RopType exceptionType = codeAnalysis.reverseLookup(insn).getDefinedRegisterSolver(insn.getRegTo()).getType();
 		if (exceptionType.category != RopType.Category.Reference)
@@ -944,6 +1045,49 @@ public class TaintTransform extends Transform {
 		return taintField;
 	}
 	
+	private DexStaticField getTaintField(DexStaticField field) {
+		
+		// Check if it has been already created
+		
+		DexStaticField cachedTaintField = taintStaticFields.get(field);
+		if (cachedTaintField != null)
+			return cachedTaintField;
+
+		// It hasn't, so let's create a new one...
+		
+		final BaseClassDefinition classDef = field.getParentClass().getClassDef();
+		
+		// Figure out a non-conflicting name for the new field
+		
+		// there is a test that tests this - need to change the names of methods if name generation changes!
+		String newPrefix = "t_" + field.getFieldDef().getFieldId().getName();
+		String newName = Utils.generateName(newPrefix, "", new NameAcceptor() {
+			@Override
+			public boolean accept(String name) {
+				return classDef.getStaticField(name) == null;
+			}
+		});
+		
+		// Generate the new taint field
+		
+		DexFieldId fieldId = DexFieldId.parseFieldId(newName, taintType(field.getFieldDef().getFieldId().getType()), typeCache);
+		int fieldAccessFlags = DexUtils.assembleAccessFlags(field.getFieldDef().getAccessFlags());
+		StaticFieldDefinition fieldDef = new StaticFieldDefinition(classDef, fieldId, fieldAccessFlags);
+		classDef.addDeclaredStaticField(fieldDef);
+		
+		DexClass parentClass = field.getParentClass();
+		DexStaticField taintField = new DexStaticField(parentClass, fieldDef, null);
+		parentClass.replaceStaticFields(Utils.concat(parentClass.getStaticFields(), taintField));
+		
+		// Cache it
+		
+		taintStaticFields.put(field, taintField);
+		
+		// Return
+		
+		return taintField;
+	}
+
 	private DexRegisterType taintType(DexRegisterType type) {
 		switch(hierarchy.classifyType(type)) {
 		case PRIMITIVE:

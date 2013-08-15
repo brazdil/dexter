@@ -152,6 +152,13 @@ public abstract class BaseClassDefinition implements Serializable {
 		return null;
 	}
 
+	public StaticFieldDefinition getStaticField(String name) {
+		for (val fieldDef : this.staticFields)
+			if (fieldDef.getFieldId().getName().equals(name))
+				return fieldDef;
+		return null;
+	}
+
 	public static enum CallDestinationType {
 		Internal,
 		External,
