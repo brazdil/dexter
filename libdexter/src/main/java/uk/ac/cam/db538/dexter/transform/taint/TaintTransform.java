@@ -33,6 +33,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Compare;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
@@ -154,6 +155,9 @@ public class TaintTransform extends Transform {
 		
 		if (element instanceof DexInstruction_ConstString)
 			return instrument_ConstString((DexInstruction_ConstString) element);
+
+		if (element instanceof DexInstruction_ConstClass)
+			return instrument_ConstClass((DexInstruction_ConstClass) element);
 
 		if (element instanceof MethodCall) {
 			CallDestinationType type = invokeClassification.get(element);
@@ -333,6 +337,13 @@ public class TaintTransform extends Transform {
 		return new DexMacro(
 				insn,
 				codeGen.newEmptyExternalTaint(insn.getRegTo()));
+	}
+
+	private DexCodeElement instrument_ConstClass(DexInstruction_ConstClass insn) {
+		// TODO: consider treating Class objects as immutable?
+		return new DexMacro(
+				insn,
+				codeGen.taintLookup(insn.getRegTo(), TypeClassification.REF_EXTERNAL));
 	}
 
 	private DexCodeElement instrument_MethodCall_Internal(MethodCall methodCall, DexCode code, MethodDefinition methodDef) {
