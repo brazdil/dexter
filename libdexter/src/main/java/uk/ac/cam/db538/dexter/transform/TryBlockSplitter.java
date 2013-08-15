@@ -11,9 +11,9 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.utils.Pair;
 import uk.ac.cam.db538.dexter.utils.Triple;
 
-public final class TransformUtils {
+public final class TryBlockSplitter {
 
-	private TransformUtils() { }
+	private TryBlockSplitter() { }
 	
 	public static DexCode checkAndFixTryBlocks(DexCode code) {
 		InstructionList insns = code.getInstructionList();

@@ -13,10 +13,10 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleAuxiliaryRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
-import uk.ac.cam.db538.dexter.transform.TransformUtils.TryBlockInfo;
+import uk.ac.cam.db538.dexter.transform.TryBlockSplitter.TryBlockInfo;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
-public class TransformUtils_Test {
+public class TryBlockSplitter_Test {
 
 	private static int ID = 0;
 	private static Random RAND = new Random();
@@ -55,7 +55,7 @@ public class TransformUtils_Test {
 			genConst(regAux),
 			block2.getEndMarker()));
 		
-		TransformUtils.checkBlocksValid(TransformUtils.getAllTryBlocks(insns));;
+		TryBlockSplitter.checkBlocksValid(TryBlockSplitter.getAllTryBlocks(insns));;
 	}
 
 	@Test(expected=AssertionError.class)
@@ -78,7 +78,7 @@ public class TransformUtils_Test {
 			genConst(regAux),
 			block2.getEndMarker()));
 		
-		TransformUtils.checkBlocksValid(TransformUtils.getAllTryBlocks(insns));;
+		TryBlockSplitter.checkBlocksValid(TryBlockSplitter.getAllTryBlocks(insns));;
 	}
 
 	@Test(expected=AssertionError.class)
@@ -101,11 +101,11 @@ public class TransformUtils_Test {
 			genConst(regAux),
 			block3.getEndMarker()));
 		
-		TransformUtils.checkBlocksValid(TransformUtils.getAllTryBlocks(insns));;
+		TryBlockSplitter.checkBlocksValid(TryBlockSplitter.getAllTryBlocks(insns));;
 	}
 	
 	private Pair<TryBlockInfo, TryBlockInfo> getNestedBlocks(InstructionList insns) {
-		return TransformUtils.getNestedBlocks(TransformUtils.getAllTryBlocks(insns));
+		return TryBlockSplitter.getNestedBlocks(TryBlockSplitter.getAllTryBlocks(insns));
 	}
 
 	@Test()
@@ -232,7 +232,7 @@ public class TransformUtils_Test {
 			block1.getEndMarker()));
 		
 		Pair<TryBlockInfo, TryBlockInfo> nestedBlocks = getNestedBlocks(insns);
-		insns = TransformUtils.fixNestedBlocks(insns, nestedBlocks.getValA(), nestedBlocks.getValB());
+		insns = TryBlockSplitter.fixNestedBlocks(insns, nestedBlocks.getValA(), nestedBlocks.getValB());
 		
 		assertEquals(9, insns.size());
 		

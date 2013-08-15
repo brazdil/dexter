@@ -75,7 +75,7 @@ import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy.TypeClassification;
 import uk.ac.cam.db538.dexter.transform.Transform;
-import uk.ac.cam.db538.dexter.transform.TransformUtils;
+import uk.ac.cam.db538.dexter.transform.TryBlockSplitter;
 import uk.ac.cam.db538.dexter.utils.Utils;
 import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
@@ -228,7 +228,7 @@ public class TaintTransform extends Transform {
 	@Override
 	public DexCode doLast(DexCode code, DexMethod method) {
 
-		code = TransformUtils.checkAndFixTryBlocks(code);
+		code = TryBlockSplitter.checkAndFixTryBlocks(code);
 		code = InvokeClassifier.expandCalls(code);
 		code = insertTaintInit(code, method);
 		
