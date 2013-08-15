@@ -484,32 +484,19 @@ public class TaintTransform extends Transform {
 			DexRegister regB = insn.getRegArgB();
 			DexSingleRegister regA_Taint = regA.getTaintRegister();
 			DexSingleRegister regB_Taint = regB.getTaintRegister();
-			DexSingleRegister regA_Taint_Backup, regB_Taint_Backup;
 			DexSingleRegister regEx = codeGen.auxReg();
 
-			if (regTo.equals(regA))
-				regA_Taint_Backup = codeGen.auxReg();
-			else
-				regA_Taint_Backup = regA_Taint;
-			
-			if (regTo.equals(regB))
-				regB_Taint_Backup = codeGen.auxReg();
-			else
-				regB_Taint_Backup = regB_Taint;
-
 			return new DexMacro(
-					tryBlock,
-					codeGen.move_prim(regA_Taint_Backup, regA_Taint),
-					codeGen.move_prim(regB_Taint_Backup, regB_Taint),
-					insn,
-					codeGen.combineTaint(regTo, regA_Taint_Backup, regB_Taint_Backup),
-					codeGen.jump(lEnd),
-					tryBlock.getEndMarker(),
-					catchAll,
-					codeGen.move_ex(regEx),
-					codeGen.taintCreate_External(null, regEx, regB_Taint_Backup), // only cache the taint
-					codeGen.thrw(regEx),
-					lEnd);
+				tryBlock,
+				insn,
+				codeGen.combineTaint(regTo, regA_Taint, regB_Taint),
+				codeGen.jump(lEnd),
+				tryBlock.getEndMarker(),
+				catchAll,
+				codeGen.move_ex(regEx),
+				codeGen.taintCreate_External(null, regEx, regB_Taint), // only cache the taint
+				codeGen.thrw(regEx),
+				lEnd);
 		} else
 			return new DexMacro(
 				codeGen.combineTaint(insn.getRegTo(), insn.getRegArgA(), insn.getRegArgB()),

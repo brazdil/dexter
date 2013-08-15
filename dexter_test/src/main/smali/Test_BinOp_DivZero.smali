@@ -33,20 +33,62 @@
 .end method
 
 .method public propagate(I)I
-    .registers 3
+    .registers 6
 
-    :try_start
-        const v1, 32
-        sub-int p1, p1, p1 # turn the argument into zero
+    const v1, 32
+
+    # Propagate once
+
+    sub-int p1, p1, p1
+    :try_start_1
         div-int v0, v1, p1
         return v0
-    :try_end
-    .catch Ljava/lang/ArithmeticException; {:try_start .. :try_end} :handler
-
-    :handler
+    :try_end_1
+    .catch Ljava/lang/ArithmeticException; {:try_start_1 .. :try_end_1} :handler_1
+    :handler_1
     move-exception v0
     invoke-virtual {v0}, Ljava/lang/Object;->hashCode()I
     move-result v0
-    return v0
+
+    # ... twice
+
+    sub-int v0, v0, v0
+    :try_start_2
+        div-int v1, v1, v0
+        return v1
+    :try_end_2
+    .catch Ljava/lang/ArithmeticException; {:try_start_2 .. :try_end_2} :handler_2
+    :handler_2
+    move-exception v0
+    invoke-virtual {v0}, Ljava/lang/Object;->hashCode()I
+    move-result v0
+
+    # ... three times
+
+    sub-int v0, v0, v0
+    :try_start_3
+        div-int v0, v1, v0
+        return v0
+    :try_end_3
+    .catch Ljava/lang/ArithmeticException; {:try_start_3 .. :try_end_3} :handler_3
+    :handler_3
+    move-exception v2
+    invoke-virtual {v2}, Ljava/lang/Object;->hashCode()I
+    move-result v2
+
+    # ... four times
+
+    sub-int v0, v2, v2
+    :try_start_4
+        div-int v0, v0, v0
+        return v0
+    :try_end_4
+    .catch Ljava/lang/ArithmeticException; {:try_start_4 .. :try_end_4} :handler_4
+    :handler_4
+    move-exception v2
+    invoke-virtual {v2}, Ljava/lang/Object;->hashCode()I
+    move-result v2
+
+    return v2
     
 .end method
