@@ -43,6 +43,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
@@ -225,6 +226,16 @@ public class TaintTransform extends Transform {
 		if (element instanceof DexInstruction_MoveException)
 			return instrument_MoveException((DexInstruction_MoveException) element);
 
+		/*
+		 * Monitor instructions can throw the IllegalMonitorStateException,
+		 * but they do so to signal that a monitor was accessed from 
+		 * a thread that doesn't own it. The assumption made here is that
+		 * this behaviour does not leak any information and therefore
+		 * instrumentation is not necessary.
+		 */
+		if (element instanceof DexInstruction_Monitor)
+			return element;
+		
 		// instructions that do not require instrumentation
 		if (element instanceof DexInstruction_Goto || 
 			element instanceof DexInstruction_IfTest ||
