@@ -133,10 +133,35 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		defineFreezedRegister(instruction.getRegTo(), analyzeMoveResult(instruction.getRegTo()));
 	}
 
+	/*
+	 * An instruction can be preceded by various code elements. This instruction picks one
+	 * that matches the given list of types. It stops when in encounters a proper instruction
+	 * or a branching of the CFG. 
+	 */
+	private DexCodeElement findElementPredecessor(Class<? extends DexCodeElement> ... types) {
+		AnalyzedDexInstruction current = analyzedInst;
+		while (true) {
+			List<AnalyzedDexInstruction> predecessors = current.getPredecessors();
+			if (predecessors.size() != 1)
+				return null;
+			
+			AnalyzedDexInstruction predecessor = predecessors.get(0);
+			DexCodeElement element = predecessor.auxillaryElement;
+			if (element == null)
+				return null;
+			
+			for (Class<? extends DexCodeElement> type : types)
+				if (element.getClass().equals(type))
+					return element;
+			
+			current = predecessor;
+		}
+	}
+	
 	@Override
 	public void visit(DexInstruction_MoveException instruction) {
 		assert analyzedInst.getPredecessorCount() == 1;
-		DexCodeElement catchElement = analyzedInst.getPredecessors().get(0).auxillaryElement;
+		DexCodeElement catchElement = findElementPredecessor(DexCatch.class, DexCatchAll.class);
 		assert catchElement != null && (catchElement instanceof DexCatch || catchElement instanceof DexCatchAll);
 		DexClassType exception = null;
 		if (catchElement instanceof DexCatch)

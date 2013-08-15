@@ -40,6 +40,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
@@ -207,6 +208,9 @@ public class TaintTransform extends Transform {
 		
 		if (element instanceof DexInstruction_InstanceGet)
 			return instrument_InstanceGet((DexInstruction_InstanceGet) element);
+
+		if (element instanceof DexInstruction_MoveException)
+			return instrument_MoveException((DexInstruction_MoveException) element);
 
 		// instructions that do not require instrumentation
 		if (element instanceof DexInstruction_Goto || 
@@ -624,6 +628,16 @@ public class TaintTransform extends Transform {
 				
 			}
 		}
+	}
+	
+	private DexCodeElement instrument_MoveException(DexInstruction_MoveException insn) {
+		RopType exceptionType = codeAnalysis.reverseLookup(insn).getDefinedRegisterSolver(insn.getRegTo()).getType();
+		if (exceptionType.category != RopType.Category.Reference)
+			throw new AssertionError("Cannot decide the type of the moved exception");
+
+		return new DexMacro(
+			insn,
+			codeGen.assigner_Lookup(insn.getRegTo(), exceptionType.type));
 	}
 	
 	private void generateGetTaint(DexClass clazz) {

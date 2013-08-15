@@ -35,20 +35,17 @@
 .method public propagate(I)I
     .registers 3
 
-#    :try_start
-#        const v1, 0x0
-#        div-int v0, p1, v1
-#        return v0
-#    :try_end
-#    .catch Ljava/lang/ArithmeticException; {:try_start .. :try_end} :handler
-#
-#    :handler
-#    move-exception v0
-#    invoke-virtual {v0}, Ljava/lang/Object;->hashCode()I
-#    move-result v0
-#    return v0
+    :try_start
+        const v1, 0x0
+        div-int v0, p1, v1
+        return v0
+    :try_end
+    .catch Ljava/lang/ArithmeticException; {:try_start .. :try_end} :handler
 
-    const v0, 0
+    :handler
+    move-exception v0
+    invoke-virtual {v0}, Ljava/lang/Object;->hashCode()I
+    move-result v0
     return v0
     
 .end method
