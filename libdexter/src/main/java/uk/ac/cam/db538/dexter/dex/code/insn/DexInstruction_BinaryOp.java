@@ -134,10 +134,15 @@ public class DexInstruction_BinaryOp extends DexInstruction {
 	visitor.visit(this);
   }
   
+  public boolean isDividing() {
+	  return 
+		  insnOpcode == Opcode_BinaryOp.DivInt || insnOpcode == Opcode_BinaryOp.RemInt ||
+		  insnOpcode == Opcode_BinaryOp.DivLong || insnOpcode == Opcode_BinaryOp.RemLong;
+  }
+  
   @Override
   protected DexClassType[] throwsExceptions() {
-	if (insnOpcode == Opcode_BinaryOp.DivInt || insnOpcode == Opcode_BinaryOp.RemInt ||
-		insnOpcode == Opcode_BinaryOp.DivLong || insnOpcode == Opcode_BinaryOp.RemLong)
+	if (isDividing())
 		return this.hierarchy.getTypeCache().LIST_Error_ArithmeticException;
 	else
 		return null;

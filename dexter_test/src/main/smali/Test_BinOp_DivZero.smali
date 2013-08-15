@@ -36,8 +36,9 @@
     .registers 3
 
     :try_start
-        const v1, 0x0
-        div-int v0, p1, v1
+        const v1, 32
+        sub-int p1, p1, p1 # turn the argument into zero
+        div-int v0, v1, p1
         return v0
     :try_end
     .catch Ljava/lang/ArithmeticException; {:try_start .. :try_end} :handler

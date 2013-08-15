@@ -75,7 +75,7 @@ public class InvokeClassifier {
 						codeGen.getMethodAnnotation(regAnno, methodCall),
 						codeGen.ifZero(regAnno, lExternal),
 						internalCall,
-						codeGen.goTo(lEnd),
+						codeGen.jump(lEnd),
 						lExternal,
 						externalCall,
 						lEnd);

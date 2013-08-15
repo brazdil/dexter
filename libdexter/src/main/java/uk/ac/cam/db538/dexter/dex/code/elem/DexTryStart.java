@@ -20,6 +20,10 @@ public class DexTryStart extends DexCodeElement {
     else
     	this.catchHandlers = Collections.unmodifiableList(new ArrayList<DexCatch>(catchHandlers));
   }
+  
+  public DexTryStart(DexTryStart toClone, DexTryEnd newEnd) {
+	  this(newEnd, toClone.catchAllHandler, toClone.catchHandlers);
+  }
 
   @Override
   public String toString() {
