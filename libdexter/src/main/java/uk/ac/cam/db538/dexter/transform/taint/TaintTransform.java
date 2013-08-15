@@ -52,6 +52,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
@@ -242,6 +243,7 @@ public class TaintTransform extends Transform {
 			element instanceof DexInstruction_IfTest ||
 			element instanceof DexInstruction_IfTestZero ||
 			element instanceof DexInstruction_Switch ||
+			element instanceof DexInstruction_Throw ||
 			element instanceof DexInstruction_ReturnVoid)
 			return element;
 		
