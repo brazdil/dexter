@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.transform.taint;
+package uk.ac.cam.db538.dexter.transform;
 
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;

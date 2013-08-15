@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.transform.taint;
+package uk.ac.cam.db538.dexter.transform;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
+import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
 import uk.ac.cam.db538.dexter.utils.Triple;
 
 import com.rx201.dx.translator.DexCodeAnalyzer;
