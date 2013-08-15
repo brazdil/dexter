@@ -40,6 +40,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
@@ -202,6 +203,9 @@ public class TaintTransform extends Transform {
 
 		if (element instanceof DexInstruction_CheckCast)
 			return instrument_CheckCast((DexInstruction_CheckCast) element);
+
+		if (element instanceof DexInstruction_InstanceOf)
+			return instrument_InstanceOf((DexInstruction_InstanceOf) element);
 
 		if (element instanceof DexInstruction_ArrayLength)
 			return instrument_ArrayLength((DexInstruction_ArrayLength) element);
@@ -550,6 +554,13 @@ public class TaintTransform extends Transform {
 		return new DexMacro(
 			codeGen.cast(insn.getRegObject().getTaintRegister(), (DexReferenceType) taintType(insn.getValue())),
 			insn);
+	}
+	
+	private DexCodeElement instrument_InstanceOf(DexInstruction_InstanceOf insn) {
+		// TODO: if the argument is NULL, it will always return FALSE
+		return new DexMacro(
+				codeGen.getTaint(insn.getRegTo().getTaintRegister(), insn.getRegObject()),
+				insn);
 	}
 	
 	private DexCodeElement instrument_ArrayLength(DexInstruction_ArrayLength insn) {

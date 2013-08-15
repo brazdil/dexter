@@ -732,12 +732,12 @@ public final class CodeGenerator {
 		return !(isPrimitive(type) || isImmutable(type));
 	}
 	
-	public DexCodeElement getTaint(DexSingleRegister regTo, DexSingleRegister regTaint) {
-		return invoke_result_prim(regTo, dexAux.getMethod_Taint_Get(), taint(regTaint));
+	public DexCodeElement getTaint(DexSingleRegister regTo, DexSingleRegister regTaintObject) {
+		return invoke_result_prim(regTo, dexAux.getMethod_Taint_Get(), taint(regTaintObject));
 	}
 	
-	public DexCodeElement getTaintExternal(DexSingleRegister regTo, DexSingleRegister regTaint) {
-		return invoke_result_prim(regTo, dexAux.getMethod_Taint_GetExternal(), taint(regTaint));
+	public DexCodeElement getTaintExternal(DexSingleRegister regTo, DexSingleRegister regTaintObject) {
+		return invoke_result_prim(regTo, dexAux.getMethod_Taint_GetExternal(), taint(regTaintObject));
 	}
 
 	public DexCodeElement setTaint(DexSingleRegister regFrom, DexSingleRegister regTaint) {
