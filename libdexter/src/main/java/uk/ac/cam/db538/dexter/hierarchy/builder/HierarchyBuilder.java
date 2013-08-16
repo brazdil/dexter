@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -189,10 +190,10 @@ public class HierarchyBuilder implements Serializable {
     }
 
     public void removeInternalClasses() {
-        val classEntries = new ArrayList<Entry<DexClassType, ClassVariants>>(definedClasses.entrySet());
+    	List<Entry<DexClassType, ClassVariants>> classEntries = new ArrayList<Entry<DexClassType, ClassVariants>>(definedClasses.entrySet());
 
-        for (val classEntry : classEntries) {
-            val classPair = classEntry.getValue();
+        for (Entry<DexClassType, ClassVariants> classEntry : classEntries) {
+        	ClassVariants classPair = classEntry.getValue();
             classPair.deleteInternal();
             if (classPair.isEmpty())
                 definedClasses.remove(classEntry.getKey());

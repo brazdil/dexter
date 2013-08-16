@@ -23,6 +23,7 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
+import org.jf.dexlib.Util.DebugInfoBuilder;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
@@ -185,7 +186,7 @@ public class DexCodeGeneration {
         time = System.currentTimeMillis() - time;
 //	    System.out.println("Translation time: " + time);
         totalCGTime += time;
-
+        
         return CodeItem.internCodeItem(dexFile, registerCount, inWords, outWords, /* debugInfo */ null, instructions, newTries, newCatchHandlers);
 
     }
