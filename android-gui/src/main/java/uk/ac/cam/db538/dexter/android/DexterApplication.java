@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.android;
 import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Environment;
 import android.util.Log;
 
 import com.rx201.dx.translator.DexCodeGeneration;

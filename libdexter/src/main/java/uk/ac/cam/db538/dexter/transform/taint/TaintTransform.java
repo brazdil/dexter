@@ -109,7 +109,7 @@ public class TaintTransform extends Transform {
 	private DexTypeCache typeCache;
 
 	private Map<DexInstanceField, DexInstanceField> taintInstanceFields;
-	private Map<DexStaticField, DexStaticField> taintStaticFields;
+	private Map<StaticFieldDefinition, DexStaticField> taintStaticFields;
 
 	@Override
 	public void doFirst(Dex dex) {
@@ -122,7 +122,7 @@ public class TaintTransform extends Transform {
 		typeCache = hierarchy.getTypeCache();
 
 		taintInstanceFields = new HashMap<DexInstanceField, DexInstanceField>();
-		taintStaticFields = new HashMap<DexStaticField, DexStaticField>();
+		taintStaticFields = new HashMap<StaticFieldDefinition, DexStaticField>();
 	}
 
 	private DexCodeAnalyzer codeAnalysis;
@@ -651,7 +651,7 @@ public class TaintTransform extends Transform {
 		
 		} else {
 			
-			if (insnIput.getFieldDef().getFieldId().getType() instanceof DexPrimitiveType)
+			if (fieldDef.getFieldId().getType() instanceof DexPrimitiveType)
 				return new DexMacro(
 					codeGen.setTaintExternal(insnIput.getRegFrom().getTaintRegister(), insnIput.getRegObject()),
 					insnIput);
@@ -711,92 +711,27 @@ public class TaintTransform extends Transform {
 	}
 	
 	private DexCodeElement instrument_StaticPut(DexInstruction_StaticPut insnSput) {
-		StaticFieldDefinition fieldDef = insnSput.getFieldDef();
-		ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
-		
 		/*
-		 * The field definition points directly to the accessed field (looked up 
-		 * during parsing). Therefore we can check whether the containing class is 
-		 * internal/external.
+		 * The getTaintField() method automatically creates a storage field.
+		 * If the parent class is internal, it creates it in the same class,
+		 * otherwise in a special auxiliary class.
 		 */
 		
-		if (classDef.isInternal()) {
+		DexStaticField taintField = getTaintField(insnSput.getFieldDef());
+		DexTaintRegister regFromTaint = insnSput.getRegFrom().getTaintRegister(); 
 		
-			DexClass parentClass = dex.getClass(classDef);
-			DexStaticField field = parentClass.getStaticField(fieldDef);
-			DexStaticField taintField = getTaintField(field);
-			DexTaintRegister regFromTaint = insnSput.getRegFrom().getTaintRegister(); 
-			
-			return new DexMacro(
-				codeGen.sput(regFromTaint, taintField.getFieldDef()),	
-				insnSput);
-		
-		} else {
-			
-//			if (insnSput.getFieldDef().getFieldId().getType() instanceof DexPrimitiveType)
-//				return new DexMacro(
-//					codeGen.setTaintExternal(insnSput.getRegFrom().getTaintRegister(), insnSput.getRegObject()),
-//					insnSput);
-//			else
-//				return new DexMacro(
-//					codeGen.propagateTaintExternal(insnSput.getRegObject(), (DexSingleRegister) insnSput.getRegFrom()),
-//					insnSput);
-
-			// TODO
-			throw new UnsupportedOperationException();
-			
-		}
-			
+		return new DexMacro(
+			codeGen.sput(regFromTaint, taintField.getFieldDef()),	
+			insnSput);
 	}
 	
 	private DexCodeElement instrument_StaticGet(DexInstruction_StaticGet insnSget) {
-		StaticFieldDefinition fieldDef = insnSget.getFieldDef();
-		ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
+		DexStaticField taintField = getTaintField(insnSget.getFieldDef());
+		DexTaintRegister regToTaint = insnSget.getRegTo().getTaintRegister(); 
 		
-		if (classDef.isInternal()) {
-		
-			DexClass parentClass = dex.getClass(classDef);
-			DexStaticField field = parentClass.getStaticField(fieldDef);
-			DexStaticField taintField = getTaintField(field);
-			DexTaintRegister regToTaint = insnSget.getRegTo().getTaintRegister(); 
-			
-			return new DexMacro(
-				codeGen.sget(regToTaint, taintField.getFieldDef()),	
-				insnSget);
-		
-		} else {
-
-//			DexRegisterType resultType = insnSget.getFieldDef().getFieldId().getType();
-//			
-//			if (resultType instanceof DexPrimitiveType)
-//				
-//				return new DexMacro(
-//					codeGen.getTaintExternal(insnSget.getRegTo().getTaintRegister(), insnSget.getRegObject()),
-//					insnSget);
-//			
-//			else {
-//				
-//				DexSingleRegister regObjectTaintBackup;
-//				DexSingleRegister regTo = (DexSingleRegister) insnSget.getRegTo();
-//				DexSingleRegister regObject = insnSget.getRegObject();
-//				
-//				if (regObject.equals(regTo))
-//					regObjectTaintBackup = codeGen.auxReg();
-//				else
-//					regObjectTaintBackup = regObject.getTaintRegister();
-//				
-//				return new DexMacro(
-//					codeGen.move_obj(regObjectTaintBackup, regObject.getTaintRegister()),
-//					insnSget,
-//					codeGen.taintLookup(regTo, (DexReferenceType) resultType),
-//					codeGen.propagateTaintExternal(regTo, regObjectTaintBackup));
-//				
-//			}
-			
-			// TODO
-			throw new UnsupportedOperationException();
-
-		}
+		return new DexMacro(
+			codeGen.sget(regToTaint, taintField.getFieldDef()),	
+			insnSget);
 	}
 
 	private DexCodeElement instrument_MoveException(DexInstruction_MoveException insn) {
@@ -1032,43 +967,55 @@ public class TaintTransform extends Transform {
 		return taintField;
 	}
 	
-	private DexStaticField getTaintField(DexStaticField field) {
+	private DexStaticField getTaintField(StaticFieldDefinition fieldDef) {
 		
 		// Check if it has been already created
 		
-		DexStaticField cachedTaintField = taintStaticFields.get(field);
+		DexStaticField cachedTaintField = taintStaticFields.get(fieldDef);
 		if (cachedTaintField != null)
 			return cachedTaintField;
 
 		// It hasn't, so let's create a new one...
 		
-		final BaseClassDefinition classDef = field.getParentClass().getClassDef();
+		BaseClassDefinition classDef;
+		DexClass parentClass;
+
+		if (fieldDef.getParentClass().isInternal()) {
+			classDef = fieldDef.getParentClass();
+			parentClass = dex.getClass(classDef);
+		} else {
+			// field is external => cannot create extra field 
+			// in the same class
+			
+			parentClass = dexAux.getType_StaticTaintFields();
+			classDef = parentClass.getClassDef();
+		}			
 		
 		// Figure out a non-conflicting name for the new field
 		
 		// there is a test that tests this - need to change the names of methods if name generation changes!
-		String newPrefix = "t_" + field.getFieldDef().getFieldId().getName();
+		String newPrefix = "t_" + fieldDef.getFieldId().getName();
+		final BaseClassDefinition classDefFinal = classDef;
 		String newName = Utils.generateName(newPrefix, "", new NameAcceptor() {
 			@Override
 			public boolean accept(String name) {
-				return classDef.getStaticField(name) == null;
+				return classDefFinal.getStaticField(name) == null;
 			}
 		});
 		
 		// Generate the new taint field
 		
-		DexFieldId fieldId = DexFieldId.parseFieldId(newName, taintType(field.getFieldDef().getFieldId().getType()), typeCache);
-		int fieldAccessFlags = DexUtils.assembleAccessFlags(field.getFieldDef().getAccessFlags());
-		StaticFieldDefinition fieldDef = new StaticFieldDefinition(classDef, fieldId, fieldAccessFlags);
-		classDef.addDeclaredStaticField(fieldDef);
+		DexFieldId taintFieldId = DexFieldId.parseFieldId(newName, taintType(fieldDef.getFieldId().getType()), typeCache);
+		int fieldAccessFlags = DexUtils.assembleAccessFlags(fieldDef.getAccessFlags());
+		StaticFieldDefinition taintFieldDef = new StaticFieldDefinition(classDef, taintFieldId, fieldAccessFlags);
+		classDef.addDeclaredStaticField(taintFieldDef);
 		
-		DexClass parentClass = field.getParentClass();
-		DexStaticField taintField = new DexStaticField(parentClass, fieldDef, null);
+		DexStaticField taintField = new DexStaticField(parentClass, taintFieldDef, null);
 		parentClass.replaceStaticFields(Utils.concat(parentClass.getStaticFields(), taintField));
 		
 		// Cache it
 		
-		taintStaticFields.put(field, taintField);
+		taintStaticFields.put(fieldDef, taintField);
 		
 		// Return
 		

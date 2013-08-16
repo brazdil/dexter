@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 39
+    const v0, 41
     new-array v0, v0, [Luk/ac/cam/db538/dexter/tests/TestExerciser;
 
     const v1, 0x0
@@ -262,8 +262,22 @@
 
     add-int/lit8 v1, v1, 1
     new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ExternalClass_PrimitiveField;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ExternalClass_PrimitiveField;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    add-int/lit8 v1, v1, 1
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ExternalClass_ReferenceField;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ExternalClass_ReferenceField;-><init>()V
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    add-int/lit8 v1, v1, 1
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ExternalClass_ReferenceField;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ExternalClass_ReferenceField;-><init>()V
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
