@@ -31,23 +31,6 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    val printDebug = state.getCache().isInsertDebugLogging();
-//
-//    if (printDebug) {
-//      val code = getMethodCode();
-//
-//      val insnPrintDebug = new DexMacro_PrintStringConst(
-//        code,
-//        "$# exiting method " +
-//        getParentMethod().getMethodDef().toString(),
-//        true);
-//
-//      code.replace(this, new DexCodeElement[] { insnPrintDebug, this });
-//    }
-  }
-
-  @Override
   public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
     return Collections.emptySet();
   }

@@ -73,30 +73,6 @@ public class DexInstruction_ArrayGet extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    // need to combine the taint of the array object and the index
-//    val code = getMethodCode();
-//    val regArrayTaint = (regTo == regArray) ? new DexRegister() : state.getTaintRegister(regArray);
-//    if (opcode != Opcode_GetPut.Object) {
-//      code.replace(this,
-//                   new DexCodeElement[] {
-//                     new DexMacro_GetObjectTaint(code, regArrayTaint, regArray),
-//                     this,
-//                     new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo), regArrayTaint, state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt)
-//                   });
-//    } else {
-//      val regTotalTaint = new DexRegister();
-//      code.replace(this,
-//                   new DexCodeElement[] {
-//                     new DexMacro_GetObjectTaint(code, regArrayTaint, regArray),
-//                     new DexInstruction_BinaryOp(code, regTotalTaint, regArrayTaint, state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt),
-//                     this,
-//                     new DexMacro_SetObjectTaint(code, regTo, regTotalTaint)
-//                   });
-//    }
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

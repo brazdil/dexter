@@ -103,23 +103,6 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    val code = getMethodCode();
-//    val insnCombineTaint = new DexInstruction_BinaryOp(code, state.getTaintRegister(regTarget), state.getTaintRegister(regSourceA), state.getTaintRegister(regSourceB), Opcode_BinaryOp.OrInt);
-//
-//    if (insnOpcode == Opcode_BinaryOp.DivInt || insnOpcode == Opcode_BinaryOp.RemInt) {
-//      val regException = new DexRegister();
-//      val insnAssignTaintToException = new DexMacro_SetObjectTaint(code, regException, state.getTaintRegister(regSourceB));
-//
-//      code.replace(this, throwingInsn_GenerateSurroundingCatchBlock(
-//                     new DexCodeElement[] { this, insnCombineTaint },
-//                     new DexCodeElement[] { insnAssignTaintToException },
-//                     regException));
-//    } else
-//      code.replace(this, new DexCodeElement[] { this, insnCombineTaint });
-  }
-
-  @Override
   public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Sets.newHashSet(regTo);
   }

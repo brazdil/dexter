@@ -104,17 +104,6 @@ public class DexInstruction_Compare extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    // need to combine the taint of the two compared registers and assign that to the operation result
-//    val code = getMethodCode();
-//    code.replace(this,
-//                 new DexCodeElement[] {
-//                   this,
-//                   new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo), state.getTaintRegister(regSourceA), state.getTaintRegister(regSourceB), Opcode_BinaryOp.OrInt),
-//                 });
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

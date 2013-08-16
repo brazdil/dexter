@@ -69,30 +69,6 @@ public class DexInstruction_ArrayPut extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    // primitives should copy the the taint to the array object
-//    // all types should copy the taint of the index to the array object
-//    val code = getMethodCode();
-//    val regTotalTaint = state.getTaintRegister(regArray);
-//    if (opcode != Opcode_GetPut.Object) {
-//      code.replace(this,
-//                   new DexCodeElement[] {
-//                     this,
-//                     new DexInstruction_BinaryOp(code, regTotalTaint, state.getTaintRegister(regFrom), state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt),
-//                     new DexMacro_SetObjectTaint(code, regArray, regTotalTaint)
-//                   });
-//    } else {
-//      code.replace(this,
-//                   new DexCodeElement[] {
-//                     this,
-//                     new DexMacro_GetObjectTaint(code, state.getTaintRegister(regFrom), regFrom),
-//                     new DexInstruction_BinaryOp(code, regTotalTaint, state.getTaintRegister(regFrom), state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt),
-//                     new DexMacro_SetObjectTaint(code, regArray, state.getTaintRegister(regFrom))
-//                   });
-//    }
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

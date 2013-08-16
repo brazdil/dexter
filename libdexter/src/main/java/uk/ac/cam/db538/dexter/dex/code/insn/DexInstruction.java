@@ -25,12 +25,6 @@ public abstract class DexInstruction extends DexCodeElement {
 
   protected static final InstructionParseError FORMAT_EXCEPTION = new InstructionParseError("Unknown instruction format or opcode");
 
-  // INSTRUCTION INSTRUMENTATION
-
-  public void instrument() {
-    throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have instrumentation implemented");
-  }
-  
   // THROWING INSTRUCTIONS
 
   @Override

@@ -65,21 +65,6 @@ public class DexInstruction_CheckCast extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    val code = getMethodCode();
-//
-//    val regException = new DexRegister();
-//    val regTaint = new DexRegister();
-//    val getObjTaint = new DexMacro_GetObjectTaint(code, regTaint, this.regObject);
-//    val setExTaint = new DexMacro_SetObjectTaint(code, regException, regTaint);
-//
-//    code.replace(this, throwingInsn_GenerateSurroundingCatchBlock(
-//                   new DexCodeElement[] { this },
-//                   new DexCodeElement[] { getObjTaint, setExTaint },
-//                   regException));
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

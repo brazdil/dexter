@@ -60,17 +60,6 @@ public class DexInstruction_Convert extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    // need to copy to taint across
-//    val code = getMethodCode();
-//    code.replace(this,
-//                 new DexCodeElement[] {
-//                   this,
-//                   new DexInstruction_Move(code, state.getTaintRegister(regTo), state.getTaintRegister(regFrom), false)
-//                 });
-  }
-
-  @Override
   public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Sets.newHashSet(regTo);
   }

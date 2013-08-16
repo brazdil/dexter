@@ -60,9 +60,6 @@ public class DexInstruction_ConstClass extends DexInstruction {
   }
 
   @Override
-  public void instrument() {  }
-
-  @Override
   public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Sets.newHashSet(regTo);
   }

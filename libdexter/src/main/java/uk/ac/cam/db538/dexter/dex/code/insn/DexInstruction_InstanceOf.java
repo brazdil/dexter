@@ -67,17 +67,6 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    // copy the taint across
-//    val code = getMethodCode();
-//    code.replace(this,
-//                 new DexCodeElement[] {
-//                   new DexMacro_GetObjectTaint(code, state.getTaintRegister(regTo), regObject),
-//                   this
-//                 });
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

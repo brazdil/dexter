@@ -59,17 +59,6 @@ public class DexInstruction_ArrayLength extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    // length needs to carry the taint of the array object
-//    val code = getMethodCode();
-//    code.replace(this,
-//                 new DexCodeElement[] {
-//                   new DexMacro_GetObjectTaint(code, state.getTaintRegister(regTo), regArray),
-//                   this
-//                 });
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

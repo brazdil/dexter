@@ -85,48 +85,6 @@ public class DexInstruction_StaticPut extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    val code = getMethodCode();
-//    val classHierarchy = getParentFile().getHierarchy();
-//
-//    val defClass = classHierarchy.getBaseClassDefinition(fieldClass);
-//    val defField = defClass.getAccessedStaticField(new DexFieldId(fieldName, fieldType));
-//
-//    if (defField == null)
-//      System.err.println("warning: cannot find accessed static field " + fieldClass.getPrettyName() + "." + fieldName);
-//
-//    val fieldDeclaringClass = defField.getParentClass();
-//
-//    if (opcode != Opcode_GetPut.Object) {
-//      if (fieldDeclaringClass.isInternal()) {
-//        // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
-//        // store the taint to the taint field
-//        val field = DexUtils.getStaticField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
-//        code.replace(this,
-//                     new DexCodeElement[] {
-//                       this,
-//                       new DexInstruction_StaticPut(code, state.getTaintRegister(regFrom), state.getCache().getTaintField(field)),
-//                     });
-//
-//      } else
-//        // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
-//        // store the taint to the adjoined field in special global class
-//        code.replace(this,
-//                     new DexCodeElement[] {
-//                       this,
-//                       new DexInstruction_StaticPut(
-//                         code,
-//                         state.getTaintRegister(regFrom),
-//                         state.getCache().getTaintField_ExternalStatic(fieldClass, (DexPrimitiveType) fieldType, fieldName))
-//                     });
-//
-//    } else {
-//      // FIELD OF REFERENCE TYPE
-//      // no need to do anything
-//    }
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

@@ -70,9 +70,6 @@ public class DexInstruction_FillArrayData extends DexInstruction {
   }
 
   @Override
-  public void instrument() { }
-
-  @Override
   public Set<? extends DexRegister> lvaReferencedRegisters() {
     return Sets.newHashSet(regArray);
   }

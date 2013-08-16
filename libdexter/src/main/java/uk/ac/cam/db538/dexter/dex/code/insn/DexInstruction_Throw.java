@@ -57,9 +57,6 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
-  public void instrument() { }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

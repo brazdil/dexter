@@ -85,49 +85,6 @@ public class DexInstruction_StaticGet extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    val code = getMethodCode();
-//    val classHierarchy = getParentFile().getHierarchy();
-//
-//    if (opcode != Opcode_GetPut.Object) {
-//      val defClass = classHierarchy.getBaseClassDefinition(fieldClass);
-//      val defField = defClass.getAccessedStaticField(new DexFieldId(fieldName, fieldType));
-//
-//      if (defField == null)
-//        System.err.println("warning: cannot find accessed static field " + fieldClass.getPrettyName() + "." + fieldName);
-//
-//      val fieldDeclaringClass = defField.getParentClass();
-//      if (fieldDeclaringClass != null && fieldDeclaringClass.isInternal()) {
-//        // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
-//        // retrieve taint from the adjoined field
-//        val field = DexUtils.getStaticField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
-//
-//        code.replace(this,
-//                     new DexCodeElement[] {
-//                       this,
-//                       new DexInstruction_StaticGet(code, state.getTaintRegister(regTo), state.getCache().getTaintField(field))
-//                     });
-//
-//      } else {
-//        // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
-//        // OR NOT FOUND
-//        // get the taint from adjoined field in special global class
-//        code.replace(this,
-//                     new DexCodeElement[] {
-//                       this,
-//                       new DexInstruction_StaticGet(
-//                         code,
-//                         state.getTaintRegister(regTo),
-//                         state.getCache().getTaintField_ExternalStatic(fieldClass, (DexPrimitiveType) fieldType, fieldName))
-//                     });
-//      }
-//    } else {
-//      // FIELD OF REFERENCE TYPE
-//      // the object itself has taint, no need to do anything
-//    }
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

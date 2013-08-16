@@ -89,59 +89,6 @@ public class DexInstruction_InstancePut extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    val code = getMethodCode();
-//    val classHierarchy = getParentFile().getHierarchy();
-//
-//    val defClass = classHierarchy.getClassDefinition(fieldClass);
-//    val defField = defClass.getAccessedInstanceField(new DexFieldId(fieldName, fieldType));
-//
-//    if (defField == null)
-//      System.err.println("warning: cannot find accessed instance field " + fieldClass.getPrettyName() + "." + fieldName);
-//
-//    val fieldDeclaringClass = defField.getParentClass();
-//
-//    if (opcode != Opcode_GetPut.Object) {
-//      val regValueTaint = state.getTaintRegister(regFrom);
-//
-//      if (fieldDeclaringClass.isInternal()) {
-//        // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
-//        // store the taint to the taint field
-//        val field = DexUtils.getInstanceField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
-//        code.replace(this,
-//                     new DexCodeElement[] {
-//                       this,
-//                       new DexInstruction_InstancePut(code, regValueTaint, regObject, state.getCache().getTaintField(field)),
-//                     });
-//
-//      } else
-//        // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
-//        // assign the same taint to the object
-//        code.replace(this,
-//                     new DexCodeElement[] {
-//                       this,
-//                       new DexMacro_SetObjectTaint(code, regObject, regValueTaint)
-//                     });
-//
-//    } else {
-//      if (!fieldDeclaringClass.isInternal()) {
-//        // FIELD OF REFERENCE TYPE DEFINED EXTERNALLY
-//        // need to copy the taint of the field value to the containing object
-//        val regValueTaint = new DexRegister();
-//        code.replace(this,
-//                     new DexCodeElement[] {
-//                       this,
-//                       new DexMacro_GetObjectTaint(code, regValueTaint, regFrom),
-//                       new DexMacro_SetObjectTaint(code, regObject, regValueTaint)
-//                     });
-//      }
-//
-//      // FIELD OF REFERENCE TYPE DEFINED INTERNALLY
-//      // no need to do anything
-//    }
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

@@ -58,15 +58,6 @@ public class DexInstruction_UnaryOp extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    val code = getMethodCode();
-//    code.replace(this, new DexCodeElement[] {
-//                   this,
-//                   new DexInstruction_Move(code, state.getTaintRegister(regTo), state.getTaintRegister(regFrom), false)
-//                 });
-  }
-
-  @Override
   public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Sets.newHashSet(regTo);
   }

@@ -107,18 +107,6 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    getMethodCode().replace(this,
-//                            new DexCodeElement[] {
-//                              this,
-//                              new DexInstruction_Const(
-//                                this.getMethodCode(),
-//                                state.getTaintRegister(regTo),
-//                                (value == 0xdec0ded) ? 1 : 0)
-//                            });
-  }
-
-  @Override
   public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Sets.newHashSet(regTo);
   }

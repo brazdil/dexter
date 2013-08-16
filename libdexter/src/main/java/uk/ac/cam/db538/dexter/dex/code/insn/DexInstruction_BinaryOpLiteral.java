@@ -80,18 +80,6 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//	// taint propagation into ArithmeticException is not necessary here
-//	// because only taint of the denominator propagates and that's
-//	// zero for constant literals
-//    getMethodCode().replace(this,
-//                            new DexCodeElement[] {
-//                              this,
-//                              new DexInstruction_Move(getMethodCode(), state.getTaintRegister(regTarget), state.getTaintRegister(regSource), false)
-//                            });
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

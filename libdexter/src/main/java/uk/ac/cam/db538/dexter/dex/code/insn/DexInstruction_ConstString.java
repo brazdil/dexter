@@ -67,9 +67,6 @@ public class DexInstruction_ConstString extends DexInstruction {
   }
 
   @Override
-  public void instrument() { }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

@@ -70,11 +70,6 @@ public class DexInstruction_MoveResult extends DexInstruction {
   }
   
   @Override
-  public void instrument() {
-	  throw new Error("MoveResult instruction is not meant to be instrumented directly");
-  }
-
-  @Override
   public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Sets.newHashSet(regTo);
   }

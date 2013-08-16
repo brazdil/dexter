@@ -100,21 +100,6 @@ public class DexInstruction_Move extends DexInstruction {
   }
 
   @Override
-  public void instrument() {
-//    if (!objectMoving) {
-//      val code = getMethodCode();
-//      val taintRegFrom = state.getTaintRegister(regFrom);
-//      val taintRegTo = state.getTaintRegister(regTo);
-//
-//      code.replace(this,
-//                   new DexCodeElement[] {
-//                     this,
-//                     new DexInstruction_Move(code, taintRegTo, taintRegFrom, false)
-//                   });
-//    }
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }
