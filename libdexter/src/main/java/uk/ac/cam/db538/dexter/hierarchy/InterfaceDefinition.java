@@ -30,4 +30,16 @@ public class InterfaceDefinition extends BaseClassDefinition {
 	public boolean isAnnotation() {
 		return getAccessFlags().contains(AccessFlags.ANNOTATION);
 	}
+
+	@Override
+	boolean hasInternalNonAbstractChildren() {
+		if (super.hasInternalNonAbstractChildren())
+			return true;
+		
+		for (BaseClassDefinition implementor : implementors)
+			if (implementor.hasInternalNonAbstractChildren())
+				return true;
+		
+		return false;
+	}
 }

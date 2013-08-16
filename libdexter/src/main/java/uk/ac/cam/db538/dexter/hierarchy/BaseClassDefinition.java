@@ -127,12 +127,12 @@ public abstract class BaseClassDefinition implements Serializable {
 		return null != iterateThroughParentsAndInterfaces(iface, extractorImplementedInterface, acceptorAlwaysTrue, false);
 	}
 	
-	public boolean hasInternalChildren() {
-		if (isInternal())
+	boolean hasInternalNonAbstractChildren() {
+		if (isInternal() && !isAbstract())
 			return true;
 
 		for (val child : this.children)
-			if (child.hasInternalChildren())
+			if (child.hasInternalNonAbstractChildren())
 				return true;
 		
 		return false;
