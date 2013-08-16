@@ -70,14 +70,17 @@ public class RuntimeHierarchy {
 				return TypeClassification.ARRAY_PRIMITIVE;
 			else
 				return TypeClassification.ARRAY_REFERENCE;
-		}
+		} 
 		
 		else {
 			val classDef = getBaseClassDefinition((DexReferenceType) type);
 			
-			if (classDef.isInternal() && !classDef.isAbstract())
+			boolean internal = classDef.isInternal();
+			boolean internalInstantiable = classDef.hasInternalNonAbstractChildren();
+			
+			if (internal && internalInstantiable)
 				return TypeClassification.REF_INTERNAL;
-			else if (classDef.hasInternalNonAbstractChildren())
+			else if (internalInstantiable)
 				return TypeClassification.REF_UNDECIDABLE;
 			else
 				return TypeClassification.REF_EXTERNAL;
