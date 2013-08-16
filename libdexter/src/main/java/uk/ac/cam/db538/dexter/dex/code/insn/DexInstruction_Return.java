@@ -23,65 +23,65 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_Return extends DexInstruction {
 
-  @Getter private final DexRegister regFrom;
-  @Getter private final RegisterType opcode;
+    @Getter private final DexRegister regFrom;
+    @Getter private final RegisterType opcode;
 
-  public DexInstruction_Return(DexSingleRegister regFrom, boolean objectMoving, RuntimeHierarchy hierarchy) {
-	super(hierarchy);
-	
-    this.regFrom = regFrom;
-    this.opcode = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
-  }
+    public DexInstruction_Return(DexSingleRegister regFrom, boolean objectMoving, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-  public DexInstruction_Return(DexWideRegister regFrom, RuntimeHierarchy hierarchy) {
-	super(hierarchy);
-	
-    this.regFrom = regFrom;
-    this.opcode = RegisterType.WIDE_PRIMITIVE;
-  }
+        this.regFrom = regFrom;
+        this.opcode = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
+    }
 
-  public static DexInstruction_Return parse(Instruction insn, CodeParserState parsingState) {
-    if (insn instanceof Instruction11x &&
-        (insn.opcode == Opcode.RETURN || insn.opcode == Opcode.RETURN_WIDE || insn.opcode == Opcode.RETURN_OBJECT)) {
+    public DexInstruction_Return(DexWideRegister regFrom, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-      val insnReturn = (Instruction11x) insn;
-      val opcode = RegisterType.fromOpcode(insn.opcode);
-      if (opcode == RegisterType.WIDE_PRIMITIVE)
-    	  return new DexInstruction_Return(
-    			  parsingState.getWideRegister(insnReturn.getRegisterA()),
-    			  parsingState.getHierarchy());
-      else
-    	  return new DexInstruction_Return(
-    			  parsingState.getSingleRegister(insnReturn.getRegisterA()),
-    			  opcode == RegisterType.REFERENCE,
-    			  parsingState.getHierarchy());
+        this.regFrom = regFrom;
+        this.opcode = RegisterType.WIDE_PRIMITIVE;
+    }
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+    public static DexInstruction_Return parse(Instruction insn, CodeParserState parsingState) {
+        if (insn instanceof Instruction11x &&
+                (insn.opcode == Opcode.RETURN || insn.opcode == Opcode.RETURN_WIDE || insn.opcode == Opcode.RETURN_OBJECT)) {
 
-  @Override
-  public String toString() {
-	  return "return" + opcode.getAsmSuffix() + " " + regFrom.toString();
-  }
+            val insnReturn = (Instruction11x) insn;
+            val opcode = RegisterType.fromOpcode(insn.opcode);
+            if (opcode == RegisterType.WIDE_PRIMITIVE)
+                return new DexInstruction_Return(
+                           parsingState.getWideRegister(insnReturn.getRegisterA()),
+                           parsingState.getHierarchy());
+            else
+                return new DexInstruction_Return(
+                           parsingState.getSingleRegister(insnReturn.getRegisterA()),
+                           opcode == RegisterType.REFERENCE,
+                           parsingState.getHierarchy());
 
-  @Override
-  public boolean cfgEndsBasicBlock() {
-    return true;
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regFrom);
-  }
-  
-  @Override
-  public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
-    return Collections.emptySet();
-  }
+    @Override
+    public String toString() {
+        return "return" + opcode.getAsmSuffix() + " " + regFrom.toString();
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+    @Override
+    public boolean cfgEndsBasicBlock() {
+        return true;
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regFrom);
+    }
+
+    @Override
+    public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
 }

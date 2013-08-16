@@ -21,58 +21,58 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_NewArray extends DexInstruction {
 
-  @Getter private final DexSingleRegister regTo;
-  @Getter private final DexSingleRegister regSize;
-  @Getter private final DexArrayType value;
+    @Getter private final DexSingleRegister regTo;
+    @Getter private final DexSingleRegister regSize;
+    @Getter private final DexArrayType value;
 
-  public DexInstruction_NewArray(DexSingleRegister to, DexSingleRegister size, DexArrayType value, RuntimeHierarchy hierarchy) {
-	super(hierarchy);
-    this.regTo = to;
-    this.regSize = size;
-    this.value = value;
-  }
+    public DexInstruction_NewArray(DexSingleRegister to, DexSingleRegister size, DexArrayType value, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
+        this.regTo = to;
+        this.regSize = size;
+        this.value = value;
+    }
 
-  public static DexInstruction_NewArray parse(Instruction insn, CodeParserState parsingState) {
-    if (insn instanceof Instruction22c && insn.opcode == Opcode.NEW_ARRAY) {
-    	
-      val hierarchy = parsingState.getHierarchy();
-    
-      val insnNewArray = (Instruction22c) insn;
-      return new DexInstruction_NewArray(
-    		  parsingState.getSingleRegister(insnNewArray.getRegisterA()),
-    		  parsingState.getSingleRegister(insnNewArray.getRegisterB()),
-    		  DexArrayType.parse(
-                ((TypeIdItem) insnNewArray.getReferencedItem()).getTypeDescriptor(),
-                hierarchy.getTypeCache()),
-              hierarchy);
+    public static DexInstruction_NewArray parse(Instruction insn, CodeParserState parsingState) {
+        if (insn instanceof Instruction22c && insn.opcode == Opcode.NEW_ARRAY) {
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+            val hierarchy = parsingState.getHierarchy();
 
-  @Override
-  public String toString() {
-    return "new-array " + regTo.toString() + ", [" + regSize.toString() + "], " + value.getDescriptor();
-  }
+            val insnNewArray = (Instruction22c) insn;
+            return new DexInstruction_NewArray(
+                       parsingState.getSingleRegister(insnNewArray.getRegisterA()),
+                       parsingState.getSingleRegister(insnNewArray.getRegisterB()),
+                       DexArrayType.parse(
+                           ((TypeIdItem) insnNewArray.getReferencedItem()).getTypeDescriptor(),
+                           hierarchy.getTypeCache()),
+                       hierarchy);
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regSize);
-  }
+    @Override
+    public String toString() {
+        return "new-array " + regTo.toString() + ", [" + regSize.toString() + "], " + value.getDescriptor();
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
-  
-  @Override
-  protected DexClassType[] throwsExceptions() {
-	return this.hierarchy.getTypeCache().LIST_Error_NegativeArraySizeException;
-  }
-  
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regSize);
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    protected DexClassType[] throwsExceptions() {
+        return this.hierarchy.getTypeCache().LIST_Error_NegativeArraySizeException;
+    }
+
 }

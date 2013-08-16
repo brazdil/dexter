@@ -7,43 +7,43 @@ import lombok.NonNull;
 
 public class Pair<A, B> implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-  
-  @Getter @NonNull private final A valA;
-  @Getter @NonNull private final B valB;
+    private static final long serialVersionUID = 1L;
 
-  public Pair(A valA, B valB) {
-    this.valA = valA;
-    this.valB = valB;
-  }
+    @Getter @NonNull private final A valA;
+    @Getter @NonNull private final B valB;
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + valA.hashCode();
-    result = prime * result + valB.hashCode();
-    return result;
-  }
+    public Pair(A valA, B valB) {
+        this.valA = valA;
+        this.valB = valB;
+    }
 
-  @SuppressWarnings("rawtypes")
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    Pair other = (Pair) obj;
-    if (!valA.equals(other.valA))
-      return false;
-    if (!valB.equals(other.valB))
-      return false;
-    return true;
-  }
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + valA.hashCode();
+        result = prime * result + valB.hashCode();
+        return result;
+    }
 
-  public static <X, Y> Pair<X, Y> create(X a, Y b) {
-	  return new Pair<X, Y>(a, b);
-  }
+    @SuppressWarnings("rawtypes")
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Pair other = (Pair) obj;
+        if (!valA.equals(other.valA))
+            return false;
+        if (!valB.equals(other.valB))
+            return false;
+        return true;
+    }
+
+    public static <X, Y> Pair<X, Y> create(X a, Y b) {
+        return new Pair<X, Y>(a, b);
+    }
 }

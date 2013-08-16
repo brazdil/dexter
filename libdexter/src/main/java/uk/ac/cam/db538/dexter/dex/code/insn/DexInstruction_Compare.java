@@ -20,91 +20,91 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_Compare extends DexInstruction {
 
-  @Getter private final DexSingleRegister regTo;
-  @Getter private final DexStandardRegister regSourceA;
-  @Getter private final DexStandardRegister regSourceB;
-  @Getter private final Opcode_Compare opcode;
+    @Getter private final DexSingleRegister regTo;
+    @Getter private final DexStandardRegister regSourceA;
+    @Getter private final DexStandardRegister regSourceB;
+    @Getter private final Opcode_Compare opcode;
 
-  public DexInstruction_Compare(DexSingleRegister target, DexSingleRegister sourceA, DexSingleRegister sourceB, boolean ltBias, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_Compare(DexSingleRegister target, DexSingleRegister sourceA, DexSingleRegister sourceB, boolean ltBias, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.regTo = target;
-    this.regSourceA = sourceA;
-    this.regSourceB = sourceB;
-    this.opcode = ltBias ? Opcode_Compare.CmplFloat : Opcode_Compare.CmpgFloat;
-  }
+        this.regTo = target;
+        this.regSourceA = sourceA;
+        this.regSourceB = sourceB;
+        this.opcode = ltBias ? Opcode_Compare.CmplFloat : Opcode_Compare.CmpgFloat;
+    }
 
-  public DexInstruction_Compare(DexSingleRegister target, DexWideRegister sourceA, DexWideRegister sourceB, boolean ltBias, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_Compare(DexSingleRegister target, DexWideRegister sourceA, DexWideRegister sourceB, boolean ltBias, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.regTo = target;
-    this.regSourceA = sourceA;
-    this.regSourceB = sourceB;
-    this.opcode = ltBias ? Opcode_Compare.CmplDouble : Opcode_Compare.CmpgDouble;
-  }
+        this.regTo = target;
+        this.regSourceA = sourceA;
+        this.regSourceB = sourceB;
+        this.opcode = ltBias ? Opcode_Compare.CmplDouble : Opcode_Compare.CmpgDouble;
+    }
 
-  public DexInstruction_Compare(DexSingleRegister target, DexWideRegister sourceA, DexWideRegister sourceB, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_Compare(DexSingleRegister target, DexWideRegister sourceA, DexWideRegister sourceB, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.regTo = target;
-    this.regSourceA = sourceA;
-    this.regSourceB = sourceB;
-    this.opcode = Opcode_Compare.CmpLong;
-  }
+        this.regTo = target;
+        this.regSourceA = sourceA;
+        this.regSourceB = sourceB;
+        this.opcode = Opcode_Compare.CmpLong;
+    }
 
-  public static DexInstruction_Compare parse(Instruction insn, CodeParserState parsingState) {
-    if (insn instanceof Instruction23x &&
-        (insn.opcode == Opcode.CMPL_FLOAT || insn.opcode == Opcode.CMPG_FLOAT)) {
+    public static DexInstruction_Compare parse(Instruction insn, CodeParserState parsingState) {
+        if (insn instanceof Instruction23x &&
+                (insn.opcode == Opcode.CMPL_FLOAT || insn.opcode == Opcode.CMPG_FLOAT)) {
 
-      val insnCompare = (Instruction23x) insn;
-      return new DexInstruction_Compare(
-    		  parsingState.getSingleRegister(insnCompare.getRegisterA()),
-    		  parsingState.getSingleRegister(insnCompare.getRegisterB()),
-    		  parsingState.getSingleRegister(insnCompare.getRegisterC()),
-    		  insnCompare.opcode == Opcode.CMPL_FLOAT,
-    		  parsingState.getHierarchy());
+            val insnCompare = (Instruction23x) insn;
+            return new DexInstruction_Compare(
+                       parsingState.getSingleRegister(insnCompare.getRegisterA()),
+                       parsingState.getSingleRegister(insnCompare.getRegisterB()),
+                       parsingState.getSingleRegister(insnCompare.getRegisterC()),
+                       insnCompare.opcode == Opcode.CMPL_FLOAT,
+                       parsingState.getHierarchy());
 
-    } else if (insn instanceof Instruction23x &&
-               (insn.opcode == Opcode.CMPL_DOUBLE || insn.opcode == Opcode.CMPG_DOUBLE)) {    		
+        } else if (insn instanceof Instruction23x &&
+                   (insn.opcode == Opcode.CMPL_DOUBLE || insn.opcode == Opcode.CMPG_DOUBLE)) {
 
-        val insnCompare = (Instruction23x) insn;
-        return new DexInstruction_Compare(
-      		  parsingState.getSingleRegister(insnCompare.getRegisterA()),
-      		  parsingState.getWideRegister(insnCompare.getRegisterB()),
-      		  parsingState.getWideRegister(insnCompare.getRegisterC()),
-      		  insnCompare.opcode == Opcode.CMPL_DOUBLE,
-      		  parsingState.getHierarchy());
+            val insnCompare = (Instruction23x) insn;
+            return new DexInstruction_Compare(
+                       parsingState.getSingleRegister(insnCompare.getRegisterA()),
+                       parsingState.getWideRegister(insnCompare.getRegisterB()),
+                       parsingState.getWideRegister(insnCompare.getRegisterC()),
+                       insnCompare.opcode == Opcode.CMPL_DOUBLE,
+                       parsingState.getHierarchy());
 
-    } else if (insn instanceof Instruction23x && insn.opcode == Opcode.CMP_LONG) {    		
+        } else if (insn instanceof Instruction23x && insn.opcode == Opcode.CMP_LONG) {
 
-        val insnCompare = (Instruction23x) insn;
-        return new DexInstruction_Compare(
-      		  parsingState.getSingleRegister(insnCompare.getRegisterA()),
-      		  parsingState.getWideRegister(insnCompare.getRegisterB()),
-      		  parsingState.getWideRegister(insnCompare.getRegisterC()),
-      		  parsingState.getHierarchy());
-        
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+            val insnCompare = (Instruction23x) insn;
+            return new DexInstruction_Compare(
+                       parsingState.getSingleRegister(insnCompare.getRegisterA()),
+                       parsingState.getWideRegister(insnCompare.getRegisterB()),
+                       parsingState.getWideRegister(insnCompare.getRegisterC()),
+                       parsingState.getHierarchy());
 
-  @Override
-  public String toString() {
-    return opcode.getAsmName() + " " + regTo.toString() + ", " + regSourceA.toString() + ", " + regSourceB.toString();
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+    @Override
+    public String toString() {
+        return opcode.getAsmName() + " " + regTo.toString() + ", " + regSourceA.toString() + ", " + regSourceB.toString();
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regSourceA, regSourceB);
-  }
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regSourceA, regSourceB);
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
 }

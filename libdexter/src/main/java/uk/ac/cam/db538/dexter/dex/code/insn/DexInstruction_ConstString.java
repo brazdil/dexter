@@ -21,59 +21,59 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_ConstString extends DexInstruction {
 
-  @Getter private final DexSingleRegister regTo;
-  @Getter private final String stringConstant;
+    @Getter private final DexSingleRegister regTo;
+    @Getter private final String stringConstant;
 
-  public DexInstruction_ConstString(DexSingleRegister to, String value, RuntimeHierarchy hierarchy) {
-	super(hierarchy);
-	
-    regTo = to;
-    stringConstant = value;
-  }
+    public DexInstruction_ConstString(DexSingleRegister to, String value, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-  public static DexInstruction_ConstString parse(Instruction insn, CodeParserState parsingState) {
-    DexSingleRegister regTo;
-    String stringConstant;
-	  
-    if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_STRING) {
+        regTo = to;
+        stringConstant = value;
+    }
 
-      val insnConstString = (Instruction21c) insn;
-      regTo = parsingState.getSingleRegister(insnConstString.getRegisterA());
-      stringConstant = ((StringIdItem) insnConstString.getReferencedItem()).getStringValue();
+    public static DexInstruction_ConstString parse(Instruction insn, CodeParserState parsingState) {
+        DexSingleRegister regTo;
+        String stringConstant;
 
-    } else if (insn instanceof Instruction31c && insn.opcode == Opcode.CONST_STRING_JUMBO) {
+        if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_STRING) {
 
-      val insnConstStringJumbo = (Instruction31c) insn;
-      regTo = parsingState.getSingleRegister(insnConstStringJumbo.getRegisterA());
-      stringConstant = ((StringIdItem) insnConstStringJumbo.getReferencedItem()).getStringValue();
+            val insnConstString = (Instruction21c) insn;
+            regTo = parsingState.getSingleRegister(insnConstString.getRegisterA());
+            stringConstant = ((StringIdItem) insnConstString.getReferencedItem()).getStringValue();
 
-    } else
-      throw FORMAT_EXCEPTION;
-    
-    return new DexInstruction_ConstString(regTo, stringConstant, parsingState.getHierarchy());
-  }
+        } else if (insn instanceof Instruction31c && insn.opcode == Opcode.CONST_STRING_JUMBO) {
 
-  @Override
-  public String toString() {
-    String escapedVal = stringConstant;
-    if (escapedVal.length() > 15)
-      escapedVal = escapedVal.substring(0, 15) + "...";
-    return "const-string " + regTo.toString() + ", \"" + escapedVal + "\"";
-  }
+            val insnConstStringJumbo = (Instruction31c) insn;
+            regTo = parsingState.getSingleRegister(insnConstStringJumbo.getRegisterA());
+            stringConstant = ((StringIdItem) insnConstStringJumbo.getReferencedItem()).getStringValue();
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+        } else
+            throw FORMAT_EXCEPTION;
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
-  
-  @Override
-  protected DexClassType[] throwsExceptions() {
-	return this.hierarchy.getTypeCache().LIST_Error;
-  }
-  
+        return new DexInstruction_ConstString(regTo, stringConstant, parsingState.getHierarchy());
+    }
+
+    @Override
+    public String toString() {
+        String escapedVal = stringConstant;
+        if (escapedVal.length() > 15)
+            escapedVal = escapedVal.substring(0, 15) + "...";
+        return "const-string " + regTo.toString() + ", \"" + escapedVal + "\"";
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    protected DexClassType[] throwsExceptions() {
+        return this.hierarchy.getTypeCache().LIST_Error;
+    }
+
 }

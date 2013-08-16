@@ -28,161 +28,161 @@ import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
 public class DexInstruction_Invoke_Test extends HierarchyTest {
 
-  @Test
-  public void testParse_Invoke_Standard_RegisterParsing_Static() throws InstructionParseError {
-    val file = new DexFile();
-    val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
-    val returnType = TypeIdItem.internTypeIdItem(file, "V");
-    val intType = TypeIdItem.internTypeIdItem(file, "I");
-    val methodName = StringIdItem.internStringIdItem(file, "myMethod");
-    for (int i = 0; i <= 5; ++i) {
-      val paramsList = new LinkedList<TypeIdItem>();
-      for (int j = 0; j < i; ++j)
+    @Test
+    public void testParse_Invoke_Standard_RegisterParsing_Static() throws InstructionParseError {
+        val file = new DexFile();
+        val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
+        val returnType = TypeIdItem.internTypeIdItem(file, "V");
+        val intType = TypeIdItem.internTypeIdItem(file, "I");
+        val methodName = StringIdItem.internStringIdItem(file, "myMethod");
+        for (int i = 0; i <= 5; ++i) {
+            val paramsList = new LinkedList<TypeIdItem>();
+            for (int j = 0; j < i; ++j)
+                paramsList.add(intType);
+
+            val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
+            val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
+            val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+
+            Utils.parseAndCompare(
+                new Instruction35c(Opcode.INVOKE_STATIC, (byte) i, (byte) 11, (byte) 12, (byte) 13, (byte) 14, (byte) 15, methodItem),
+                (i == 0) ? "invoke-static com.test.myMethod()"
+                : (i == 1) ? "invoke-static com.test.myMethod(v11)"
+                : (i == 2) ? "invoke-static com.test.myMethod(v11, v12)"
+                : (i == 3) ? "invoke-static com.test.myMethod(v11, v12, v13)"
+                : (i == 4) ? "invoke-static com.test.myMethod(v11, v12, v13, v14)"
+                : "invoke-static com.test.myMethod(v11, v12, v13, v14, v15)",
+                this.hierarchy);
+        }
+    }
+
+    @Test
+    public void testParse_Invoke_Standard_RegisterParsing_NonStatic() throws InstructionParseError {
+        val file = new DexFile();
+        val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
+        val returnType = TypeIdItem.internTypeIdItem(file, "V");
+        val intType = TypeIdItem.internTypeIdItem(file, "I");
+        val methodName = StringIdItem.internStringIdItem(file, "myMethod");
+        for (int i = 0; i <= 4; ++i) {
+            val paramsList = new LinkedList<TypeIdItem>();
+            for (int j = 0; j < i; ++j)
+                paramsList.add(intType);
+
+            val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
+            val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
+            val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+
+            Utils.parseAndCompare(
+                new Instruction35c(Opcode.INVOKE_DIRECT, (byte) i + 1, (byte) 11, (byte) 12, (byte) 13, (byte) 14, (byte) 15, methodItem),
+                (i == 0) ? "invoke-direct com.test.myMethod{v11}()"
+                : (i == 1) ? "invoke-direct com.test.myMethod{v11}(v12)"
+                : (i == 2) ? "invoke-direct com.test.myMethod{v11}(v12, v13)"
+                : (i == 3) ? "invoke-direct com.test.myMethod{v11}(v12, v13, v14)"
+                : "invoke-direct com.test.myMethod{v11}(v12, v13, v14, v15)",
+                this.hierarchy);
+        }
+    }
+
+    @Test
+    public void testParse_Invoke_Standard_CallTypes() throws InstructionParseError {
+        val file = new DexFile();
+        val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
+        val returnType = TypeIdItem.internTypeIdItem(file, "V");
+        val intType = TypeIdItem.internTypeIdItem(file, "I");
+        val methodName = StringIdItem.internStringIdItem(file, "myMethod");
+
+        val paramsList = new LinkedList<TypeIdItem>();
         paramsList.add(intType);
 
-      val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
-      val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
-      val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+        val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
+        val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
+        val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
 
-      Utils.parseAndCompare(
-        new Instruction35c(Opcode.INVOKE_STATIC, (byte) i, (byte) 11, (byte) 12, (byte) 13, (byte) 14, (byte) 15, methodItem),
-        (i == 0) ? "invoke-static com.test.myMethod()"
-        : (i == 1) ? "invoke-static com.test.myMethod(v11)"
-        : (i == 2) ? "invoke-static com.test.myMethod(v11, v12)"
-        : (i == 3) ? "invoke-static com.test.myMethod(v11, v12, v13)"
-        : (i == 4) ? "invoke-static com.test.myMethod(v11, v12, v13, v14)"
-        : "invoke-static com.test.myMethod(v11, v12, v13, v14, v15)",
-        this.hierarchy);
+        Utils.parseAndCompare(
+            new Instruction[] {
+                new Instruction35c(Opcode.INVOKE_STATIC, (byte) 1, (byte) 11, (byte) 0, (byte) 0, (byte) 0, (byte) 0, methodItem),
+                new Instruction35c(Opcode.INVOKE_VIRTUAL, (byte) 2, (byte) 11, (byte) 12, (byte) 0, (byte) 0, (byte) 0, methodItem),
+                new Instruction35c(Opcode.INVOKE_DIRECT, (byte) 2, (byte) 11, (byte) 12, (byte) 0, (byte) 0, (byte) 0, methodItem),
+                new Instruction35c(Opcode.INVOKE_SUPER, (byte) 2, (byte) 11, (byte) 12, (byte) 0, (byte) 0, (byte) 0, methodItem),
+                new Instruction35c(Opcode.INVOKE_INTERFACE, (byte) 2, (byte) 11, (byte) 12, (byte) 0, (byte) 0, (byte) 0, methodItem)
+            }, new String[] {
+                "invoke-static com.test.myMethod(v11)",
+                "invoke-virtual com.test.myMethod{v11}(v12)",
+                "invoke-direct com.test.myMethod{v11}(v12)",
+                "invoke-super com.test.myMethod{v11}(v12)",
+                "invoke-interface com.test.myMethod{v11}(v12)"
+            }, this.hierarchy);
     }
-  }
 
-  @Test
-  public void testParse_Invoke_Standard_RegisterParsing_NonStatic() throws InstructionParseError {
-    val file = new DexFile();
-    val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
-    val returnType = TypeIdItem.internTypeIdItem(file, "V");
-    val intType = TypeIdItem.internTypeIdItem(file, "I");
-    val methodName = StringIdItem.internStringIdItem(file, "myMethod");
-    for (int i = 0; i <= 4; ++i) {
-      val paramsList = new LinkedList<TypeIdItem>();
-      for (int j = 0; j < i; ++j)
-        paramsList.add(intType);
+    @Test
+    public void testParse_Invoke_Range() throws InstructionParseError {
+        val file = new DexFile();
+        val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
+        val returnType = TypeIdItem.internTypeIdItem(file, "V");
+        val intType = TypeIdItem.internTypeIdItem(file, "I");
+        val methodName = StringIdItem.internStringIdItem(file, "myMethod");
 
-      val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
-      val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
-      val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+        val paramsList = new LinkedList<TypeIdItem>();
+        for (int j = 0; j < 10; ++j)
+            paramsList.add(intType);
 
-      Utils.parseAndCompare(
-        new Instruction35c(Opcode.INVOKE_DIRECT, (byte) i + 1, (byte) 11, (byte) 12, (byte) 13, (byte) 14, (byte) 15, methodItem),
-        (i == 0) ? "invoke-direct com.test.myMethod{v11}()"
-        : (i == 1) ? "invoke-direct com.test.myMethod{v11}(v12)"
-        : (i == 2) ? "invoke-direct com.test.myMethod{v11}(v12, v13)"
-        : (i == 3) ? "invoke-direct com.test.myMethod{v11}(v12, v13, v14)"
-        : "invoke-direct com.test.myMethod{v11}(v12, v13, v14, v15)",
-        this.hierarchy);
+        val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
+        val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
+        val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+
+        Utils.parseAndCompare(
+            new Instruction[] {
+                new Instruction3rc(Opcode.INVOKE_STATIC_RANGE, (short) 10, 48000 , methodItem),
+                new Instruction3rc(Opcode.INVOKE_VIRTUAL_RANGE, (short) 11, 48000 , methodItem),
+                new Instruction3rc(Opcode.INVOKE_DIRECT_RANGE, (short) 11, 48000 , methodItem),
+                new Instruction3rc(Opcode.INVOKE_SUPER_RANGE, (short) 11, 48000 , methodItem),
+                new Instruction3rc(Opcode.INVOKE_INTERFACE_RANGE, (short) 11, 48000 , methodItem)
+            }, new String[] {
+                "invoke-static com.test.myMethod(v48000, v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009)",
+                "invoke-virtual com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
+                "invoke-direct com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
+                "invoke-super com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
+                "invoke-interface com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)"
+            }, this.hierarchy);
     }
-  }
 
-  @Test
-  public void testParse_Invoke_Standard_CallTypes() throws InstructionParseError {
-    val file = new DexFile();
-    val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
-    val returnType = TypeIdItem.internTypeIdItem(file, "V");
-    val intType = TypeIdItem.internTypeIdItem(file, "I");
-    val methodName = StringIdItem.internStringIdItem(file, "myMethod");
+    @Test
+    public void testCheckArguments_Static_Correct() {
+        val cache = this.hierarchy.getTypeCache();
+        val params = Arrays.asList(new DexRegisterType[] {
+                                       DexRegisterType.parse("J", cache)
+                                   });
+        val regs = Arrays.asList(new DexStandardRegister[] {
+                                     new DexWideOriginalRegister(1)
+                                 });
 
-    val paramsList = new LinkedList<TypeIdItem>();
-    paramsList.add(intType);
+        new DexInstruction_Invoke(this.classLong.getType(),
+                                  DexMethodId.parseMethodId(
+                                      "valueOf",
+                                      new DexPrototype(this.classLong.getType(), params),
+                                      cache),
+                                  regs,
+                                  Opcode_Invoke.Static,
+                                  this.hierarchy);
+    }
 
-    val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
-    val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
-    val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+    @Test(expected=Error.class)
+    public void testCheckArguments_Static_Incorrect() {
+        val cache = this.hierarchy.getTypeCache();
+        val params = Arrays.asList(new DexRegisterType[] {
+                                       DexRegisterType.parse("J", cache)
+                                   });
+        val regs = Arrays.asList(new DexStandardRegister[] {
+                                     new DexSingleOriginalRegister(1)
+                                 });
 
-    Utils.parseAndCompare(
-      new Instruction[] {
-        new Instruction35c(Opcode.INVOKE_STATIC, (byte) 1, (byte) 11, (byte) 0, (byte) 0, (byte) 0, (byte) 0, methodItem),
-        new Instruction35c(Opcode.INVOKE_VIRTUAL, (byte) 2, (byte) 11, (byte) 12, (byte) 0, (byte) 0, (byte) 0, methodItem),
-        new Instruction35c(Opcode.INVOKE_DIRECT, (byte) 2, (byte) 11, (byte) 12, (byte) 0, (byte) 0, (byte) 0, methodItem),
-        new Instruction35c(Opcode.INVOKE_SUPER, (byte) 2, (byte) 11, (byte) 12, (byte) 0, (byte) 0, (byte) 0, methodItem),
-        new Instruction35c(Opcode.INVOKE_INTERFACE, (byte) 2, (byte) 11, (byte) 12, (byte) 0, (byte) 0, (byte) 0, methodItem)
-      }, new String[] {
-        "invoke-static com.test.myMethod(v11)",
-        "invoke-virtual com.test.myMethod{v11}(v12)",
-        "invoke-direct com.test.myMethod{v11}(v12)",
-        "invoke-super com.test.myMethod{v11}(v12)",
-        "invoke-interface com.test.myMethod{v11}(v12)"
-      }, this.hierarchy);
-  }
-
-  @Test
-  public void testParse_Invoke_Range() throws InstructionParseError {
-    val file = new DexFile();
-    val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
-    val returnType = TypeIdItem.internTypeIdItem(file, "V");
-    val intType = TypeIdItem.internTypeIdItem(file, "I");
-    val methodName = StringIdItem.internStringIdItem(file, "myMethod");
-
-    val paramsList = new LinkedList<TypeIdItem>();
-    for (int j = 0; j < 10; ++j)
-      paramsList.add(intType);
-
-    val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
-    val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
-    val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
-
-    Utils.parseAndCompare(
-      new Instruction[] {
-        new Instruction3rc(Opcode.INVOKE_STATIC_RANGE, (short) 10, 48000 , methodItem),
-        new Instruction3rc(Opcode.INVOKE_VIRTUAL_RANGE, (short) 11, 48000 , methodItem),
-        new Instruction3rc(Opcode.INVOKE_DIRECT_RANGE, (short) 11, 48000 , methodItem),
-        new Instruction3rc(Opcode.INVOKE_SUPER_RANGE, (short) 11, 48000 , methodItem),
-        new Instruction3rc(Opcode.INVOKE_INTERFACE_RANGE, (short) 11, 48000 , methodItem)
-      }, new String[] {
-        "invoke-static com.test.myMethod(v48000, v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009)",
-        "invoke-virtual com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
-        "invoke-direct com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
-        "invoke-super com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
-        "invoke-interface com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)"
-      }, this.hierarchy);
-  }
-
-  @Test
-  public void testCheckArguments_Static_Correct() {
-    val cache = this.hierarchy.getTypeCache();
-    val params = Arrays.asList(new DexRegisterType[] {
-                                 DexRegisterType.parse("J", cache)
-                               });
-    val regs = Arrays.asList(new DexStandardRegister[] {
-                               new DexWideOriginalRegister(1)
-                             });
-
-    new DexInstruction_Invoke(this.classLong.getType(),
-                              DexMethodId.parseMethodId(
-                            		  "valueOf",
-                            		  new DexPrototype(this.classLong.getType(), params),
-                            		  cache),
-                              regs,
-                              Opcode_Invoke.Static,
-                              this.hierarchy);
-  }
-
-  @Test(expected=Error.class)
-  public void testCheckArguments_Static_Incorrect() {
-	    val cache = this.hierarchy.getTypeCache();
-	    val params = Arrays.asList(new DexRegisterType[] {
-	                                 DexRegisterType.parse("J", cache)
-	                               });
-	    val regs = Arrays.asList(new DexStandardRegister[] {
-	                               new DexSingleOriginalRegister(1)
-	                             });
-
-	    new DexInstruction_Invoke(this.classLong.getType(),
-	                              DexMethodId.parseMethodId(
-	                            		  "valueOf",
-	                            		  new DexPrototype(this.classLong.getType(), params),
-	                            		  cache),
-	                              regs,
-	                              Opcode_Invoke.Static,
-	                              this.hierarchy);
-  }
+        new DexInstruction_Invoke(this.classLong.getType(),
+                                  DexMethodId.parseMethodId(
+                                      "valueOf",
+                                      new DexPrototype(this.classLong.getType(), params),
+                                      cache),
+                                  regs,
+                                  Opcode_Invoke.Static,
+                                  this.hierarchy);
+    }
 }

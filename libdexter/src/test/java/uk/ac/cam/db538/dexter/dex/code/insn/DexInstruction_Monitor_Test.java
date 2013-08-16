@@ -10,16 +10,16 @@ import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
 public class DexInstruction_Monitor_Test extends HierarchyTest {
 
-  @Test
-  public void testParse() {
-    Utils.parseAndCompare(
-      new Instruction[] {
-        new Instruction11x(Opcode.MONITOR_ENTER, (short) 255),
-        new Instruction11x(Opcode.MONITOR_EXIT, (short) 254)
-      }, new String[] {
-        "monitor-enter v255",
-        "monitor-exit v254"
-      },
-      this.hierarchy);
-  }
+    @Test
+    public void testParse() {
+        Utils.parseAndCompare(
+            new Instruction[] {
+                new Instruction11x(Opcode.MONITOR_ENTER, (short) 255),
+                new Instruction11x(Opcode.MONITOR_EXIT, (short) 254)
+            }, new String[] {
+                "monitor-enter v255",
+                "monitor-exit v254"
+            },
+            this.hierarchy);
+    }
 }

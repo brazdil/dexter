@@ -9,11 +9,11 @@ import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
 public class DexInstruction_NewInstance_Test extends HierarchyTest {
 
-  @Test
-  public void testParse_NewInstance() throws InstructionParseError {
-    Utils.parseAndCompare(
-      new Instruction21c(Opcode.NEW_INSTANCE, (short) 236, Utils.getTypeItem("Ljava/lang/String;")),
-      "new-instance v236, Ljava/lang/String;",
-      this.hierarchy);
-  }
+    @Test
+    public void testParse_NewInstance() throws InstructionParseError {
+        Utils.parseAndCompare(
+            new Instruction21c(Opcode.NEW_INSTANCE, (short) 236, Utils.getTypeItem("Ljava/lang/String;")),
+            "new-instance v236, Ljava/lang/String;",
+            this.hierarchy);
+    }
 }

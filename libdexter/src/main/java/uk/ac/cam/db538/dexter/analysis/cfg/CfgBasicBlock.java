@@ -11,27 +11,27 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 public class CfgBasicBlock extends CfgBlock {
 
-  @Getter private final InstructionList instructions;
+    @Getter private final InstructionList instructions;
 
-  public CfgBasicBlock(InstructionList instructions) {
-    if (instructions == null || instructions.isEmpty())
-      throw new UnsupportedOperationException("BasicBlock must contain at least one instruction");
+    public CfgBasicBlock(InstructionList instructions) {
+        if (instructions == null || instructions.isEmpty())
+            throw new UnsupportedOperationException("BasicBlock must contain at least one instruction");
 
-    this.instructions = instructions;
-  }
+        this.instructions = instructions;
+    }
 
-  public DexCodeElement getFirstInstruction() {
-    return instructions.peekFirst();
-  }
+    public DexCodeElement getFirstInstruction() {
+        return instructions.peekFirst();
+    }
 
-  public DexCodeElement getLastInstruction() {
-    return instructions.peekLast();
-  }
+    public DexCodeElement getLastInstruction() {
+        return instructions.peekLast();
+    }
 
-  public Set<DexRegister> getAllDefinedRegisters() {
-    val set = new HashSet<DexRegister>();
-    for (val insn : instructions)
-      set.addAll(insn.lvaDefinedRegisters());
-    return set;
-  }
+    public Set<DexRegister> getAllDefinedRegisters() {
+        val set = new HashSet<DexRegister>();
+        for (val insn : instructions)
+            set.addAll(insn.lvaDefinedRegisters());
+        return set;
+    }
 }

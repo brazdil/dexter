@@ -19,77 +19,77 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_BinaryOpLiteral extends DexInstruction {
 
-  @Getter private final DexSingleRegister regTo;
-  @Getter private final DexSingleRegister regArgA;
-  @Getter private final long argB;
-  @Getter private final Opcode_BinaryOpLiteral insnOpcode;
-  
-  public DexInstruction_BinaryOpLiteral(DexSingleRegister target, DexSingleRegister source, long literal, Opcode_BinaryOpLiteral opcode, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    @Getter private final DexSingleRegister regTo;
+    @Getter private final DexSingleRegister regArgA;
+    @Getter private final long argB;
+    @Getter private final Opcode_BinaryOpLiteral insnOpcode;
 
-    this.regTo = target;
-    this.regArgA = source;
-    this.argB = literal;
-    this.insnOpcode = opcode;
-  }
+    public DexInstruction_BinaryOpLiteral(DexSingleRegister target, DexSingleRegister source, long literal, Opcode_BinaryOpLiteral opcode, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-  public static DexInstruction_BinaryOpLiteral parse(Instruction insn, CodeParserState parsingState) {
-	val opcode = Opcode_BinaryOpLiteral.convert(insn.opcode);
-    int regA, regB;
-    long lit;
+        this.regTo = target;
+        this.regArgA = source;
+        this.argB = literal;
+        this.insnOpcode = opcode;
+    }
 
-    if (insn instanceof Instruction22s && opcode != null) {
+    public static DexInstruction_BinaryOpLiteral parse(Instruction insn, CodeParserState parsingState) {
+        val opcode = Opcode_BinaryOpLiteral.convert(insn.opcode);
+        int regA, regB;
+        long lit;
 
-      val insnBinaryOpLit16 = (Instruction22s) insn;
-      regA = insnBinaryOpLit16.getRegisterA();
-      regB = insnBinaryOpLit16.getRegisterB();
-      lit = insnBinaryOpLit16.getLiteral();
+        if (insn instanceof Instruction22s && opcode != null) {
 
-    } else if (insn instanceof Instruction22b && opcode != null) {
+            val insnBinaryOpLit16 = (Instruction22s) insn;
+            regA = insnBinaryOpLit16.getRegisterA();
+            regB = insnBinaryOpLit16.getRegisterB();
+            lit = insnBinaryOpLit16.getLiteral();
 
-      val insnBinaryOpLit8 = (Instruction22b) insn;
-      regA = insnBinaryOpLit8.getRegisterA();
-      regB = insnBinaryOpLit8.getRegisterB();
-      lit = insnBinaryOpLit8.getLiteral();
+        } else if (insn instanceof Instruction22b && opcode != null) {
 
-    } else
-      throw FORMAT_EXCEPTION;
+            val insnBinaryOpLit8 = (Instruction22b) insn;
+            regA = insnBinaryOpLit8.getRegisterA();
+            regB = insnBinaryOpLit8.getRegisterB();
+            lit = insnBinaryOpLit8.getLiteral();
 
-    return new DexInstruction_BinaryOpLiteral(
-    		parsingState.getSingleRegister(regA),
-    		parsingState.getSingleRegister(regB),
-    		lit,
-    		opcode,
-    		parsingState.getHierarchy());
-  }
+        } else
+            throw FORMAT_EXCEPTION;
 
-  @Override
-  public String toString() {
-    return insnOpcode.name().toLowerCase() + "-int/lit " + regTo.toString() +
-           ", " + regArgA.toString() + ", #" + argB;
-  }
+        return new DexInstruction_BinaryOpLiteral(
+                   parsingState.getSingleRegister(regA),
+                   parsingState.getSingleRegister(regB),
+                   lit,
+                   opcode,
+                   parsingState.getHierarchy());
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+    @Override
+    public String toString() {
+        return insnOpcode.name().toLowerCase() + "-int/lit " + regTo.toString() +
+               ", " + regArgA.toString() + ", #" + argB;
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regArgA);
-  }
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regArgA);
+    }
 
-  @Override
-  protected DexClassType[] throwsExceptions() {
-	if (insnOpcode == Opcode_BinaryOpLiteral.Div || insnOpcode == Opcode_BinaryOpLiteral.Rem) {
-		return this.hierarchy.getTypeCache().LIST_Error_ArithmeticException;
-	} else
-		return null;
-  }
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    protected DexClassType[] throwsExceptions() {
+        if (insnOpcode == Opcode_BinaryOpLiteral.Div || insnOpcode == Opcode_BinaryOpLiteral.Rem) {
+            return this.hierarchy.getTypeCache().LIST_Error_ArithmeticException;
+        } else
+            return null;
+    }
 
 }

@@ -21,58 +21,58 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_InstanceOf extends DexInstruction {
 
-  @Getter private final DexSingleRegister regTo;
-  @Getter private final DexSingleRegister regObject;
-  @Getter private final DexReferenceType value;
+    @Getter private final DexSingleRegister regTo;
+    @Getter private final DexSingleRegister regObject;
+    @Getter private final DexReferenceType value;
 
-  public DexInstruction_InstanceOf(DexSingleRegister to, DexSingleRegister object, DexReferenceType value, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_InstanceOf(DexSingleRegister to, DexSingleRegister object, DexReferenceType value, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.regTo = to;
-    this.regObject = object;
-    this.value = value;
-  }
+        this.regTo = to;
+        this.regObject = object;
+        this.value = value;
+    }
 
-  public static DexInstruction_InstanceOf parse(Instruction insn, CodeParserState parsingState) {
-    if (insn instanceof Instruction22c && insn.opcode == Opcode.INSTANCE_OF) {
+    public static DexInstruction_InstanceOf parse(Instruction insn, CodeParserState parsingState) {
+        if (insn instanceof Instruction22c && insn.opcode == Opcode.INSTANCE_OF) {
 
-      val hierarchy = parsingState.getHierarchy();
-    	
-      val insnInstanceOf = (Instruction22c) insn;
-      return new DexInstruction_InstanceOf(
-    		  parsingState.getSingleRegister(insnInstanceOf.getRegisterA()),
-    		  parsingState.getSingleRegister(insnInstanceOf.getRegisterB()),
-    		  DexReferenceType.parse(
-                ((TypeIdItem) insnInstanceOf.getReferencedItem()).getTypeDescriptor(),
-                hierarchy.getTypeCache()),
-              hierarchy);
+            val hierarchy = parsingState.getHierarchy();
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+            val insnInstanceOf = (Instruction22c) insn;
+            return new DexInstruction_InstanceOf(
+                       parsingState.getSingleRegister(insnInstanceOf.getRegisterA()),
+                       parsingState.getSingleRegister(insnInstanceOf.getRegisterB()),
+                       DexReferenceType.parse(
+                           ((TypeIdItem) insnInstanceOf.getReferencedItem()).getTypeDescriptor(),
+                           hierarchy.getTypeCache()),
+                       hierarchy);
 
-  @Override
-  public String toString() {
-    return "instance-of " + regTo.toString() + ", " + regObject.toString() + ", " + value.getDescriptor();
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+    @Override
+    public String toString() {
+        return "instance-of " + regTo.toString() + ", " + regObject.toString() + ", " + value.getDescriptor();
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regObject);
-  }
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
-  
-  @Override
-  protected DexClassType[] throwsExceptions() {
-	return this.hierarchy.getTypeCache().LIST_Error;
-  }
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regObject);
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    protected DexClassType[] throwsExceptions() {
+        return this.hierarchy.getTypeCache().LIST_Error;
+    }
 }

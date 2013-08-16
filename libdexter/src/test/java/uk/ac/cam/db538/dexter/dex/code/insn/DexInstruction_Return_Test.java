@@ -10,16 +10,16 @@ import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
 public class DexInstruction_Return_Test extends HierarchyTest {
 
-  @Test
-  public void testParse() {
-    Utils.parseAndCompare(
-      new Instruction[] {
-        new Instruction11x(Opcode.RETURN, (short) 255),
-        new Instruction11x(Opcode.RETURN_OBJECT, (short) 254)
-      }, new String[] {
-        "return v255",
-        "return-object v254"
-      },
-      this.hierarchy);
-  }
+    @Test
+    public void testParse() {
+        Utils.parseAndCompare(
+            new Instruction[] {
+                new Instruction11x(Opcode.RETURN, (short) 255),
+                new Instruction11x(Opcode.RETURN_OBJECT, (short) 254)
+            }, new String[] {
+                "return v255",
+                "return-object v254"
+            },
+            this.hierarchy);
+    }
 }

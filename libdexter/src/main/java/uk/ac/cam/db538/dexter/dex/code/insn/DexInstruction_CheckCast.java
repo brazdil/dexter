@@ -21,57 +21,57 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_CheckCast extends DexInstruction {
 
-  @Getter private final DexSingleRegister regObject;
-  @Getter private final DexReferenceType value;
+    @Getter private final DexSingleRegister regObject;
+    @Getter private final DexReferenceType value;
 
-  public DexInstruction_CheckCast(DexSingleRegister object, DexReferenceType value, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_CheckCast(DexSingleRegister object, DexReferenceType value, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.regObject = object;
-    this.value = value;
-  }
+        this.regObject = object;
+        this.value = value;
+    }
 
-  public static DexInstruction_CheckCast parse(Instruction insn, CodeParserState parsingState) {
-    if (insn instanceof Instruction21c && insn.opcode == Opcode.CHECK_CAST) {
+    public static DexInstruction_CheckCast parse(Instruction insn, CodeParserState parsingState) {
+        if (insn instanceof Instruction21c && insn.opcode == Opcode.CHECK_CAST) {
 
-      val hierarchy = parsingState.getHierarchy();
-    	
-      val insnCheckCast = (Instruction21c) insn;
-      return new DexInstruction_CheckCast(
-    		  parsingState.getSingleRegister(insnCheckCast.getRegisterA()),
-    		  DexReferenceType.parse(
-                     ((TypeIdItem) insnCheckCast.getReferencedItem()).getTypeDescriptor(),
-                     hierarchy.getTypeCache()),
-              hierarchy);
+            val hierarchy = parsingState.getHierarchy();
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+            val insnCheckCast = (Instruction21c) insn;
+            return new DexInstruction_CheckCast(
+                       parsingState.getSingleRegister(insnCheckCast.getRegisterA()),
+                       DexReferenceType.parse(
+                           ((TypeIdItem) insnCheckCast.getReferencedItem()).getTypeDescriptor(),
+                           hierarchy.getTypeCache()),
+                       hierarchy);
 
-  @Override
-  public String toString() {
-    return "check-cast " + regObject.toString() + ", " + value.getDescriptor();
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regObject);
-  }
+    @Override
+    public String toString() {
+        return "check-cast " + regObject.toString() + ", " + value.getDescriptor();
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    // it defines it, because the object gets its type changed inside the VM
-    return Sets.newHashSet(regObject);
-  }
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regObject);
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        // it defines it, because the object gets its type changed inside the VM
+        return Sets.newHashSet(regObject);
+    }
 
-  @Override
-  protected DexClassType[] throwsExceptions() {
-	return this.hierarchy.getTypeCache().LIST_Error_ClassCastException;
-  }
-  
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    protected DexClassType[] throwsExceptions() {
+        return this.hierarchy.getTypeCache().LIST_Error_ClassCastException;
+    }
+
 }

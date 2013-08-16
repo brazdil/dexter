@@ -25,12 +25,12 @@ class JarSignerParameters implements ContentSignerParameters {
      * Create a new object.
      */
     JarSignerParameters(String[] args, URI tsa, X509Certificate tsaCertificate,
-        byte[] signature, String signatureAlgorithm,
-        X509Certificate[] signerCertificateChain, byte[] content,
-        ZipFile source) {
+                        byte[] signature, String signatureAlgorithm,
+                        X509Certificate[] signerCertificateChain, byte[] content,
+                        ZipFile source) {
 
         if (signature == null || signatureAlgorithm == null ||
-            signerCertificateChain == null) {
+                signerCertificateChain == null) {
             throw new NullPointerException();
         }
         this.args = args;

@@ -19,67 +19,67 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_ArrayGet extends DexInstruction {
 
-  @Getter private final DexRegister regTo;
-  @Getter private final DexSingleRegister regArray;
-  @Getter private final DexSingleRegister regIndex;
-  @Getter private final Opcode_GetPut opcode;
+    @Getter private final DexRegister regTo;
+    @Getter private final DexSingleRegister regArray;
+    @Getter private final DexSingleRegister regIndex;
+    @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_ArrayGet(DexRegister to, DexSingleRegister array, DexSingleRegister index, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_ArrayGet(DexRegister to, DexSingleRegister array, DexSingleRegister index, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.regTo = to;
-    this.regArray = array;
-    this.regIndex = index;
-    this.opcode = opcode;
+        this.regTo = to;
+        this.regArray = array;
+        this.regIndex = index;
+        this.opcode = opcode;
 
-    Opcode_GetPut.checkRegisterWidth(regTo, this.opcode);
-  }
+        Opcode_GetPut.checkRegisterWidth(regTo, this.opcode);
+    }
 
-  public static DexInstruction_ArrayGet parse(Instruction insn, CodeParserState parsingState) {
-	val opcode = Opcode_GetPut.convert_AGET(insn.opcode);
-    if (insn instanceof Instruction23x && opcode != null) {
+    public static DexInstruction_ArrayGet parse(Instruction insn, CodeParserState parsingState) {
+        val opcode = Opcode_GetPut.convert_AGET(insn.opcode);
+        if (insn instanceof Instruction23x && opcode != null) {
 
-      val insnArrayGet = (Instruction23x) insn;
-      
-      DexStandardRegister regTo;
-      if (opcode == Opcode_GetPut.Wide)
-    	  regTo = parsingState.getWideRegister(insnArrayGet.getRegisterA());
-      else
-    	  regTo = parsingState.getSingleRegister(insnArrayGet.getRegisterA());
-      
-      return new DexInstruction_ArrayGet(
-    		  regTo,
-    		  parsingState.getSingleRegister(insnArrayGet.getRegisterB()),
-    		  parsingState.getSingleRegister(insnArrayGet.getRegisterC()),
-    		  opcode,
-    		  parsingState.getHierarchy());
+            val insnArrayGet = (Instruction23x) insn;
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+            DexStandardRegister regTo;
+            if (opcode == Opcode_GetPut.Wide)
+                regTo = parsingState.getWideRegister(insnArrayGet.getRegisterA());
+            else
+                regTo = parsingState.getSingleRegister(insnArrayGet.getRegisterA());
 
-  @Override
-  public String toString() {
-    return "aget" + opcode.getAsmSuffix() + " " + regTo.toString() + ", {" + regArray.toString() + "}[" + regIndex.toString() + "]";
-  }
+            return new DexInstruction_ArrayGet(
+                       regTo,
+                       parsingState.getSingleRegister(insnArrayGet.getRegisterB()),
+                       parsingState.getSingleRegister(insnArrayGet.getRegisterC()),
+                       opcode,
+                       parsingState.getHierarchy());
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regArray, regIndex);
-  }
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
-  
-  @Override
-  protected DexClassType[] throwsExceptions() {
-	return this.hierarchy.getTypeCache().LIST_Error_Null_ArrayIndexOutOfBounds;
-  }
-  
+    @Override
+    public String toString() {
+        return "aget" + opcode.getAsmSuffix() + " " + regTo.toString() + ", {" + regArray.toString() + "}[" + regIndex.toString() + "]";
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regArray, regIndex);
+    }
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    protected DexClassType[] throwsExceptions() {
+        return this.hierarchy.getTypeCache().LIST_Error_Null_ArrayIndexOutOfBounds;
+    }
+
 }

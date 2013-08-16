@@ -21,83 +21,83 @@ import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
 public class DexAnnotation {
 
-  @Getter private final DexClassType type;
-  @Getter private final AnnotationVisibility visibility;
-  private final List<String> paramNames;
-  private final List<EncodedValue> paramValues;
+    @Getter private final DexClassType type;
+    @Getter private final AnnotationVisibility visibility;
+    private final List<String> paramNames;
+    private final List<EncodedValue> paramValues;
 
-  public DexAnnotation(DexClassType type, AnnotationVisibility visibility) {
-    this.type = type;
-    this.visibility = visibility;
-    // Order of parameters matter, so it can't be stored in a hash table.
-    this.paramNames = new ArrayList<String>();
-    this.paramValues = new ArrayList<EncodedValue>();
-  }
+    public DexAnnotation(DexClassType type, AnnotationVisibility visibility) {
+        this.type = type;
+        this.visibility = visibility;
+        // Order of parameters matter, so it can't be stored in a hash table.
+        this.paramNames = new ArrayList<String>();
+        this.paramValues = new ArrayList<EncodedValue>();
+    }
 
-  public DexAnnotation(AnnotationItem anno, DexTypeCache cache) {
-    this(DexClassType.parse(anno.getEncodedAnnotation().annotationType.getTypeDescriptor(), cache),
-         anno.getVisibility());
+    public DexAnnotation(AnnotationItem anno, DexTypeCache cache) {
+        this(DexClassType.parse(anno.getEncodedAnnotation().annotationType.getTypeDescriptor(), cache),
+             anno.getVisibility());
 
-    val encAnno = anno.getEncodedAnnotation();
-    int len = encAnno.names.length;
-    for (int i = 0; i < len; ++i)
-      addParam(encAnno.names[i].getStringValue(), encAnno.values[i]);
-  }
+        val encAnno = anno.getEncodedAnnotation();
+        int len = encAnno.names.length;
+        for (int i = 0; i < len; ++i)
+            addParam(encAnno.names[i].getStringValue(), encAnno.values[i]);
+    }
 
-  public void addParam(String name, EncodedValue value) {
-	  paramNames.add(name);
-	  paramValues.add(value);
-  }
+    public void addParam(String name, EncodedValue value) {
+        paramNames.add(name);
+        paramValues.add(value);
+    }
 
-  public List<String> getParamNames() {
-	return Collections.unmodifiableList(paramNames);
-  }
-  
-  public List<EncodedValue> getParamValues() {
-	return Collections.unmodifiableList(paramValues);
-  }
+    public List<String> getParamNames() {
+        return Collections.unmodifiableList(paramNames);
+    }
 
-  public static List<DexAnnotation> parseAll(AnnotationSetItem annotations, DexTypeCache cache) {
-    if (annotations == null)
-      return Collections.emptyList();
+    public List<EncodedValue> getParamValues() {
+        return Collections.unmodifiableList(paramValues);
+    }
 
-    val items = annotations.getAnnotations();
-    val list = new ArrayList<DexAnnotation>(items.length);
+    public static List<DexAnnotation> parseAll(AnnotationSetItem annotations, DexTypeCache cache) {
+        if (annotations == null)
+            return Collections.emptyList();
 
-    for (val anno : items)
-      list.add(new DexAnnotation(anno, cache));
+        val items = annotations.getAnnotations();
+        val list = new ArrayList<DexAnnotation>(items.length);
 
-    return list;
-  }
+        for (val anno : items)
+            list.add(new DexAnnotation(anno, cache));
 
-  public static List<List<DexAnnotation>> parseAll(AnnotationSetRefList annotations, DexTypeCache cache) {
-    if (annotations == null)
-      return Collections.emptyList();
+        return list;
+    }
 
-    val annotationLists = annotations.getAnnotationSets();
-    if (annotationLists.length == 0)
-    	return Collections.emptyList();
-    
-    List<List<DexAnnotation>> list = new ArrayList<List<DexAnnotation>>(annotationLists.length);
-    
-    for (val anno : annotationLists)
-      list.add(parseAll(anno, cache));
+    public static List<List<DexAnnotation>> parseAll(AnnotationSetRefList annotations, DexTypeCache cache) {
+        if (annotations == null)
+            return Collections.emptyList();
 
-    return list;
-  }
+        val annotationLists = annotations.getAnnotationSets();
+        if (annotationLists.length == 0)
+            return Collections.emptyList();
 
-  public AnnotationItem writeToFile(DexFile outFile, DexAssemblingCache cache) {
-	int paramCount = paramNames.size();
-	int paramIndex = 0;
-	val paramNames = new StringIdItem[paramCount];
-	val paramValues = new EncodedValue[paramCount];
-	for (int i = 0; i < paramCount; i++) {
-		paramNames[paramIndex] = cache.getStringConstant(this.paramNames.get(i));
-		paramValues[paramIndex] = DexUtils.cloneEncodedValue(this.paramValues.get(i), cache);
-		paramIndex++;
-	}
-	   
-	val subValue = new AnnotationEncodedSubValue(cache.getType(type), paramNames, paramValues);
-	return AnnotationItem.internAnnotationItem(outFile, visibility, subValue);
-  }
+        List<List<DexAnnotation>> list = new ArrayList<List<DexAnnotation>>(annotationLists.length);
+
+        for (val anno : annotationLists)
+            list.add(parseAll(anno, cache));
+
+        return list;
+    }
+
+    public AnnotationItem writeToFile(DexFile outFile, DexAssemblingCache cache) {
+        int paramCount = paramNames.size();
+        int paramIndex = 0;
+        val paramNames = new StringIdItem[paramCount];
+        val paramValues = new EncodedValue[paramCount];
+        for (int i = 0; i < paramCount; i++) {
+            paramNames[paramIndex] = cache.getStringConstant(this.paramNames.get(i));
+            paramValues[paramIndex] = DexUtils.cloneEncodedValue(this.paramValues.get(i), cache);
+            paramIndex++;
+        }
+
+        val subValue = new AnnotationEncodedSubValue(cache.getType(type), paramNames, paramValues);
+        return AnnotationItem.internAnnotationItem(outFile, visibility, subValue);
+    }
 }

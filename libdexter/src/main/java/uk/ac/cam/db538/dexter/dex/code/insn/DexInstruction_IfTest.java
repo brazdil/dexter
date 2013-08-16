@@ -20,58 +20,58 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_IfTest extends DexInstruction {
 
-  @Getter private final DexSingleRegister regA;
-  @Getter private final DexSingleRegister regB;
-  @Getter private final DexLabel target;
-  @Getter private final Opcode_IfTest insnOpcode;
+    @Getter private final DexSingleRegister regA;
+    @Getter private final DexSingleRegister regB;
+    @Getter private final DexLabel target;
+    @Getter private final Opcode_IfTest insnOpcode;
 
-  public DexInstruction_IfTest(DexSingleRegister regA, DexSingleRegister regB, DexLabel target, Opcode_IfTest opcode, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_IfTest(DexSingleRegister regA, DexSingleRegister regB, DexLabel target, Opcode_IfTest opcode, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.regA = regA;
-    this.regB = regB;
-    this.target = target;
-    this.insnOpcode = opcode;
-  }
+        this.regA = regA;
+        this.regB = regB;
+        this.target = target;
+        this.insnOpcode = opcode;
+    }
 
-  public static DexInstruction_IfTest parse(Instruction insn, CodeParserState parsingState) throws InstructionParseError {
-    if (insn instanceof Instruction22t && Opcode_IfTest.convert(insn.opcode) != null) {
+    public static DexInstruction_IfTest parse(Instruction insn, CodeParserState parsingState) throws InstructionParseError {
+        if (insn instanceof Instruction22t && Opcode_IfTest.convert(insn.opcode) != null) {
 
-      val insnIfTest = (Instruction22t) insn;
-      return new DexInstruction_IfTest(
-    		  parsingState.getSingleRegister(insnIfTest.getRegisterA()),
-    		  parsingState.getSingleRegister(insnIfTest.getRegisterB()),
-    		  parsingState.getLabel(insnIfTest.getTargetAddressOffset(), insn),
-    		  Opcode_IfTest.convert(insn.opcode),
-    		  parsingState.getHierarchy());
+            val insnIfTest = (Instruction22t) insn;
+            return new DexInstruction_IfTest(
+                       parsingState.getSingleRegister(insnIfTest.getRegisterA()),
+                       parsingState.getSingleRegister(insnIfTest.getRegisterB()),
+                       parsingState.getLabel(insnIfTest.getTargetAddressOffset(), insn),
+                       Opcode_IfTest.convert(insn.opcode),
+                       parsingState.getHierarchy());
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
-  @Override
-  public String toString() {
-    return "if-" + insnOpcode.name() + " " + regA.toString() +
-           ", " + regB.toString() + ", " + target.toString();
-  }
+    @Override
+    public String toString() {
+        return "if-" + insnOpcode.name() + " " + regA.toString() +
+               ", " + regB.toString() + ", " + target.toString();
+    }
 
-  @Override
-  public boolean cfgEndsBasicBlock() {
-    return true;
-  }
+    @Override
+    public boolean cfgEndsBasicBlock() {
+        return true;
+    }
 
-  @Override
-  public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
-	return Sets.newHashSet(target, code.getNextInstruction(this));
-  }
+    @Override
+    public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
+        return Sets.newHashSet(target, code.getNextInstruction(this));
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regA, regB);
-  }
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regA, regB);
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
 }

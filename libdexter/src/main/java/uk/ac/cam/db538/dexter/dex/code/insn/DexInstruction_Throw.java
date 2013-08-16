@@ -22,52 +22,52 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_Throw extends DexInstruction {
 
-  @Getter private final DexSingleRegister regFrom;
+    @Getter private final DexSingleRegister regFrom;
 
-  public DexInstruction_Throw(DexSingleRegister from, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
-    this.regFrom = from;
-  }
+    public DexInstruction_Throw(DexSingleRegister from, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
+        this.regFrom = from;
+    }
 
-  public static DexInstruction_Throw parse(Instruction insn, CodeParserState parsingState) {
-    if (insn instanceof Instruction11x && insn.opcode == Opcode.THROW) {
+    public static DexInstruction_Throw parse(Instruction insn, CodeParserState parsingState) {
+        if (insn instanceof Instruction11x && insn.opcode == Opcode.THROW) {
 
-      val insnThrow = (Instruction11x) insn;
-      return new DexInstruction_Throw(
-    		  parsingState.getSingleRegister(insnThrow.getRegisterA()),
-    		  parsingState.getHierarchy());
+            val insnThrow = (Instruction11x) insn;
+            return new DexInstruction_Throw(
+                       parsingState.getSingleRegister(insnThrow.getRegisterA()),
+                       parsingState.getHierarchy());
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
-  @Override
-  public String toString() {
-    return "throw " + regFrom.toString();
-  }
+    @Override
+    public String toString() {
+        return "throw " + regFrom.toString();
+    }
 
-  @Override
-  public boolean cfgEndsBasicBlock() {
-    return true;
-  }
-  
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regFrom);
-  }
+    @Override
+    public boolean cfgEndsBasicBlock() {
+        return true;
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regFrom);
+    }
 
-  @Override
-  protected DexClassType[] throwsExceptions() {
-    return new DexClassType[] { DexClassType.parse("Ljava/lang/Throwable;", this.hierarchy.getTypeCache()) };
-  }
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  @Override
-  protected Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
-	  return Collections.emptySet();
-  }
+    @Override
+    protected DexClassType[] throwsExceptions() {
+        return new DexClassType[] { DexClassType.parse("Ljava/lang/Throwable;", this.hierarchy.getTypeCache()) };
+    }
+
+    @Override
+    protected Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
+        return Collections.emptySet();
+    }
 }

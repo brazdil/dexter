@@ -4,20 +4,20 @@ import lombok.Getter;
 
 public class DexTaintRegister extends DexSingleRegister {
 
-	@Getter private final DexStandardRegister originalRegister;
+    @Getter private final DexStandardRegister originalRegister;
 
-	// Only to be called by Dex{Single,Wide}OriginalRegister constructors
-	DexTaintRegister(DexStandardRegister origReg) {
-		this.originalRegister = origReg;
-	}
+    // Only to be called by Dex{Single,Wide}OriginalRegister constructors
+    DexTaintRegister(DexStandardRegister origReg) {
+        this.originalRegister = origReg;
+    }
 
-	@Override
-	String getAsmId() {
-		return originalRegister.getAsmId();
-	}
+    @Override
+    String getAsmId() {
+        return originalRegister.getAsmId();
+    }
 
-	@Override
-	String getAsmPrefix() {
-		return "t";
-	}
+    @Override
+    String getAsmPrefix() {
+        return "t";
+    }
 }

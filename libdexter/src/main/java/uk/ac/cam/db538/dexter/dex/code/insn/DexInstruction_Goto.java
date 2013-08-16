@@ -20,47 +20,47 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_Goto extends DexInstruction {
 
-  @Getter private final DexLabel target;
+    @Getter private final DexLabel target;
 
-  public DexInstruction_Goto(DexLabel target, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_Goto(DexLabel target, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.target = target;
-  }
+        this.target = target;
+    }
 
-  public static DexInstruction_Goto parse(Instruction insn, CodeParserState parsingState) {
-    long targetOffset;
-    if (insn instanceof Instruction10t && insn.opcode == Opcode.GOTO) {
-      targetOffset = ((Instruction10t) insn).getTargetAddressOffset();
-    } else if (insn instanceof Instruction20t && insn.opcode == Opcode.GOTO_16) {
-      targetOffset = ((Instruction20t) insn).getTargetAddressOffset();
-    } else if (insn instanceof Instruction30t && insn.opcode == Opcode.GOTO_32) {
-      targetOffset = ((Instruction30t) insn).getTargetAddressOffset();
-    } else
-      throw FORMAT_EXCEPTION;
+    public static DexInstruction_Goto parse(Instruction insn, CodeParserState parsingState) {
+        long targetOffset;
+        if (insn instanceof Instruction10t && insn.opcode == Opcode.GOTO) {
+            targetOffset = ((Instruction10t) insn).getTargetAddressOffset();
+        } else if (insn instanceof Instruction20t && insn.opcode == Opcode.GOTO_16) {
+            targetOffset = ((Instruction20t) insn).getTargetAddressOffset();
+        } else if (insn instanceof Instruction30t && insn.opcode == Opcode.GOTO_32) {
+            targetOffset = ((Instruction30t) insn).getTargetAddressOffset();
+        } else
+            throw FORMAT_EXCEPTION;
 
-    return new DexInstruction_Goto(
-    		parsingState.getLabel(targetOffset, insn),
-    		parsingState.getHierarchy());
-  }
+        return new DexInstruction_Goto(
+                   parsingState.getLabel(targetOffset, insn),
+                   parsingState.getHierarchy());
+    }
 
-  @Override
-  public String toString() {
-    return "goto " + target.toString();
-  }
+    @Override
+    public String toString() {
+        return "goto " + target.toString();
+    }
 
-  @Override
-  public boolean cfgEndsBasicBlock() {
-    return true;
-  }
+    @Override
+    public boolean cfgEndsBasicBlock() {
+        return true;
+    }
 
-  @Override
-  public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
-	  return Sets.newHashSet(target);
-  }
+    @Override
+    public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
+        return Sets.newHashSet(target);
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
 }

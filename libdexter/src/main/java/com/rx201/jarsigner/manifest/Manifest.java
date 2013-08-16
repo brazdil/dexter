@@ -110,7 +110,7 @@ public class Manifest implements Cloneable {
     public Manifest(Manifest man) {
         mainAttributes = (Attributes) man.mainAttributes.clone();
         entries = (HashMap<String, Attributes>) ((HashMap<String, Attributes>) man
-                .getEntries()).clone();
+                  .getEntries()).clone();
     }
 
     Manifest(InputStream is, boolean readChunks) throws IOException {
@@ -337,7 +337,7 @@ public class Manifest implements Cloneable {
     }
 
     private static void writeEntry(OutputStream os, Attributes.Name name,
-            String value, CharsetEncoder encoder, ByteBuffer bBuf) throws IOException {
+                                   String value, CharsetEncoder encoder, ByteBuffer bBuf) throws IOException {
         String nameString = name.getName();
         os.write(nameString.getBytes(Charset.forName("US-ASCII")));
         os.write(VALUE_SEPARATOR);

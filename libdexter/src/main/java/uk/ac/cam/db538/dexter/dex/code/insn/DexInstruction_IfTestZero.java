@@ -20,53 +20,53 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_IfTestZero extends DexInstruction {
 
-  @Getter private final DexSingleRegister reg;
-  @Getter private final DexLabel target;
-  @Getter private final Opcode_IfTestZero insnOpcode;
+    @Getter private final DexSingleRegister reg;
+    @Getter private final DexLabel target;
+    @Getter private final Opcode_IfTestZero insnOpcode;
 
-  public DexInstruction_IfTestZero(DexSingleRegister reg, DexLabel target, Opcode_IfTestZero opcode, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_IfTestZero(DexSingleRegister reg, DexLabel target, Opcode_IfTestZero opcode, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.reg = reg;
-    this.target = target;
-    this.insnOpcode = opcode;
-  }
+        this.reg = reg;
+        this.target = target;
+        this.insnOpcode = opcode;
+    }
 
-  public static DexInstruction_IfTestZero parse(Instruction insn, CodeParserState parsingState) {
-    if (insn instanceof Instruction21t && Opcode_IfTestZero.convert(insn.opcode) != null) {
+    public static DexInstruction_IfTestZero parse(Instruction insn, CodeParserState parsingState) {
+        if (insn instanceof Instruction21t && Opcode_IfTestZero.convert(insn.opcode) != null) {
 
-      val insnIfTestZero = (Instruction21t) insn;
-      return new DexInstruction_IfTestZero(
-    		  parsingState.getSingleRegister(insnIfTestZero.getRegisterA()),
-    		  parsingState.getLabel(insnIfTestZero.getTargetAddressOffset(), insn),
-    		  Opcode_IfTestZero.convert(insn.opcode),
-    		  parsingState.getHierarchy());
+            val insnIfTestZero = (Instruction21t) insn;
+            return new DexInstruction_IfTestZero(
+                       parsingState.getSingleRegister(insnIfTestZero.getRegisterA()),
+                       parsingState.getLabel(insnIfTestZero.getTargetAddressOffset(), insn),
+                       Opcode_IfTestZero.convert(insn.opcode),
+                       parsingState.getHierarchy());
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
-  @Override
-  public String toString() {
-    return "if-" + insnOpcode.name() + " " + reg.toString() + ", " + target.toString();
-  }
+    @Override
+    public String toString() {
+        return "if-" + insnOpcode.name() + " " + reg.toString() + ", " + target.toString();
+    }
 
-  @Override
-  public boolean cfgEndsBasicBlock() {
-    return true;
-  }
+    @Override
+    public boolean cfgEndsBasicBlock() {
+        return true;
+    }
 
-  @Override
-  public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
-	return Sets.newHashSet(target, code.getNextInstruction(this));
-  }
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(reg);
-  }
+    @Override
+    public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
+        return Sets.newHashSet(target, code.getNextInstruction(this));
+    }
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(reg);
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
 }

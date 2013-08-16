@@ -25,75 +25,75 @@ import uk.ac.cam.db538.dexter.utils.Cache;
 
 public abstract class DexField {
 
-	@Getter private final DexClass parentClass;
+    @Getter private final DexClass parentClass;
 
-	private final List<DexAnnotation> _annotations;
-	@Getter private final List<DexAnnotation> annotations;
-  
-	public DexField(DexClass parentClass) {
-		this.parentClass = parentClass;
+    private final List<DexAnnotation> _annotations;
+    @Getter private final List<DexAnnotation> annotations;
 
-		this._annotations = new ArrayList<DexAnnotation>();
-		this.annotations = Collections.unmodifiableList(this._annotations);
-	}
+    public DexField(DexClass parentClass) {
+        this.parentClass = parentClass;
 
-	public DexField(DexClass parentClass, EncodedField fieldItem, AnnotationDirectoryItem annoDir) {
-		this(parentClass);
-		
-		this._annotations.addAll(init_ParseAnnotations(getParentFile(), fieldItem, annoDir));
-	}
-	
-	private static List<DexAnnotation> init_ParseAnnotations(Dex dex, EncodedField fieldInfo, AnnotationDirectoryItem annoDir) {
-		if (annoDir == null)
-			return Collections.emptyList();
-		else
-			return DexAnnotation.parseAll(annoDir.getFieldAnnotations(fieldInfo.field), dex.getTypeCache());
-	}
-	
-	public Dex getParentFile() {
-		return parentClass.getParentFile();
-	}
-	
-	public void addAnnotation(DexAnnotation anno) {
-		_annotations.add(anno);
-	}
+        this._annotations = new ArrayList<DexAnnotation>();
+        this.annotations = Collections.unmodifiableList(this._annotations);
+    }
 
-	protected abstract FieldDefinition internal_GetFieldDef(); 
-	
-	public EncodedField writeToFile(DexFile outFile, DexAssemblingCache cache) {
-		val fieldDef = internal_GetFieldDef();
-		val fieldItem = cache.getField(fieldDef);
-		val accessFlags = DexUtils.assembleAccessFlags(fieldDef.getAccessFlags());
+    public DexField(DexClass parentClass, EncodedField fieldItem, AnnotationDirectoryItem annoDir) {
+        this(parentClass);
 
-		return new EncodedField(fieldItem, accessFlags);
-	}
+        this._annotations.addAll(init_ParseAnnotations(getParentFile(), fieldItem, annoDir));
+    }
 
-	public static Cache<FieldDefinition, FieldIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
-		return new Cache<FieldDefinition, FieldIdItem>() {
-			@Override
-			protected FieldIdItem createNewEntry(FieldDefinition key) {
-				return FieldIdItem.internFieldIdItem(
-						outFile,
-						cache.getType(key.getParentClass().getType()),
-						cache.getType(key.getFieldId().getType()),
-						cache.getStringConstant(key.getFieldId().getName()));
-			}
-		};
-	}
+    private static List<DexAnnotation> init_ParseAnnotations(Dex dex, EncodedField fieldInfo, AnnotationDirectoryItem annoDir) {
+        if (annoDir == null)
+            return Collections.emptyList();
+        else
+            return DexAnnotation.parseAll(annoDir.getFieldAnnotations(fieldInfo.field), dex.getTypeCache());
+    }
 
-	public FieldAnnotation assembleAnnotations(DexFile outFile, DexAssemblingCache cache) {
-		if (_annotations.size() == 0)
-			return null;
-		
-		val annoList = new ArrayList<AnnotationItem>(_annotations.size());
-		for (val anno : _annotations)
-			annoList.add(anno.writeToFile(outFile, cache));
+    public Dex getParentFile() {
+        return parentClass.getParentFile();
+    }
 
-		val annoSet = AnnotationSetItem.internAnnotationSetItem(outFile, annoList);
-		val fieldAnno = new FieldAnnotation(cache.getField(internal_GetFieldDef()), annoSet);
+    public void addAnnotation(DexAnnotation anno) {
+        _annotations.add(anno);
+    }
 
-		return fieldAnno;
-	}
+    protected abstract FieldDefinition internal_GetFieldDef();
+
+    public EncodedField writeToFile(DexFile outFile, DexAssemblingCache cache) {
+        val fieldDef = internal_GetFieldDef();
+        val fieldItem = cache.getField(fieldDef);
+        val accessFlags = DexUtils.assembleAccessFlags(fieldDef.getAccessFlags());
+
+        return new EncodedField(fieldItem, accessFlags);
+    }
+
+    public static Cache<FieldDefinition, FieldIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
+        return new Cache<FieldDefinition, FieldIdItem>() {
+            @Override
+            protected FieldIdItem createNewEntry(FieldDefinition key) {
+                return FieldIdItem.internFieldIdItem(
+                           outFile,
+                           cache.getType(key.getParentClass().getType()),
+                           cache.getType(key.getFieldId().getType()),
+                           cache.getStringConstant(key.getFieldId().getName()));
+            }
+        };
+    }
+
+    public FieldAnnotation assembleAnnotations(DexFile outFile, DexAssemblingCache cache) {
+        if (_annotations.size() == 0)
+            return null;
+
+        val annoList = new ArrayList<AnnotationItem>(_annotations.size());
+        for (val anno : _annotations)
+            annoList.add(anno.writeToFile(outFile, cache));
+
+        val annoSet = AnnotationSetItem.internAnnotationSetItem(outFile, annoList);
+        val fieldAnno = new FieldAnnotation(cache.getField(internal_GetFieldDef()), annoSet);
+
+        return fieldAnno;
+    }
 
 //  private String generateTaintFieldName() {
 //    long suffix = 0L;
@@ -104,7 +104,7 @@ public abstract class DexField {
 //    return fieldName;
 //  }
 
-	public void instrument() {
+    public void instrument() {
 //    if (type instanceof DexPrimitiveType) {
 //      val newName = generateTaintFieldName();
 //      val newType = DexPrimitiveType.parse("I", parentClass.getParentFile().getTypeCache());
@@ -115,5 +115,5 @@ public abstract class DexField {
 //      return newField;
 //    } else
 //      return null;
-	}
+    }
 }

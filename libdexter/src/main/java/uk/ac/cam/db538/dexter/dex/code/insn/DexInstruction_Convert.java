@@ -18,59 +18,59 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_Convert extends DexInstruction {
 
-  @Getter private final DexStandardRegister regTo;
-  @Getter private final DexStandardRegister regFrom;
-  @Getter private final Opcode_Convert insnOpcode;
+    @Getter private final DexStandardRegister regTo;
+    @Getter private final DexStandardRegister regFrom;
+    @Getter private final Opcode_Convert insnOpcode;
 
-  public DexInstruction_Convert(DexStandardRegister to, DexStandardRegister from, Opcode_Convert opcode, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_Convert(DexStandardRegister to, DexStandardRegister from, Opcode_Convert opcode, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    regTo = to;
-    regFrom = from;
-    insnOpcode = opcode;
-  }
+        regTo = to;
+        regFrom = from;
+        insnOpcode = opcode;
+    }
 
-  public static DexInstruction_Convert parse(Instruction insn, CodeParserState parsingState) {
-	val opcode = Opcode_Convert.convert(insn.opcode);
-    if (insn instanceof Instruction12x && opcode != null) {
+    public static DexInstruction_Convert parse(Instruction insn, CodeParserState parsingState) {
+        val opcode = Opcode_Convert.convert(insn.opcode);
+        if (insn instanceof Instruction12x && opcode != null) {
 
-      val insnConvert = (Instruction12x) insn;
-      
-      DexStandardRegister regTo, regFrom;
-      
-      if (opcode.getWidthTo() == RegisterWidth.SINGLE)
-    	  regTo = parsingState.getSingleRegister(insnConvert.getRegisterA());
-      else
-    	  regTo = parsingState.getWideRegister(insnConvert.getRegisterA());
-      
-      if (opcode.getWidthFrom() == RegisterWidth.SINGLE)
-    	  regFrom = parsingState.getSingleRegister(insnConvert.getRegisterB());
-      else
-    	  regFrom = parsingState.getWideRegister(insnConvert.getRegisterB());
-      
-      return new DexInstruction_Convert(regTo, regFrom, opcode, parsingState.getHierarchy()); 
+            val insnConvert = (Instruction12x) insn;
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+            DexStandardRegister regTo, regFrom;
 
-  @Override
-  public String toString() {
-    return insnOpcode.getAssemblyName() + " " + regTo.toString() + ", " + regFrom.toString();
-  }
+            if (opcode.getWidthTo() == RegisterWidth.SINGLE)
+                regTo = parsingState.getSingleRegister(insnConvert.getRegisterA());
+            else
+                regTo = parsingState.getWideRegister(insnConvert.getRegisterA());
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+            if (opcode.getWidthFrom() == RegisterWidth.SINGLE)
+                regFrom = parsingState.getSingleRegister(insnConvert.getRegisterB());
+            else
+                regFrom = parsingState.getWideRegister(insnConvert.getRegisterB());
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regFrom);
-  }
+            return new DexInstruction_Convert(regTo, regFrom, opcode, parsingState.getHierarchy());
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
+
+    @Override
+    public String toString() {
+        return insnOpcode.getAssemblyName() + " " + regTo.toString() + ", " + regFrom.toString();
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regFrom);
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
 }

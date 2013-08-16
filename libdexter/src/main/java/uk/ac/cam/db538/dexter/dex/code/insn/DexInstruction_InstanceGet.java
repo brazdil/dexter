@@ -23,89 +23,89 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_InstanceGet extends DexInstruction {
 
-  @Getter private final DexRegister regTo;
-  @Getter private final DexSingleRegister regObject;
-  @Getter private final InstanceFieldDefinition fieldDef;
-  @Getter private final Opcode_GetPut opcode;
+    @Getter private final DexRegister regTo;
+    @Getter private final DexSingleRegister regObject;
+    @Getter private final InstanceFieldDefinition fieldDef;
+    @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, InstanceFieldDefinition fieldDef, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, InstanceFieldDefinition fieldDef, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.regTo = to;
-    this.regObject = obj;
-    this.fieldDef = fieldDef;
-    this.opcode = Opcode_GetPut.getOpcodeFromType(this.fieldDef.getFieldId().getType());
-    
-    Opcode_GetPut.checkRegisterWidth(regTo, opcode);
-  }
-  
-  public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, DexInstanceField field, RuntimeHierarchy hierarchy) {
-	this(to, obj, field.getFieldDef(), hierarchy);
-  }
+        this.regTo = to;
+        this.regObject = obj;
+        this.fieldDef = fieldDef;
+        this.opcode = Opcode_GetPut.getOpcodeFromType(this.fieldDef.getFieldId().getType());
 
-  public static DexInstruction_InstanceGet parse(Instruction insn, CodeParserState parsingState) {
-    val opcode = Opcode_GetPut.convert_IGET(insn.opcode);
-    
-	if (insn instanceof Instruction22c && opcode != null) {
+        Opcode_GetPut.checkRegisterWidth(regTo, opcode);
+    }
 
-      val hierarchy = parsingState.getHierarchy();
-    	
-      val insnInstanceGet = (Instruction22c) insn;
-      val refItem = (FieldIdItem) insnInstanceGet.getReferencedItem();
-      
-      DexRegister regTo;
-      if (opcode == Opcode_GetPut.Wide)
-    	  regTo = parsingState.getWideRegister(insnInstanceGet.getRegisterA());
-      else
-    	  regTo = parsingState.getSingleRegister(insnInstanceGet.getRegisterA());
-      val regObj = parsingState.getSingleRegister(insnInstanceGet.getRegisterB());
-      
-      val classType = DexClassType.parse(
-			  refItem.getContainingClass().getTypeDescriptor(),
-			  hierarchy.getTypeCache());
-      val fieldId = DexFieldId.parseFieldId(
-	    		refItem.getFieldName().getStringValue(),
-	    		DexRegisterType.parse(
-	    				refItem.getFieldType().getTypeDescriptor(),
-	    				hierarchy.getTypeCache()),
-	    		hierarchy.getTypeCache());
-      
-      InstanceFieldDefinition fieldDef = hierarchy
-    		 .getClassDefinition(classType)
-    		 .getAccessedInstanceField(fieldId);
-      
-      if (fieldDef == null)
-    	  throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
-      
-      return new DexInstruction_InstanceGet(regTo, regObj, fieldDef, hierarchy);
+    public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, DexInstanceField field, RuntimeHierarchy hierarchy) {
+        this(to, obj, field.getFieldDef(), hierarchy);
+    }
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+    public static DexInstruction_InstanceGet parse(Instruction insn, CodeParserState parsingState) {
+        val opcode = Opcode_GetPut.convert_IGET(insn.opcode);
 
-  @Override
-  public String toString() {
-    return "iget" + opcode.getAsmSuffix() + " " + regTo.toString() + ", {" + regObject.toString() + "}" + fieldDef.toString();
-  }
+        if (insn instanceof Instruction22c && opcode != null) {
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regObject);
-  }
+            val hierarchy = parsingState.getHierarchy();
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+            val insnInstanceGet = (Instruction22c) insn;
+            val refItem = (FieldIdItem) insnInstanceGet.getReferencedItem();
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+            DexRegister regTo;
+            if (opcode == Opcode_GetPut.Wide)
+                regTo = parsingState.getWideRegister(insnInstanceGet.getRegisterA());
+            else
+                regTo = parsingState.getSingleRegister(insnInstanceGet.getRegisterA());
+            val regObj = parsingState.getSingleRegister(insnInstanceGet.getRegisterB());
 
-  @Override
-  protected DexClassType[] throwsExceptions() {
-	return this.hierarchy.getTypeCache().LIST_Error_NullPointerException;
-  }
-  
+            val classType = DexClassType.parse(
+                                refItem.getContainingClass().getTypeDescriptor(),
+                                hierarchy.getTypeCache());
+            val fieldId = DexFieldId.parseFieldId(
+                              refItem.getFieldName().getStringValue(),
+                              DexRegisterType.parse(
+                                  refItem.getFieldType().getTypeDescriptor(),
+                                  hierarchy.getTypeCache()),
+                              hierarchy.getTypeCache());
+
+            InstanceFieldDefinition fieldDef = hierarchy
+                                               .getClassDefinition(classType)
+                                               .getAccessedInstanceField(fieldId);
+
+            if (fieldDef == null)
+                throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
+
+            return new DexInstruction_InstanceGet(regTo, regObj, fieldDef, hierarchy);
+
+        } else
+            throw FORMAT_EXCEPTION;
+    }
+
+    @Override
+    public String toString() {
+        return "iget" + opcode.getAsmSuffix() + " " + regTo.toString() + ", {" + regObject.toString() + "}" + fieldDef.toString();
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regObject);
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    protected DexClassType[] throwsExceptions() {
+        return this.hierarchy.getTypeCache().LIST_Error_NullPointerException;
+    }
+
 }

@@ -24,58 +24,58 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_FillArrayData extends DexInstruction {
 
-  @Getter private final DexSingleRegister regArray;
-  @Getter private final List<byte[]> elementData;
+    @Getter private final DexSingleRegister regArray;
+    @Getter private final List<byte[]> elementData;
 
-  public DexInstruction_FillArrayData(DexSingleRegister array, List<byte[]> elementData, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_FillArrayData(DexSingleRegister array, List<byte[]> elementData, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.regArray = array;
-    this.elementData = Utils.finalList(elementData);
-  }
+        this.regArray = array;
+        this.elementData = Utils.finalList(elementData);
+    }
 
-  public static DexInstruction_FillArrayData parse(Instruction insn, CodeParserState parsingState) {
-    if (insn instanceof Instruction31t && insn.opcode == Opcode.FILL_ARRAY_DATA) {
+    public static DexInstruction_FillArrayData parse(Instruction insn, CodeParserState parsingState) {
+        if (insn instanceof Instruction31t && insn.opcode == Opcode.FILL_ARRAY_DATA) {
 
-      val insnFillArrayData = (Instruction31t) insn;
+            val insnFillArrayData = (Instruction31t) insn;
 
-      // find the target pseudo instruction containing the data
-      val insnTarget = parsingState.getDexlibInstructionAt(insnFillArrayData.getTargetAddressOffset(), insnFillArrayData);
-      if (!(insnTarget instanceof ArrayDataPseudoInstruction))
-    	  throw FORMAT_EXCEPTION;
-      val insnDataTable = (ArrayDataPseudoInstruction) insnTarget;
-      
-      // parse array register
-      val regArray = parsingState.getSingleRegister(insnFillArrayData.getRegisterA());
-      
-      // parse the data table 
-      val elementData = new ArrayList<byte[]>(insnDataTable.getElementCount());
-      for (Iterator<ArrayElement> arrayIter = insnDataTable.getElements(); arrayIter.hasNext();) {
-        val current = arrayIter.next();
-        val currentData = new byte[current.elementWidth];
-        System.arraycopy(current.buffer, current.bufferIndex, currentData, 0, current.elementWidth);
-        elementData.add(currentData);
-      }
-      
-      // return
-      return new DexInstruction_FillArrayData(regArray, elementData, parsingState.getHierarchy());
-    		  
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+            // find the target pseudo instruction containing the data
+            val insnTarget = parsingState.getDexlibInstructionAt(insnFillArrayData.getTargetAddressOffset(), insnFillArrayData);
+            if (!(insnTarget instanceof ArrayDataPseudoInstruction))
+                throw FORMAT_EXCEPTION;
+            val insnDataTable = (ArrayDataPseudoInstruction) insnTarget;
 
-  @Override
-  public String toString() {
-    return "fill-array-data " + regArray.toString() + ", <data>";
-  }
+            // parse array register
+            val regArray = parsingState.getSingleRegister(insnFillArrayData.getRegisterA());
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regArray);
-  }
+            // parse the data table
+            val elementData = new ArrayList<byte[]>(insnDataTable.getElementCount());
+            for (Iterator<ArrayElement> arrayIter = insnDataTable.getElements(); arrayIter.hasNext();) {
+                val current = arrayIter.next();
+                val currentData = new byte[current.elementWidth];
+                System.arraycopy(current.buffer, current.bufferIndex, currentData, 0, current.elementWidth);
+                elementData.add(currentData);
+            }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+            // return
+            return new DexInstruction_FillArrayData(regArray, elementData, parsingState.getHierarchy());
+
+        } else
+            throw FORMAT_EXCEPTION;
+    }
+
+    @Override
+    public String toString() {
+        return "fill-array-data " + regArray.toString() + ", <data>";
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regArray);
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
 }

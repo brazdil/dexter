@@ -4,26 +4,26 @@ import lombok.Getter;
 
 public class DexSingleOriginalRegister extends DexSingleRegister {
 
-	@Getter private final int id;
-	private final DexTaintRegister taintRegister;
-	
-	public DexSingleOriginalRegister(int id) {
-		this.id = id;
-		this.taintRegister = new DexTaintRegister(this);
-	}
+    @Getter private final int id;
+    private final DexTaintRegister taintRegister;
 
-	@Override
-	String getAsmId() {
-		return Integer.toString(id);
-	}
+    public DexSingleOriginalRegister(int id) {
+        this.id = id;
+        this.taintRegister = new DexTaintRegister(this);
+    }
 
-	@Override
-	String getAsmPrefix() {
-		return "v";
-	}
-	
-	@Override
-	public DexTaintRegister getTaintRegister() {
-		return this.taintRegister;
-	}
+    @Override
+    String getAsmId() {
+        return Integer.toString(id);
+    }
+
+    @Override
+    String getAsmPrefix() {
+        return "v";
+    }
+
+    @Override
+    public DexTaintRegister getTaintRegister() {
+        return this.taintRegister;
+    }
 }

@@ -17,126 +17,126 @@ import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexPrototype implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	
-	@Getter private final DexType returnType;
-	private final List<? extends DexRegisterType> parameterTypes;
-  
-	private final int hashcode;
+    private static final long serialVersionUID = 1L;
 
-	public DexPrototype(DexType returnType, List<? extends DexRegisterType> argTypes) {
-		this.returnType = returnType;
-		this.parameterTypes = Utils.finalList(argTypes);
-    
-		// precompute hashcode
-		int result = 31 + parameterTypes.hashCode();
-		result = 31 * result + returnType.hashCode();
-		this.hashcode = result;
-	}
+    @Getter private final DexType returnType;
+    private final List<? extends DexRegisterType> parameterTypes;
 
-	public static DexPrototype parse(DexType returnType, List<? extends DexRegisterType> argumentTypes, DexTypeCache cache) {
-		val proto = new DexPrototype(returnType, argumentTypes);
-		return cache.getCachedPrototype(proto); // will return 'proto' if not cached
-	}
+    private final int hashcode;
 
-	public static DexPrototype parse(ProtoIdItem proto, DexTypeCache cache) {
-		return parse(
-			parseReturnType(proto, cache),
-			parseArgumentTypes(proto, cache),
-			cache);
-	}
-	
-	private static DexType parseReturnType(ProtoIdItem proto, DexTypeCache typeCache) {
-		val item = proto.getReturnType();
-		return DexType.parse(item.getTypeDescriptor(), typeCache);
-	}
-	
-	private static List<DexRegisterType> parseArgumentTypes(ProtoIdItem proto, DexTypeCache typeCache) {
-		val params = proto.getParameters();
-		
-		if (params != null) {
-			val list = new ArrayList<DexRegisterType>(params.getTypeCount());
-			for (val type : params.getTypes())
-				list.add(DexRegisterType.parse(type.getTypeDescriptor(), typeCache));
-			return list;
-		}
-		return Collections.emptyList();
-	}
-	
-	public int countParamWords(boolean isStatic) {
-		int totalWords = 0;
-		if (!isStatic)
-			totalWords += DexClassType.TypeSize.getRegisterCount();
-		for (val param : parameterTypes)
-			totalWords += param.getRegisters();
-		return totalWords;
-	}
+    public DexPrototype(DexType returnType, List<? extends DexRegisterType> argTypes) {
+        this.returnType = returnType;
+        this.parameterTypes = Utils.finalList(argTypes);
 
-	public int getParameterCount(boolean isStatic) {
-		return parameterTypes.size() + (isStatic ? 0 : 1);
-	}
+        // precompute hashcode
+        int result = 31 + parameterTypes.hashCode();
+        result = 31 * result + returnType.hashCode();
+        this.hashcode = result;
+    }
 
-	public DexRegisterType getParameterType(int paramId, boolean isStatic, DexReferenceType clazz) {
-		if (!isStatic) {
-			if (paramId == 0)
-				return clazz;
-			else
-				paramId--;
-		}
-		return parameterTypes.get(paramId);
-	}
-	
-	public boolean hasPrimitiveArgument() {
-		for (val paramType : parameterTypes)
-			if (paramType instanceof DexPrimitiveType)
-				return true;
-		return false;
-	}
+    public static DexPrototype parse(DexType returnType, List<? extends DexRegisterType> argumentTypes, DexTypeCache cache) {
+        val proto = new DexPrototype(returnType, argumentTypes);
+        return cache.getCachedPrototype(proto); // will return 'proto' if not cached
+    }
 
-	public String getDescriptor() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("(");
-		for(val parameter : parameterTypes) {
-			sb.append(parameter.getDescriptor());
-		}
-		sb.append(")");
-		sb.append(returnType.getDescriptor());
-		return sb.toString();
-	}
-  
-	@Override
-	public String toString() {
-		return getDescriptor();
-	}
+    public static DexPrototype parse(ProtoIdItem proto, DexTypeCache cache) {
+        return parse(
+                   parseReturnType(proto, cache),
+                   parseArgumentTypes(proto, cache),
+                   cache);
+    }
 
-	@Override
-	public int hashCode() {
-		return hashcode;
-	}
+    private static DexType parseReturnType(ProtoIdItem proto, DexTypeCache typeCache) {
+        val item = proto.getReturnType();
+        return DexType.parse(item.getTypeDescriptor(), typeCache);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
+    private static List<DexRegisterType> parseArgumentTypes(ProtoIdItem proto, DexTypeCache typeCache) {
+        val params = proto.getParameters();
 
-		if (!(obj instanceof DexPrototype))
-			return false;
-		DexPrototype other = (DexPrototype) obj;
+        if (params != null) {
+            val list = new ArrayList<DexRegisterType>(params.getTypeCount());
+            for (val type : params.getTypes())
+                list.add(DexRegisterType.parse(type.getTypeDescriptor(), typeCache));
+            return list;
+        }
+        return Collections.emptyList();
+    }
 
-		return 
-				this.returnType.equals(other.returnType) &&
-				this.parameterTypes.equals(other.parameterTypes); 
-	}
-  
-	public static Cache<DexPrototype, ProtoIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
-		return new Cache<DexPrototype, ProtoIdItem>() {
-			@Override
-			protected ProtoIdItem createNewEntry(DexPrototype prototype) {
-				return ProtoIdItem.internProtoIdItem(
-						outFile,
-						cache.getType(prototype.returnType),
-						cache.getTypeList(prototype.parameterTypes));
-			}
-		};
-	}	
+    public int countParamWords(boolean isStatic) {
+        int totalWords = 0;
+        if (!isStatic)
+            totalWords += DexClassType.TypeSize.getRegisterCount();
+        for (val param : parameterTypes)
+            totalWords += param.getRegisters();
+        return totalWords;
+    }
+
+    public int getParameterCount(boolean isStatic) {
+        return parameterTypes.size() + (isStatic ? 0 : 1);
+    }
+
+    public DexRegisterType getParameterType(int paramId, boolean isStatic, DexReferenceType clazz) {
+        if (!isStatic) {
+            if (paramId == 0)
+                return clazz;
+            else
+                paramId--;
+        }
+        return parameterTypes.get(paramId);
+    }
+
+    public boolean hasPrimitiveArgument() {
+        for (val paramType : parameterTypes)
+            if (paramType instanceof DexPrimitiveType)
+                return true;
+        return false;
+    }
+
+    public String getDescriptor() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(");
+        for(val parameter : parameterTypes) {
+            sb.append(parameter.getDescriptor());
+        }
+        sb.append(")");
+        sb.append(returnType.getDescriptor());
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return getDescriptor();
+    }
+
+    @Override
+    public int hashCode() {
+        return hashcode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+
+        if (!(obj instanceof DexPrototype))
+            return false;
+        DexPrototype other = (DexPrototype) obj;
+
+        return
+            this.returnType.equals(other.returnType) &&
+            this.parameterTypes.equals(other.parameterTypes);
+    }
+
+    public static Cache<DexPrototype, ProtoIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
+        return new Cache<DexPrototype, ProtoIdItem>() {
+            @Override
+            protected ProtoIdItem createNewEntry(DexPrototype prototype) {
+                return ProtoIdItem.internProtoIdItem(
+                           outFile,
+                           cache.getType(prototype.returnType),
+                           cache.getTypeList(prototype.parameterTypes));
+            }
+        };
+    }
 }

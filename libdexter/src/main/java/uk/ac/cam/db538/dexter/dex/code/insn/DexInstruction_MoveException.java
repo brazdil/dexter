@@ -18,39 +18,39 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_MoveException extends DexInstruction {
 
-  @Getter private final DexSingleRegister regTo;
+    @Getter private final DexSingleRegister regTo;
 
-  public DexInstruction_MoveException(DexSingleRegister regTo, RuntimeHierarchy hierarchy) {
-	super(hierarchy);
-	  
-    this.regTo = regTo;
-  }
+    public DexInstruction_MoveException(DexSingleRegister regTo, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-  public static DexInstruction_MoveException parse(Instruction insn, CodeParserState parsingState) {
-    if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_EXCEPTION) {
+        this.regTo = regTo;
+    }
 
-      val insnMoveException = (Instruction11x) insn;
-      return new DexInstruction_MoveException(
-    		  parsingState.getSingleRegister(insnMoveException.getRegisterA()),
-    		  parsingState.getHierarchy());
+    public static DexInstruction_MoveException parse(Instruction insn, CodeParserState parsingState) {
+        if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_EXCEPTION) {
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+            val insnMoveException = (Instruction11x) insn;
+            return new DexInstruction_MoveException(
+                       parsingState.getSingleRegister(insnMoveException.getRegisterA()),
+                       parsingState.getHierarchy());
+
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
 
-  @Override
-  public String toString() {
-    return "move-exception " + regTo.toString();
-  }
+    @Override
+    public String toString() {
+        return "move-exception " + regTo.toString();
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
 }

@@ -22,85 +22,85 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_Move extends DexInstruction {
 
-  @Getter private final DexRegister regTo;
-  @Getter private final DexRegister regFrom;
-  @Getter private final RegisterType type;
+    @Getter private final DexRegister regTo;
+    @Getter private final DexRegister regFrom;
+    @Getter private final RegisterType type;
 
-  public DexInstruction_Move(DexSingleRegister regTo, DexSingleRegister regFrom, boolean objectMoving, RuntimeHierarchy hierarchy) {
-	super(hierarchy);
-	
-    this.regTo = regTo;
-    this.regFrom = regFrom;
-    this.type = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
-  }
+    public DexInstruction_Move(DexSingleRegister regTo, DexSingleRegister regFrom, boolean objectMoving, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-  public DexInstruction_Move(DexWideRegister regTo, DexWideRegister regFrom, RuntimeHierarchy hierarchy) {
-	super(hierarchy);
-	
-    this.regTo = regTo;
-    this.regFrom = regFrom;
-    this.type = RegisterType.WIDE_PRIMITIVE;
-  }
-
-  public static DexInstruction_Move parse(Instruction insn, CodeParserState parsingState) {
-    int regA, regB;
-
-    if (insn instanceof Instruction12x &&
-        (insn.opcode == Opcode.MOVE || insn.opcode == Opcode.MOVE_WIDE || insn.opcode == Opcode.MOVE_OBJECT)) {
-
-      val insnMove = (Instruction12x) insn;
-      regA = insnMove.getRegisterA();
-      regB = insnMove.getRegisterB();
-
-    } else if (insn instanceof Instruction22x &&
-               (insn.opcode == Opcode.MOVE_FROM16 || insn.opcode == Opcode.MOVE_WIDE_FROM16 || insn.opcode == Opcode.MOVE_OBJECT_FROM16)) {
-
-      val insnMoveFrom16 = (Instruction22x) insn;
-      regA = insnMoveFrom16.getRegisterA();
-      regB = insnMoveFrom16.getRegisterB();
-
-    } else if (insn instanceof Instruction32x &&
-               (insn.opcode == Opcode.MOVE_16 || insn.opcode == Opcode.MOVE_WIDE_16 || insn.opcode == Opcode.MOVE_OBJECT_16)) {
-
-      val insnMove16 = (Instruction32x) insn;
-      regA = insnMove16.getRegisterA();
-      regB = insnMove16.getRegisterB();
-
-    } else
-      throw FORMAT_EXCEPTION;
-    
-    val opcode = RegisterType.fromOpcode(insn.opcode);
-    if (opcode == RegisterType.WIDE_PRIMITIVE) {
-    	return new DexInstruction_Move(
-    			parsingState.getWideRegister(regA),
-    			parsingState.getWideRegister(regB),
-    			parsingState.getHierarchy());
-    } else {
-    	return new DexInstruction_Move(
-    			parsingState.getSingleRegister(regA),
-    			parsingState.getSingleRegister(regB),
-    			opcode == RegisterType.REFERENCE,
-    			parsingState.getHierarchy());
+        this.regTo = regTo;
+        this.regFrom = regFrom;
+        this.type = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
     }
-  }
 
-  @Override
-  public String toString() {
-	return "move" + type.getAsmSuffix() + " " + regTo.toString() + ", " + regFrom.toString();
-  }
+    public DexInstruction_Move(DexWideRegister regTo, DexWideRegister regFrom, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+        this.regTo = regTo;
+        this.regFrom = regFrom;
+        this.type = RegisterType.WIDE_PRIMITIVE;
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaReferencedRegisters() {
-    return Sets.newHashSet(regFrom);
-  }
+    public static DexInstruction_Move parse(Instruction insn, CodeParserState parsingState) {
+        int regA, regB;
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
+        if (insn instanceof Instruction12x &&
+                (insn.opcode == Opcode.MOVE || insn.opcode == Opcode.MOVE_WIDE || insn.opcode == Opcode.MOVE_OBJECT)) {
+
+            val insnMove = (Instruction12x) insn;
+            regA = insnMove.getRegisterA();
+            regB = insnMove.getRegisterB();
+
+        } else if (insn instanceof Instruction22x &&
+                   (insn.opcode == Opcode.MOVE_FROM16 || insn.opcode == Opcode.MOVE_WIDE_FROM16 || insn.opcode == Opcode.MOVE_OBJECT_FROM16)) {
+
+            val insnMoveFrom16 = (Instruction22x) insn;
+            regA = insnMoveFrom16.getRegisterA();
+            regB = insnMoveFrom16.getRegisterB();
+
+        } else if (insn instanceof Instruction32x &&
+                   (insn.opcode == Opcode.MOVE_16 || insn.opcode == Opcode.MOVE_WIDE_16 || insn.opcode == Opcode.MOVE_OBJECT_16)) {
+
+            val insnMove16 = (Instruction32x) insn;
+            regA = insnMove16.getRegisterA();
+            regB = insnMove16.getRegisterB();
+
+        } else
+            throw FORMAT_EXCEPTION;
+
+        val opcode = RegisterType.fromOpcode(insn.opcode);
+        if (opcode == RegisterType.WIDE_PRIMITIVE) {
+            return new DexInstruction_Move(
+                       parsingState.getWideRegister(regA),
+                       parsingState.getWideRegister(regB),
+                       parsingState.getHierarchy());
+        } else {
+            return new DexInstruction_Move(
+                       parsingState.getSingleRegister(regA),
+                       parsingState.getSingleRegister(regB),
+                       opcode == RegisterType.REFERENCE,
+                       parsingState.getHierarchy());
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "move" + type.getAsmSuffix() + " " + regTo.toString() + ", " + regFrom.toString();
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
+
+    @Override
+    public Set<? extends DexRegister> lvaReferencedRegisters() {
+        return Sets.newHashSet(regFrom);
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
 }

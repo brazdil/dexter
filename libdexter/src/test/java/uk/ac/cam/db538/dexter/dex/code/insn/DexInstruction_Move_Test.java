@@ -11,46 +11,46 @@ import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
 public class DexInstruction_Move_Test extends HierarchyTest {
 
-  @Test
-  public void testParse_Move() {
-    Utils.parseAndCompare(new Instruction12x(Opcode.MOVE, (byte) 1, (byte) 2),
-                          "move v1, v2",
-                          this.hierarchy);
-  }
+    @Test
+    public void testParse_Move() {
+        Utils.parseAndCompare(new Instruction12x(Opcode.MOVE, (byte) 1, (byte) 2),
+                              "move v1, v2",
+                              this.hierarchy);
+    }
 
-  @Test
-  public void testParse_MoveObject() {
-    Utils.parseAndCompare(new Instruction12x(Opcode.MOVE_OBJECT, (byte) 1, (byte) 2),
-                          "move-object v1, v2",
-                          this.hierarchy);
-  }
+    @Test
+    public void testParse_MoveObject() {
+        Utils.parseAndCompare(new Instruction12x(Opcode.MOVE_OBJECT, (byte) 1, (byte) 2),
+                              "move-object v1, v2",
+                              this.hierarchy);
+    }
 
-  @Test
-  public void testParse_MoveFrom16() {
-    Utils.parseAndCompare(new Instruction22x(Opcode.MOVE_FROM16, (short) 255, 65535),
-                          "move v255, v65535",
-                          this.hierarchy);
-  }
+    @Test
+    public void testParse_MoveFrom16() {
+        Utils.parseAndCompare(new Instruction22x(Opcode.MOVE_FROM16, (short) 255, 65535),
+                              "move v255, v65535",
+                              this.hierarchy);
+    }
 
-  @Test
-  public void testParse_MoveObjectFrom16() {
-    Utils.parseAndCompare(new Instruction22x(Opcode.MOVE_OBJECT_FROM16, (short) 255, 65535),
-                          "move-object v255, v65535",
-                          this.hierarchy);
-  }
+    @Test
+    public void testParse_MoveObjectFrom16() {
+        Utils.parseAndCompare(new Instruction22x(Opcode.MOVE_OBJECT_FROM16, (short) 255, 65535),
+                              "move-object v255, v65535",
+                              this.hierarchy);
+    }
 
-  @Test
-  public void testParse_Move16() {
-    Utils.parseAndCompare(new Instruction32x(Opcode.MOVE_16, 65534, 65535),
-                          "move v65534, v65535",
-                          this.hierarchy);
-  }
+    @Test
+    public void testParse_Move16() {
+        Utils.parseAndCompare(new Instruction32x(Opcode.MOVE_16, 65534, 65535),
+                              "move v65534, v65535",
+                              this.hierarchy);
+    }
 
-  @Test
-  public void testParse_MoveObject16() {
-    Utils.parseAndCompare(new Instruction32x(Opcode.MOVE_OBJECT_16, 65534, 65535),
-                          "move-object v65534, v65535",
-                          this.hierarchy);
-  }
+    @Test
+    public void testParse_MoveObject16() {
+        Utils.parseAndCompare(new Instruction32x(Opcode.MOVE_OBJECT_16, 65534, 65535),
+                              "move-object v65534, v65535",
+                              this.hierarchy);
+    }
 
 }

@@ -16,62 +16,62 @@ import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 
 public class TestingTaintTransform extends TaintTransform {
 
-	public TestingTaintTransform() {
-	}
+    public TestingTaintTransform() {
+    }
 
-	public TestingTaintTransform(ProgressCallback progressCallback) {
-		super(progressCallback);
-	}
+    public TestingTaintTransform(ProgressCallback progressCallback) {
+        super(progressCallback);
+    }
 
-	@Override
-	public boolean exclude(DexClass clazz) {
-		String name = clazz.getClassDef().getType().getDescriptor();
-		return name.equals("Luk/ac/cam/db538/dexter/tests/TestList;");
-	}
+    @Override
+    public boolean exclude(DexClass clazz) {
+        String name = clazz.getClassDef().getType().getDescriptor();
+        return name.equals("Luk/ac/cam/db538/dexter/tests/TestList;");
+    }
 
-	@Override
-	public DexMethod doLast(DexMethod method) {
-		if (isTaintCheckMethod(method)) {
-			DexCode oldCode = method.getMethodBody(); 
-			DexRegister paramReg = oldCode.getParameters().get(0).getRegister(); 
-			
-			List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
-			for (DexCodeElement insn : oldCode.getInstructionList())
-				if (insn instanceof DexInstruction_Return)
-					newInstructions.add(new DexInstruction_Return(paramReg.getTaintRegister(), false, oldCode.getHierarchy()));
-				else
-					newInstructions.add(insn);
-			
-			DexCode newCode = new DexCode(oldCode, new InstructionList(newInstructions));
-			method = new DexMethod(method, newCode);
-		}
-		
-		return super.doLast(method);
-	}
-	
-	@Override
-	public DexCodeElement doFirst(DexCodeElement element, DexCode code, DexMethod method) {
-		if (element instanceof DexInstruction_Const) {
-			DexInstruction_Const insnConst = (DexInstruction_Const) element;
-			if (insnConst.getValue() == 0xDEC0DEDL)
-				return new DexMacro(
-					new DexInstruction_Const(insnConst.getRegTo().getTaintRegister(), 1L, code.getHierarchy()),
-					insnConst);
-		}
-		
-		return super.doFirst(element, code, method);
-	}
+    @Override
+    public DexMethod doLast(DexMethod method) {
+        if (isTaintCheckMethod(method)) {
+            DexCode oldCode = method.getMethodBody();
+            DexRegister paramReg = oldCode.getParameters().get(0).getRegister();
 
-	private static final String TAINTCHECK_CLASS = "Luk/ac/cam/db538/dexter/tests/TaintChecker;";
-	private static final String TAINTCHECK_METHOD = "isTainted";
-	private static final String TAINTCHECK_PROTOTYPE = "(I)Z";
+            List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
+            for (DexCodeElement insn : oldCode.getInstructionList())
+                if (insn instanceof DexInstruction_Return)
+                    newInstructions.add(new DexInstruction_Return(paramReg.getTaintRegister(), false, oldCode.getHierarchy()));
+                else
+                    newInstructions.add(insn);
 
-	private boolean isTaintCheckMethod(DexMethod method) {
-		return
-			method.getParentClass().getClassDef().getType().getDescriptor().equals(TAINTCHECK_CLASS) &&
-			method.getMethodDef().getMethodId().getName().equals(TAINTCHECK_METHOD) &&
-			method.getMethodDef().getMethodId().getPrototype().getDescriptor().equals(TAINTCHECK_PROTOTYPE) &&
-			method.getMethodDef().isStatic() &&
-			method.getMethodBody() != null;
-	}
+            DexCode newCode = new DexCode(oldCode, new InstructionList(newInstructions));
+            method = new DexMethod(method, newCode);
+        }
+
+        return super.doLast(method);
+    }
+
+    @Override
+    public DexCodeElement doFirst(DexCodeElement element, DexCode code, DexMethod method) {
+        if (element instanceof DexInstruction_Const) {
+            DexInstruction_Const insnConst = (DexInstruction_Const) element;
+            if (insnConst.getValue() == 0xDEC0DEDL)
+                return new DexMacro(
+                           new DexInstruction_Const(insnConst.getRegTo().getTaintRegister(), 1L, code.getHierarchy()),
+                           insnConst);
+        }
+
+        return super.doFirst(element, code, method);
+    }
+
+    private static final String TAINTCHECK_CLASS = "Luk/ac/cam/db538/dexter/tests/TaintChecker;";
+    private static final String TAINTCHECK_METHOD = "isTainted";
+    private static final String TAINTCHECK_PROTOTYPE = "(I)Z";
+
+    private boolean isTaintCheckMethod(DexMethod method) {
+        return
+            method.getParentClass().getClassDef().getType().getDescriptor().equals(TAINTCHECK_CLASS) &&
+            method.getMethodDef().getMethodId().getName().equals(TAINTCHECK_METHOD) &&
+            method.getMethodDef().getMethodId().getPrototype().getDescriptor().equals(TAINTCHECK_PROTOTYPE) &&
+            method.getMethodDef().isStatic() &&
+            method.getMethodBody() != null;
+    }
 }

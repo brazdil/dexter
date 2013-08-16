@@ -68,24 +68,24 @@ public class SignatureFile {
 
         // create digest of the manifest main attributes
         ManifestDigester.Entry mde =
-                md.get(ManifestDigester.MF_MAIN_ATTRS, false);
+            md.get(ManifestDigester.MF_MAIN_ATTRS, false);
         if (mde != null) {
             for (int i=0; i < digests.length; i++) {
                 mattr.putValue(digests[i].getAlgorithm() +
-                        "-Digest-" + ManifestDigester.MF_MAIN_ATTRS,
-                        encoder.encode(mde.digest(digests[i])));
+                               "-Digest-" + ManifestDigester.MF_MAIN_ATTRS,
+                               encoder.encode(mde.digest(digests[i])));
             }
         } else {
             throw new IllegalStateException
-                ("ManifestDigester failed to create " +
-                "Manifest-Main-Attribute entry");
+            ("ManifestDigester failed to create " +
+             "Manifest-Main-Attribute entry");
         }
 
         /* go through the manifest entries and create the digests */
 
         Map<String,Attributes> entries = sf.getEntries();
         Iterator<Map.Entry<String,Attributes>> mit =
-                                mf.getEntries().entrySet().iterator();
+            mf.getEntries().entrySet().iterator();
         while(mit.hasNext()) {
             Map.Entry<String,Attributes> e = mit.next();
             String name = e.getKey();
@@ -151,11 +151,11 @@ public class SignatureFile {
                                X509Certificate tsaCert,
                                ContentSigner signingMechanism,
                                String[] args, ZipFile zipFile)
-        throws NoSuchAlgorithmException, InvalidKeyException, IOException,
-            SignatureException, CertificateException
+    throws NoSuchAlgorithmException, InvalidKeyException, IOException,
+        SignatureException, CertificateException
     {
         return new Block(this, privateKey, sigalg, certChain, externalSF,
-                tsaUrl, tsaCert, signingMechanism, args, zipFile);
+                         tsaUrl, tsaCert, signingMechanism, args, zipFile);
     }
 
 
@@ -168,10 +168,10 @@ public class SignatureFile {
          * Construct a new signature block.
          */
         Block(SignatureFile sfg, PrivateKey privateKey, String sigalg,
-            X509Certificate[] certChain, boolean externalSF, String tsaUrl,
-            X509Certificate tsaCert, ContentSigner signingMechanism,
-            String[] args, ZipFile zipFile)
-            throws NoSuchAlgorithmException, InvalidKeyException, IOException,
+              X509Certificate[] certChain, boolean externalSF, String tsaUrl,
+              X509Certificate tsaCert, ContentSigner signingMechanism,
+              String[] args, ZipFile zipFile)
+        throws NoSuchAlgorithmException, InvalidKeyException, IOException,
             SignatureException, CertificateException {
 
             Principal issuerName = certChain[0].getIssuerDN();
@@ -181,10 +181,10 @@ public class SignatureFile {
                 // an encoded DN could cause the types of String attribute
                 // values to be changed)
                 X509CertInfo tbsCert = new
-                    X509CertInfo(certChain[0].getTBSCertificate());
+                X509CertInfo(certChain[0].getTBSCertificate());
                 issuerName = (Principal)
-                    tbsCert.get(CertificateIssuerName.NAME + "." +
-                                CertificateIssuerName.DN_NAME);
+                             tbsCert.get(CertificateIssuerName.NAME + "." +
+                                         CertificateIssuerName.DN_NAME);
             }
             BigInteger serial = certChain[0].getSerialNumber();
 
@@ -213,11 +213,11 @@ public class SignatureFile {
             // check common invalid key/signature algorithm combinations
             String sigAlgUpperCase = signatureAlgorithm.toUpperCase();
             if ((sigAlgUpperCase.endsWith("WITHRSA") &&
-                !keyAlgorithm.equalsIgnoreCase("RSA")) ||
-                (sigAlgUpperCase.endsWith("WITHDSA") &&
-                !keyAlgorithm.equalsIgnoreCase("DSA"))) {
+                    !keyAlgorithm.equalsIgnoreCase("RSA")) ||
+                    (sigAlgUpperCase.endsWith("WITHDSA") &&
+                     !keyAlgorithm.equalsIgnoreCase("DSA"))) {
                 throw new SignatureException
-                    ("private key algorithm is not compatible with signature algorithm");
+                ("private key algorithm is not compatible with signature algorithm");
             }
 
             blockFileName = "META-INF/"+sfg.getBaseName()+"."+keyAlgorithm;
@@ -254,11 +254,11 @@ public class SignatureFile {
             // Assemble parameters for the signing mechanism
             ContentSignerParameters params =
                 new JarSignerParameters(args, tsaUri, tsaCert, signature,
-                    signatureAlgorithm, certChain, content, zipFile);
+                                        signatureAlgorithm, certChain, content, zipFile);
 
             // Generate the signature block
             block = signingMechanism.generateSignedData(
-                    params, externalSF, (tsaUrl != null || tsaCert != null));
+                        params, externalSF, (tsaUrl != null || tsaCert != null));
         }
 
         /*

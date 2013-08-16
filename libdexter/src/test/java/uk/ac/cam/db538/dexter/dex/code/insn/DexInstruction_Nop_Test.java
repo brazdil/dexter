@@ -9,12 +9,12 @@ import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
 public class DexInstruction_Nop_Test extends HierarchyTest {
 
-  @Test
-  public void testParse() {
-    Utils.parseAndCompare(
-      new Instruction10x(Opcode.NOP),
-      "nop",
-      this.hierarchy);
-  }
+    @Test
+    public void testParse() {
+        Utils.parseAndCompare(
+            new Instruction10x(Opcode.NOP),
+            "nop",
+            this.hierarchy);
+    }
 
 }

@@ -78,7 +78,7 @@ public class JarSigner {
     // one
 
     private static Manifest getManifestFile(JarFile jarFile)
-            throws IOException {
+    throws IOException {
         JarEntry je = jarFile.getJarEntry("META-INF/MANIFEST.MF");
         if (je != null) {
             Enumeration entries = jarFile.entries();
@@ -103,7 +103,7 @@ public class JarSigner {
     // map of all the valid entries from the manifest
 
     private static Map pruneManifest(Manifest manifest, JarFile jarFile)
-            throws IOException {
+    throws IOException {
         Map map = manifest.getEntries();
         Iterator elements = map.keySet().iterator();
         while (elements.hasNext()) {
@@ -123,7 +123,7 @@ public class JarSigner {
     // file by adding the appropriate headers
 
     private static Map createEntries(Manifest manifest, JarFile jarFile)
-            throws IOException {
+    throws IOException {
         Map entries = null;
         if (manifest.getEntries().size() > 0)
             entries = pruneManifest(manifest, jarFile);
@@ -143,7 +143,7 @@ public class JarSigner {
     private static JarBASE64Encoder b64Encoder = new JarBASE64Encoder();
 
     private static String updateDigest(MessageDigest digest, InputStream inputStream)
-            throws IOException {
+    throws IOException {
         byte[] buffer = new byte[2048];
         int read = 0;
         while ((read = inputStream.read(buffer)) > 0)
@@ -161,7 +161,7 @@ public class JarSigner {
     // for those entries in the META-INF directory)
 
     private static Map updateManifestDigest(Manifest manifest, JarFile jarFile, MessageDigest messageDigest, Map entries)
-            throws IOException {
+    throws IOException {
         Enumeration jarElements = jarFile.entries();
         while (jarElements.hasMoreElements()) {
             JarEntry jarEntry = (JarEntry) jarElements.nextElement();
@@ -192,7 +192,7 @@ public class JarSigner {
     // a small helper function that will convert a manifest into an
     // array of bytes
     private byte[] serialiseManifest(Manifest manifest)
-            throws IOException {
+    throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         manifest.write(baos);
         baos.flush();
@@ -204,18 +204,18 @@ public class JarSigner {
     // create a signature file object out of the manifest and the
     // message digest
     private SignatureFile createSignatureFile(Manifest manifest, MessageDigest messageDigest)
-            throws IOException {
+    throws IOException {
         // construct the signature file and the signature block for
         // this manifest
         ManifestDigester manifestDigester = new ManifestDigester(serialiseManifest(manifest));
-        return new SignatureFile(new MessageDigest[]{messageDigest}, manifest, manifestDigester, this.alias, true);
+        return new SignatureFile(new MessageDigest[] {messageDigest}, manifest, manifestDigester, this.alias, true);
 
     }
 
     // a helper function that can take entries from one jar file and
     // write it to another jar stream
     private static void writeJarEntry(JarEntry je, JarFile jarFile, JarOutputStream jos)
-            throws IOException {
+    throws IOException {
         jos.putNextEntry(je);
         byte[] buffer = new byte[2048];
         int read = 0;
@@ -229,7 +229,7 @@ public class JarSigner {
     // the actual JAR signing method -- this is the method which
     // will be called by those wrapping the JARSigner class
     public void signJarFile(JarFile jarFile, OutputStream outputStream)
-            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, IOException, CertificateException {
+    throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, IOException, CertificateException {
 
         // calculate the necessary files for the signed jAR
 
@@ -247,8 +247,8 @@ public class JarSigner {
         // construct the signature file object and the
         // signature block objects
         SignatureFile signatureFile = createSignatureFile(manifest, messageDigest);
-        SignatureFile.Block block = signatureFile.generateBlock(privateKey, null, certChain, 
-        		true, null, null, null, null, jarFile);
+        SignatureFile.Block block = signatureFile.generateBlock(privateKey, null, certChain,
+                                    true, null, null, null, null, jarFile);
 
         // start writing out the signed JAR file
 
@@ -286,8 +286,8 @@ public class JarSigner {
             JarEntry metaEntry = (JarEntry) metaEntries.nextElement();
             if (metaEntry.getName().startsWith("META-INF") &&
                     !(manifestFileName.equalsIgnoreCase(metaEntry.getName()) ||
-                            signatureFileName.equalsIgnoreCase(metaEntry.getName()) ||
-                            signatureBlockName.equalsIgnoreCase(metaEntry.getName())))
+                      signatureFileName.equalsIgnoreCase(metaEntry.getName()) ||
+                      signatureBlockName.equalsIgnoreCase(metaEntry.getName())))
                 writeJarEntry(metaEntry, jarFile, jos);
 
         }
@@ -311,7 +311,7 @@ public class JarSigner {
     }
 
 
-	public static File sign(File jar, File newJar, String alias, X509Certificate certChain[], PrivateKey privateKey) {
+    public static File sign(File jar, File newJar, String alias, X509Certificate certChain[], PrivateKey privateKey) {
         try {
             JarSigner jarSigner = new JarSigner(alias, privateKey, certChain);
 

@@ -45,7 +45,7 @@ class InitManifest {
     }
 
     void initEntries(Map<String, Attributes> entries,
-            Map<String, Manifest.Chunk> chunks) throws IOException {
+                     Map<String, Manifest.Chunk> chunks) throws IOException {
 
         int mark = pos;
         while (readHeader()) {

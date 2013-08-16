@@ -4,12 +4,12 @@ import lombok.Getter;
 
 public class InstructionOffsetException extends RuntimeException {
 
-  private static final long serialVersionUID = -5210852859056051200L;
+    private static final long serialVersionUID = -5210852859056051200L;
 
-  @Getter private DexInstruction problematicInstruction;
+    @Getter private DexInstruction problematicInstruction;
 
-  public InstructionOffsetException(DexInstruction insn) {
-    super();
-    this.problematicInstruction = insn;
-  }
+    public InstructionOffsetException(DexInstruction insn) {
+        super();
+        this.problematicInstruction = insn;
+    }
 }

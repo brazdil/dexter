@@ -32,135 +32,135 @@ import com.android.dex.util.ExceptionWithContext;
 
 class DalvCodeBridge {
 
-	private DalvCode dvCode;
-	private CodeItem codeItem;
+    private DalvCode dvCode;
+    private CodeItem codeItem;
 
-	public DalvCodeBridge(DalvCode dvCode, DexMethod dxMethod) {
-		this.dvCode = dvCode;
-		process(dxMethod);
-	}
+    public DalvCodeBridge(DalvCode dvCode, DexMethod dxMethod) {
+        this.dvCode = dvCode;
+        process(dxMethod);
+    }
 
-	private CstType toCstType(String descriptor) {
-		return CstType.intern(Type.intern(descriptor));
-	}
-	
-	private CstNat toNat(String methodName, DexPrototype prototype) {
-		return new CstNat(new CstString(methodName),
-						  new CstString(prototype.getDescriptor())
-				);
-	}
-	
-	private void process(DexMethod dxMethod) {
-		MethodDefinition methodDef = dxMethod.getMethodDef();
-		
-		String methodName = methodDef.getMethodId().getName();
-		DexPrototype dexPrototype = methodDef.getMethodId().getPrototype();
-		DexClass dexClass = dxMethod.getParentClass();
-		
-		CstType thisClass = toCstType(dexClass.getClassDef().getType().getDescriptor());
-		CstType superClass = toCstType(dexClass.getClassDef().getSuperclass().getType().getDescriptor());
-		
-		StdTypeList interfaces = StdTypeList.EMPTY;
-		for(DexClassType intf : dexClass.getInterfaceTypes())
-			interfaces.withAddedType(Type.intern(intf.getDescriptor()));
+    private CstType toCstType(String descriptor) {
+        return CstType.intern(Type.intern(descriptor));
+    }
 
-		int classAccessFlags = 0;
-		for (AccessFlags flag : dexClass.getClassDef().getAccessFlags())
-			classAccessFlags |= flag.getValue();
-		
-		DexFile outputDex = new DexFile(new DexOptions());
-		ClassDefItem outClass = new ClassDefItem(thisClass, classAccessFlags,
-				superClass, interfaces, null);
+    private CstNat toNat(String methodName, DexPrototype prototype) {
+        return new CstNat(new CstString(methodName),
+                          new CstString(prototype.getDescriptor())
+                         );
+    }
 
-		try {
-			CstMethodRef meth = new CstMethodRef(thisClass, toNat(methodName, dexPrototype));
-			int methodAccessFlags = 0;
-			for(AccessFlags flag : dxMethod.getMethodDef().getAccessFlags()) 
-				methodAccessFlags |= flag.getValue();
-					
-			boolean isStatic = methodDef.isStatic();
-			boolean isPrivate = methodDef.isPrivate();
-			boolean isNative = methodDef.isNative();
-			boolean isConstructor = methodDef.isConstructor();
+    private void process(DexMethod dxMethod) {
+        MethodDefinition methodDef = dxMethod.getMethodDef();
 
-			assert methodDef.hasBytecode();
-			
-			// Preserve the synchronized flag as its "declared" variant...
-			// It ought to use com.android.dx.rop.code.AccessFlags, not
-			// org.jf.dexlib.Util.AccessFlags, but their value should be the same
-			if (dxMethod.getMethodDef().getAccessFlags().contains(AccessFlags.SYNCHRONIZED) ||
-					dxMethod.getMethodDef().getAccessFlags().contains(AccessFlags.DECLARED_SYNCHRONIZED)) {
-				methodAccessFlags |= AccessFlags.DECLARED_SYNCHRONIZED.getValue(); 
+        String methodName = methodDef.getMethodId().getName();
+        DexPrototype dexPrototype = methodDef.getMethodId().getPrototype();
+        DexClass dexClass = dxMethod.getParentClass();
 
-				/*
-				 * ...but only native methods are actually allowed to be
-				 * synchronized.
-				 */
-				if (!isNative) {
-					methodAccessFlags &= ~AccessFlags.SYNCHRONIZED.getValue();
-				}
-			}
+        CstType thisClass = toCstType(dexClass.getClassDef().getType().getDescriptor());
+        CstType superClass = toCstType(dexClass.getClassDef().getSuperclass().getType().getDescriptor());
 
-			if (isConstructor) {
-				methodAccessFlags |= AccessFlags.CONSTRUCTOR.getValue();
-			}
+        StdTypeList interfaces = StdTypeList.EMPTY;
+        for(DexClassType intf : dexClass.getInterfaceTypes())
+            interfaces.withAddedType(Type.intern(intf.getDescriptor()));
 
-			EncodedMethod mi = new EncodedMethod(meth, methodAccessFlags, dvCode,
-					StdTypeList.EMPTY);
+        int classAccessFlags = 0;
+        for (AccessFlags flag : dexClass.getClassDef().getAccessFlags())
+            classAccessFlags |= flag.getValue();
 
-			if (meth.isInstanceInit() || meth.isClassInit() || isStatic
-					|| isPrivate) {
-				outClass.addDirectMethod(mi);
-			} else {
-				outClass.addVirtualMethod(mi);
-			}
+        DexFile outputDex = new DexFile(new DexOptions());
+        ClassDefItem outClass = new ClassDefItem(thisClass, classAccessFlags,
+                superClass, interfaces, null);
 
-			/* Not necessary to add annotation here because we are only
-			 * interested in the bytecode produced.
-			Annotations annotations = AttributeTranslator
-					.getMethodAnnotations(one);
-			if (annotations.size() != 0) {
-				outClass.addMethodAnnotations(meth, annotations);
-			}
-			
-			AnnotationsList list = AttributeTranslator
-					.getParameterAnnotations(one);
-			if (list.size() != 0) {
-				outClass.addParameterAnnotations(meth, list);
-			}
- 		    */
-		} catch (RuntimeException ex) {
-			String msg = "...while processing " + methodName + " "
-					+ dexPrototype.getDescriptor();
-			throw ExceptionWithContext.withContext(ex, msg);
-		}
-		
-		outputDex.add(outClass);
-		
-		OutputStreamWriter humanOut = null; //new OutputStreamWriter(System.out);
-		try {
-			byte[] outArray = outputDex.toDex(humanOut, true);
-			DexFileFromMemory tmpDexFile = new DexFileFromMemory(outArray);
-		
-			List<CodeItem> codeItems = tmpDexFile.CodeItemsSection.getItems();
-			assert codeItems.size() == 1;
-			codeItem = codeItems.get(0);
-		} catch (IOException e) {
-			e.printStackTrace();
-			codeItem = null;
-		}
-	}
+        try {
+            CstMethodRef meth = new CstMethodRef(thisClass, toNat(methodName, dexPrototype));
+            int methodAccessFlags = 0;
+            for(AccessFlags flag : dxMethod.getMethodDef().getAccessFlags())
+                methodAccessFlags |= flag.getValue();
 
-	public Instruction[] getInstructions() {
-		return codeItem.getInstructions();
-	}
+            boolean isStatic = methodDef.isStatic();
+            boolean isPrivate = methodDef.isPrivate();
+            boolean isNative = methodDef.isNative();
+            boolean isConstructor = methodDef.isConstructor();
 
-	public TryItem[] getTries() {
-		return codeItem.getTries();
-	}
+            assert methodDef.hasBytecode();
 
-	public int getRegisterCount() {
-		return codeItem.getRegisterCount();
-	}
+            // Preserve the synchronized flag as its "declared" variant...
+            // It ought to use com.android.dx.rop.code.AccessFlags, not
+            // org.jf.dexlib.Util.AccessFlags, but their value should be the same
+            if (dxMethod.getMethodDef().getAccessFlags().contains(AccessFlags.SYNCHRONIZED) ||
+                    dxMethod.getMethodDef().getAccessFlags().contains(AccessFlags.DECLARED_SYNCHRONIZED)) {
+                methodAccessFlags |= AccessFlags.DECLARED_SYNCHRONIZED.getValue();
+
+                /*
+                 * ...but only native methods are actually allowed to be
+                 * synchronized.
+                 */
+                if (!isNative) {
+                    methodAccessFlags &= ~AccessFlags.SYNCHRONIZED.getValue();
+                }
+            }
+
+            if (isConstructor) {
+                methodAccessFlags |= AccessFlags.CONSTRUCTOR.getValue();
+            }
+
+            EncodedMethod mi = new EncodedMethod(meth, methodAccessFlags, dvCode,
+                                                 StdTypeList.EMPTY);
+
+            if (meth.isInstanceInit() || meth.isClassInit() || isStatic
+                    || isPrivate) {
+                outClass.addDirectMethod(mi);
+            } else {
+                outClass.addVirtualMethod(mi);
+            }
+
+            /* Not necessary to add annotation here because we are only
+             * interested in the bytecode produced.
+            Annotations annotations = AttributeTranslator
+            		.getMethodAnnotations(one);
+            if (annotations.size() != 0) {
+            	outClass.addMethodAnnotations(meth, annotations);
+            }
+
+            AnnotationsList list = AttributeTranslator
+            		.getParameterAnnotations(one);
+            if (list.size() != 0) {
+            	outClass.addParameterAnnotations(meth, list);
+            }
+            */
+        } catch (RuntimeException ex) {
+            String msg = "...while processing " + methodName + " "
+                         + dexPrototype.getDescriptor();
+            throw ExceptionWithContext.withContext(ex, msg);
+        }
+
+        outputDex.add(outClass);
+
+        OutputStreamWriter humanOut = null; //new OutputStreamWriter(System.out);
+        try {
+            byte[] outArray = outputDex.toDex(humanOut, true);
+            DexFileFromMemory tmpDexFile = new DexFileFromMemory(outArray);
+
+            List<CodeItem> codeItems = tmpDexFile.CodeItemsSection.getItems();
+            assert codeItems.size() == 1;
+            codeItem = codeItems.get(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            codeItem = null;
+        }
+    }
+
+    public Instruction[] getInstructions() {
+        return codeItem.getInstructions();
+    }
+
+    public TryItem[] getTries() {
+        return codeItem.getTries();
+    }
+
+    public int getRegisterCount() {
+        return codeItem.getRegisterCount();
+    }
 
 }

@@ -7,12 +7,12 @@ public class DexInstrumentationCache {
 
 //  private final Dex parentFile;
 //
-  @Getter private final boolean insertDebugLogging;
-  
-  public DexInstrumentationCache(boolean debug) {
-	  insertDebugLogging = debug;
-  }
-  
+    @Getter private final boolean insertDebugLogging;
+
+    public DexInstrumentationCache(boolean debug) {
+        insertDebugLogging = debug;
+    }
+
 //
 //  private final Map<DexField, DexField> fieldInstrumentation;
 //  private final Cache<FieldDefinition, DexField>

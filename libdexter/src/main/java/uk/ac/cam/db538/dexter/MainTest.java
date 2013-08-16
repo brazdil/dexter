@@ -19,20 +19,20 @@ import com.rx201.dx.translator.DexCodeGeneration;
 
 public class MainTest {
 
-	private static void dumpAnnotation(File apkFile) {
-		val out = new ByteArrayAnnotatedOutput();
-		out.enableAnnotations(80, true);
+    private static void dumpAnnotation(File apkFile) {
+        val out = new ByteArrayAnnotatedOutput();
+        out.enableAnnotations(80, true);
 
-		DexFile outFile;
-		try {
-			outFile = new DexFile(apkFile);
-			outFile.place();
-			outFile.writeTo(out);
-			out.writeAnnotationsTo(new FileWriter("annot_original.txt"));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-	}	    
+        DexFile outFile;
+        try {
+            outFile = new DexFile(apkFile);
+            outFile.place();
+            outFile.writeTo(out);
+            out.writeAnnotationsTo(new FileWriter("annot_original.txt"));
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
 
 //  private static void writeToJar(Dex dex, File targetFile) {
 //     final byte[] newDex = dex.writeToFile();
@@ -41,87 +41,87 @@ public class MainTest {
 //     try {
 //	     targetFile.delete();
 //	     ZipFile jarFile = new ZipFile(targetFile);
-//	     
+//
 //	     ZipParameters parameters = new ZipParameters();
 //	     parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
 //	     parameters.setFileNameInZip("classes.dex");
 //	     parameters.setSourceExternalStream(true);
-//	
+//
 //	     jarFile.addStream(new ByteArrayInputStream(newDex), parameters);
 //     } catch (ZipException e) {
 //     }
 //  }
-	
-  public static void main(String[] args) throws IOException {
-	long epoch = System.currentTimeMillis();
-    if (args.length != 2 && args.length != 3) {
-      System.err.println("usage: dexter <framework-dir> <apk-file> [<destination-apk]>");
-      System.exit(1);
-    }
 
-    val apkFile = new File(args[1]);
-    if (!apkFile.isFile()) {
-      System.err.println("<apk-file> is not a file");
-      System.exit(1);
-    }
+    public static void main(String[] args) throws IOException {
+        long epoch = System.currentTimeMillis();
+        if (args.length != 2 && args.length != 3) {
+            System.err.println("usage: dexter <framework-dir> <apk-file> [<destination-apk]>");
+            System.exit(1);
+        }
 
-    File apkFile_new;
-    if (args.length == 3)
-       apkFile_new = new File(args[2]);
-    else
-       apkFile_new = new File(apkFile.getAbsolutePath() + "_new.apk");
-    
-    // dumpAnnotation(apkFile);
-    
-    // val apkFile_new = new File(apkFile.getAbsolutePath() + "_new.apk");
+        val apkFile = new File(args[1]);
+        if (!apkFile.isFile()) {
+            System.err.println("<apk-file> is not a file");
+            System.exit(1);
+        }
 
-    val frameworkDir = new File(args[0]);
-    if (!frameworkDir.isDirectory()) {
-      System.err.println("<framework-dir> is not a directory");
-      System.exit(1);
-    }
-    
-    // build runtime class hierarchy
-    val hierarchyBuilder = new HierarchyBuilder();
-    
-    System.out.println("Scanning framework");
-    hierarchyBuilder.importFrameworkFolder(frameworkDir);
-    long hierarchyTime = System.currentTimeMillis() - epoch;
-    
-    System.out.println("Scanning application");
-    val fileApp = new DexFile(apkFile);
-    val fileAux = new DexFileFromMemory(ClassLoader.getSystemResourceAsStream("merge-classes.dex"));
-    
-    System.out.println("Building hierarchy");
-    val buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);
-    val hierarchy = buildData.getValA();
-    val renamerAux = buildData.getValB();
-    
-    System.out.println("Parsing application");
-    AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
-    Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
-    
-    if (args.length == 3) {
-       DexCodeGeneration.DEBUG = false;
+        File apkFile_new;
+        if (args.length == 3)
+            apkFile_new = new File(args[2]);
+        else
+            apkFile_new = new File(apkFile.getAbsolutePath() + "_new.apk");
+
+        // dumpAnnotation(apkFile);
+
+        // val apkFile_new = new File(apkFile.getAbsolutePath() + "_new.apk");
+
+        val frameworkDir = new File(args[0]);
+        if (!frameworkDir.isDirectory()) {
+            System.err.println("<framework-dir> is not a directory");
+            System.exit(1);
+        }
+
+        // build runtime class hierarchy
+        val hierarchyBuilder = new HierarchyBuilder();
+
+        System.out.println("Scanning framework");
+        hierarchyBuilder.importFrameworkFolder(frameworkDir);
+        long hierarchyTime = System.currentTimeMillis() - epoch;
+
+        System.out.println("Scanning application");
+        val fileApp = new DexFile(apkFile);
+        val fileAux = new DexFileFromMemory(ClassLoader.getSystemResourceAsStream("merge-classes.dex"));
+
+        System.out.println("Building hierarchy");
+        val buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);
+        val hierarchy = buildData.getValA();
+        val renamerAux = buildData.getValB();
+
+        System.out.println("Parsing application");
+        AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux);
+        Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
+
+        if (args.length == 3) {
+            DexCodeGeneration.DEBUG = false;
 //      System.out.println("Instrumenting application");
 //      dex.instrument(false);
-    } else {
+        } else {
 //    	dex.instrument(false);
-    }
-    
+        }
+
 //    writeToJar(dexApp, apkFile_new);
 //    Apk.produceAPK(apkFile, apkFile_new, "ApplicationClass", dexApp.writeToFile());
-    
-    long analysisTime = DexCodeGeneration.totalAnalysisTime;
-    long translationTime = DexCodeGeneration.totalCGTime;
-    long compileTime = DexCodeGeneration.totalDxTime;
-    long totalTime = System.currentTimeMillis() - epoch;
-    
-    System.out.println("===1=== Hierarchy:" + hierarchyTime + 
-    		", Analyze:" + analysisTime +
-    		", Translate:" + translationTime +
-    		", Compile:" + compileTime +
-    		", Total:" + totalTime);
-  }
+
+        long analysisTime = DexCodeGeneration.totalAnalysisTime;
+        long translationTime = DexCodeGeneration.totalCGTime;
+        long compileTime = DexCodeGeneration.totalDxTime;
+        long totalTime = System.currentTimeMillis() - epoch;
+
+        System.out.println("===1=== Hierarchy:" + hierarchyTime +
+                           ", Analyze:" + analysisTime +
+                           ", Translate:" + translationTime +
+                           ", Compile:" + compileTime +
+                           ", Total:" + totalTime);
+    }
 
 }

@@ -16,49 +16,49 @@ import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 
 public class DexStaticField extends DexField {
 
-	@Getter private final StaticFieldDefinition fieldDef;
-	@Getter private final EncodedValue initialValue; 
+    @Getter private final StaticFieldDefinition fieldDef;
+    @Getter private final EncodedValue initialValue;
 
-	public DexStaticField(DexClass parentClass, StaticFieldDefinition fieldDef, EncodedValue initialValue) {
-		super(parentClass);
-		this.initialValue = initialValue;
-		this.fieldDef = fieldDef;
-	}
-	
-	public DexStaticField(DexClass parentClass, ClassDefItem classItem, EncodedField fieldItem, int fieldIndex, AnnotationDirectoryItem annoDir) {
-		super(parentClass, fieldItem, annoDir);
-		
-		this.initialValue = init_ParseInitialValue(classItem, fieldIndex);
-		this.fieldDef = init_FindFieldDefinition(parentClass, fieldItem);
-	}
-	
-	private static StaticFieldDefinition init_FindFieldDefinition(DexClass parentClass, EncodedField fieldItem) {
-		val hierarchy = parentClass.getParentFile().getHierarchy();
-		val classDef = parentClass.getClassDef();
-		
-		val name = fieldItem.field.getFieldName().getStringValue();
-		val type = DexRegisterType.parse(fieldItem.field.getFieldType().getTypeDescriptor(), hierarchy.getTypeCache()); 
-		
-		val fieldId = DexFieldId.parseFieldId(name, type, hierarchy.getTypeCache());
-		return classDef.getStaticField(fieldId);
-	}
-	
-	private static EncodedValue init_ParseInitialValue(ClassDefItem classItem, int fieldIndex) {
-		// extract data
-		val initValuesItem = classItem.getStaticFieldInitializers();
-		if (initValuesItem == null)
-			return null;
-		
-		// return the value
-		val initValues = initValuesItem.getEncodedArray().values;
-		if (fieldIndex < initValues.length)
-			return initValues[fieldIndex];
-		else
-			return null;
-	}
+    public DexStaticField(DexClass parentClass, StaticFieldDefinition fieldDef, EncodedValue initialValue) {
+        super(parentClass);
+        this.initialValue = initialValue;
+        this.fieldDef = fieldDef;
+    }
 
-	@Override
-	protected FieldDefinition internal_GetFieldDef() {
-		return this.fieldDef;
-	}
+    public DexStaticField(DexClass parentClass, ClassDefItem classItem, EncodedField fieldItem, int fieldIndex, AnnotationDirectoryItem annoDir) {
+        super(parentClass, fieldItem, annoDir);
+
+        this.initialValue = init_ParseInitialValue(classItem, fieldIndex);
+        this.fieldDef = init_FindFieldDefinition(parentClass, fieldItem);
+    }
+
+    private static StaticFieldDefinition init_FindFieldDefinition(DexClass parentClass, EncodedField fieldItem) {
+        val hierarchy = parentClass.getParentFile().getHierarchy();
+        val classDef = parentClass.getClassDef();
+
+        val name = fieldItem.field.getFieldName().getStringValue();
+        val type = DexRegisterType.parse(fieldItem.field.getFieldType().getTypeDescriptor(), hierarchy.getTypeCache());
+
+        val fieldId = DexFieldId.parseFieldId(name, type, hierarchy.getTypeCache());
+        return classDef.getStaticField(fieldId);
+    }
+
+    private static EncodedValue init_ParseInitialValue(ClassDefItem classItem, int fieldIndex) {
+        // extract data
+        val initValuesItem = classItem.getStaticFieldInitializers();
+        if (initValuesItem == null)
+            return null;
+
+        // return the value
+        val initValues = initValuesItem.getEncodedArray().values;
+        if (fieldIndex < initValues.length)
+            return initValues[fieldIndex];
+        else
+            return null;
+    }
+
+    @Override
+    protected FieldDefinition internal_GetFieldDef() {
+        return this.fieldDef;
+    }
 }

@@ -17,198 +17,198 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class AnalyzedDexInstruction {
 
-	    /**
-	     * The actual instruction
-	     */
-	    protected final DexInstruction instruction;
-	    protected DexCodeElement auxillaryElement;
+    /**
+     * The actual instruction
+     */
+    protected final DexInstruction instruction;
+    protected DexCodeElement auxillaryElement;
 
-	    /**
-	     * Instructions that can pass on execution to this one during normal execution
-	     */
-	    protected final LinkedList<AnalyzedDexInstruction> predecessors = new LinkedList<AnalyzedDexInstruction>();
-	    protected final Set<AnalyzedDexInstruction> exceptionPredecessors = new HashSet<AnalyzedDexInstruction>();
-	    /**
-	     * Instructions that can execution could pass on to next during normal execution
-	     */
-	    protected final LinkedList<AnalyzedDexInstruction> successors = new LinkedList<AnalyzedDexInstruction>();
+    /**
+     * Instructions that can pass on execution to this one during normal execution
+     */
+    protected final LinkedList<AnalyzedDexInstruction> predecessors = new LinkedList<AnalyzedDexInstruction>();
+    protected final Set<AnalyzedDexInstruction> exceptionPredecessors = new HashSet<AnalyzedDexInstruction>();
+    /**
+     * Instructions that can execution could pass on to next during normal execution
+     */
+    protected final LinkedList<AnalyzedDexInstruction> successors = new LinkedList<AnalyzedDexInstruction>();
 
-	    /**
-	     * This contains the register types *before* the instruction has executed
-	     */
-	    protected final HashMap<DexRegister, TypeSolver> usedRegisterMap;
+    /**
+     * This contains the register types *before* the instruction has executed
+     */
+    protected final HashMap<DexRegister, TypeSolver> usedRegisterMap;
 
-	    /**
-	     * This contains the register types *after* the instruction has executed
-	     */
-	    protected final HashMap<DexRegister, TypeSolver> definedRegisterMap;
+    /**
+     * This contains the register types *after* the instruction has executed
+     */
+    protected final HashMap<DexRegister, TypeSolver> definedRegisterMap;
 
 
-	    protected final HashMap<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>> constrainedRegisters;
-	    
-	    public final int instructionIndex;
-	    
-		protected HashMap<DexRegister, Pair<RopType, Boolean>> useSet;
-		protected HashMap<DexRegister, Pair<RopType, Boolean>> defSet;
-		// <regSource, regDestination>
-		protected HashMap<DexRegister, DexRegister> moveSet;
-		public static RuntimeHierarchy hierarchy;
-	    
-	    
-	    public AnalyzedDexInstruction(int index, DexInstruction instruction) {
-	        this.instruction = instruction;
-	        this.usedRegisterMap = new HashMap<DexRegister, TypeSolver>();
-	        this.definedRegisterMap = new HashMap<DexRegister, TypeSolver>();
-	        this.constrainedRegisters = new HashMap<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>>();
-	        this.instructionIndex = index;
-	        this.auxillaryElement = null;
-	        
-			useSet = new HashMap<DexRegister, Pair<RopType, Boolean>>();
-			defSet = new HashMap<DexRegister, Pair<RopType, Boolean>>();
-			moveSet = new HashMap<DexRegister, DexRegister>();
-	    }
+    protected final HashMap<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>> constrainedRegisters;
 
-	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexCodeElement element) {
-	    	this(index, instruction);
-	    	this.auxillaryElement = element;
-	    }
+    public final int instructionIndex;
 
-	    public int getPredecessorCount() {
-	        return predecessors.size();
-	    }
+    protected HashMap<DexRegister, Pair<RopType, Boolean>> useSet;
+    protected HashMap<DexRegister, Pair<RopType, Boolean>> defSet;
+    // <regSource, regDestination>
+    protected HashMap<DexRegister, DexRegister> moveSet;
+    public static RuntimeHierarchy hierarchy;
 
-	    public List<AnalyzedDexInstruction> getPredecessors() {
-	        return Collections.unmodifiableList(predecessors);
-	    }
 
-	    protected void linkToSuccessor(AnalyzedDexInstruction successor, boolean exceptionPath) {
-	    	successors.add(successor);
-	    	successor.predecessors.add(this);
-	    	if (exceptionPath) 
-	    		successor.exceptionPredecessors.add(this);
-	    }
+    public AnalyzedDexInstruction(int index, DexInstruction instruction) {
+        this.instruction = instruction;
+        this.usedRegisterMap = new HashMap<DexRegister, TypeSolver>();
+        this.definedRegisterMap = new HashMap<DexRegister, TypeSolver>();
+        this.constrainedRegisters = new HashMap<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>>();
+        this.instructionIndex = index;
+        this.auxillaryElement = null;
 
-	    public boolean isExceptionPredecessor(AnalyzedDexInstruction predecessor) {
-	    	return exceptionPredecessors.contains(predecessor);
-	    }
-	    
-	    public int getSuccessorCount() {
-	        return successors.size();
-	    }
+        useSet = new HashMap<DexRegister, Pair<RopType, Boolean>>();
+        defSet = new HashMap<DexRegister, Pair<RopType, Boolean>>();
+        moveSet = new HashMap<DexRegister, DexRegister>();
+    }
 
-	    public List<AnalyzedDexInstruction> getSuccesors() {
-	        return Collections.unmodifiableList(successors);
-	    }
+    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexCodeElement element) {
+        this(index, instruction);
+        this.auxillaryElement = element;
+    }
 
-	    public AnalyzedDexInstruction getOnlySuccesor() {
-	    	assert successors.size() == 1;
-	    	return successors.get(0);
-	    }
+    public int getPredecessorCount() {
+        return predecessors.size();
+    }
 
-		public DexInstruction getInstruction() {
-	        return instruction;
-	    }
+    public List<AnalyzedDexInstruction> getPredecessors() {
+        return Collections.unmodifiableList(predecessors);
+    }
 
-	    public DexCodeElement getCodeElement() {
-	    	if (instruction != null) {
-	    		assert auxillaryElement == null;
-	    		return instruction;
-	    	} else if (auxillaryElement != null) {
-	    		return auxillaryElement;
-	    	} else {
-	    		throw new RuntimeException("bad AnalyzedDexInstruction structure");
-	    	}
-	    }
-		public Set<DexRegister> getUsedRegisters() {
-			return useSet.keySet();
-		}
-		
-	    public RopType getUsedRegisterType(DexRegister reg) {
-	    	return usedRegisterMap.get(reg).getType();
-	    }
-	    
-	    public void associateDefinitionSite(DexRegister usedReg, TypeSolver definition) {
-	    	usedRegisterMap.put(usedReg, definition);
-	    }
+    protected void linkToSuccessor(AnalyzedDexInstruction successor, boolean exceptionPath) {
+        successors.add(successor);
+        successor.predecessors.add(this);
+        if (exceptionPath)
+            successor.exceptionPredecessors.add(this);
+    }
 
-	    public TypeSolver getUsedRegisterSolver(DexRegister usedReg) {
-	    	return usedRegisterMap.get(usedReg);
-	    }
+    public boolean isExceptionPredecessor(AnalyzedDexInstruction predecessor) {
+        return exceptionPredecessors.contains(predecessor);
+    }
 
-		public Set<DexRegister> getDefinedRegisters() {
-			return defSet.keySet();
-		}
+    public int getSuccessorCount() {
+        return successors.size();
+    }
 
-		public RopType getDefinedRegisterType(DexRegister reg) {
-	    	return definedRegisterMap.get(reg).getType();
-	    }
+    public List<AnalyzedDexInstruction> getSuccesors() {
+        return Collections.unmodifiableList(successors);
+    }
 
-	    public TypeSolver getDefinedRegisterSolver(DexRegister dexRegister) {
-    		return definedRegisterMap.get(dexRegister);
-	    }
+    public AnalyzedDexInstruction getOnlySuccesor() {
+        assert successors.size() == 1;
+        return successors.get(0);
+    }
 
-	    public int getInstructionIndex() {
-	    	return instructionIndex;
-	    }
-	    
-		public void defineRegister(DexRegister regTo, RopType registerType, boolean freezed) {
-			definedRegisterMap.put(regTo, new TypeSolver(this));
-			defSet.put(regTo, new Pair<RopType, Boolean>(registerType, freezed));
-		}
-		
-		public void useRegister(DexRegister regFrom, RopType registerType, boolean freezed) {
-			useSet.put(regFrom, new Pair<RopType, Boolean>(registerType, freezed));
-		}
-		
-		public void addRegisterConstraint(DexRegister regTo, DexRegister regFrom, TypeSolver.CascadeType type) {
-			constrainedRegisters.put(regTo, 
-					new Pair<DexRegister, TypeSolver.CascadeType>(regFrom, type));
-		}
+    public DexInstruction getInstruction() {
+        return instruction;
+    }
 
-		public void createConstraintEdges() {
-			for(Entry<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>> constraint : constrainedRegisters.entrySet()) {
-				TypeSolver target = definedRegisterMap.get(constraint.getKey());
-				//TODO: Hack for now, should add another addRegisterConstraint() interface
-				if (target == null)
-					target = usedRegisterMap.get(constraint.getKey());
-				TypeSolver source = usedRegisterMap.get(constraint.getValue().getValA());
-				target.addDependingTS(source, constraint.getValue().getValB());
-			}
-		}
-		
-		public void initDefinitionConstraints() {
-			for(Entry<DexRegister, Pair<RopType, Boolean>> constraint : defSet.entrySet()) {
-				TypeSolver target = definedRegisterMap.get(constraint.getKey());
-				RopType type = constraint.getValue().getValA();
-				boolean freezed = constraint.getValue().getValB();
-				target.addConstraint(type, freezed, hierarchy);
-			}
-		}
+    public DexCodeElement getCodeElement() {
+        if (instruction != null) {
+            assert auxillaryElement == null;
+            return instruction;
+        } else if (auxillaryElement != null) {
+            return auxillaryElement;
+        } else {
+            throw new RuntimeException("bad AnalyzedDexInstruction structure");
+        }
+    }
+    public Set<DexRegister> getUsedRegisters() {
+        return useSet.keySet();
+    }
 
-		public void propagateUsageConstraints() {
-			for(Entry<DexRegister, Pair<RopType, Boolean>> constraint : useSet.entrySet()) {
-				TypeSolver target = usedRegisterMap.get(constraint.getKey());
-				RopType type = constraint.getValue().getValA();
-				boolean freezed = constraint.getValue().getValB();
-				try {
-					target.addConstraint(type, freezed, hierarchy);
-				} catch (AssertionError ex) {
-					throw new AssertionError(
-						"Error propagating usage of " + constraint.getKey().toString() + 
-						" in insn " + this.getInstructionIndex() + ": " + this.getInstruction().toString(),
-						ex);
-				}
-			}
-		}
+    public RopType getUsedRegisterType(DexRegister reg) {
+        return usedRegisterMap.get(reg).getType();
+    }
 
-		@Override
-		public String toString() {
-			if (auxillaryElement != null)
-				return auxillaryElement.toString();
-			else if (instruction != null)
-				return instruction.toString();
-			else
-				return "null:" + instructionIndex;
-		}
+    public void associateDefinitionSite(DexRegister usedReg, TypeSolver definition) {
+        usedRegisterMap.put(usedReg, definition);
+    }
+
+    public TypeSolver getUsedRegisterSolver(DexRegister usedReg) {
+        return usedRegisterMap.get(usedReg);
+    }
+
+    public Set<DexRegister> getDefinedRegisters() {
+        return defSet.keySet();
+    }
+
+    public RopType getDefinedRegisterType(DexRegister reg) {
+        return definedRegisterMap.get(reg).getType();
+    }
+
+    public TypeSolver getDefinedRegisterSolver(DexRegister dexRegister) {
+        return definedRegisterMap.get(dexRegister);
+    }
+
+    public int getInstructionIndex() {
+        return instructionIndex;
+    }
+
+    public void defineRegister(DexRegister regTo, RopType registerType, boolean freezed) {
+        definedRegisterMap.put(regTo, new TypeSolver(this));
+        defSet.put(regTo, new Pair<RopType, Boolean>(registerType, freezed));
+    }
+
+    public void useRegister(DexRegister regFrom, RopType registerType, boolean freezed) {
+        useSet.put(regFrom, new Pair<RopType, Boolean>(registerType, freezed));
+    }
+
+    public void addRegisterConstraint(DexRegister regTo, DexRegister regFrom, TypeSolver.CascadeType type) {
+        constrainedRegisters.put(regTo,
+                                 new Pair<DexRegister, TypeSolver.CascadeType>(regFrom, type));
+    }
+
+    public void createConstraintEdges() {
+        for(Entry<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>> constraint : constrainedRegisters.entrySet()) {
+            TypeSolver target = definedRegisterMap.get(constraint.getKey());
+            //TODO: Hack for now, should add another addRegisterConstraint() interface
+            if (target == null)
+                target = usedRegisterMap.get(constraint.getKey());
+            TypeSolver source = usedRegisterMap.get(constraint.getValue().getValA());
+            target.addDependingTS(source, constraint.getValue().getValB());
+        }
+    }
+
+    public void initDefinitionConstraints() {
+        for(Entry<DexRegister, Pair<RopType, Boolean>> constraint : defSet.entrySet()) {
+            TypeSolver target = definedRegisterMap.get(constraint.getKey());
+            RopType type = constraint.getValue().getValA();
+            boolean freezed = constraint.getValue().getValB();
+            target.addConstraint(type, freezed, hierarchy);
+        }
+    }
+
+    public void propagateUsageConstraints() {
+        for(Entry<DexRegister, Pair<RopType, Boolean>> constraint : useSet.entrySet()) {
+            TypeSolver target = usedRegisterMap.get(constraint.getKey());
+            RopType type = constraint.getValue().getValA();
+            boolean freezed = constraint.getValue().getValB();
+            try {
+                target.addConstraint(type, freezed, hierarchy);
+            } catch (AssertionError ex) {
+                throw new AssertionError(
+                    "Error propagating usage of " + constraint.getKey().toString() +
+                    " in insn " + this.getInstructionIndex() + ": " + this.getInstruction().toString(),
+                    ex);
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        if (auxillaryElement != null)
+            return auxillaryElement.toString();
+        else if (instruction != null)
+            return instruction.toString();
+        else
+            return "null:" + instructionIndex;
+    }
 
 }

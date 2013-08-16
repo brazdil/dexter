@@ -23,54 +23,54 @@ import com.google.common.collect.Sets;
 
 public class DexInstruction_ConstClass extends DexInstruction {
 
-  @Getter private final DexSingleRegister regTo;
-  @Getter private final DexReferenceType value;
+    @Getter private final DexSingleRegister regTo;
+    @Getter private final DexReferenceType value;
 
-  public DexInstruction_ConstClass(DexSingleRegister to, DexReferenceType value, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
+    public DexInstruction_ConstClass(DexSingleRegister to, DexReferenceType value, RuntimeHierarchy hierarchy) {
+        super(hierarchy);
 
-    this.regTo = to;
-    this.value = value;
-  }
+        this.regTo = to;
+        this.value = value;
+    }
 
-  public DexInstruction_ConstClass(DexSingleRegister to, BaseClassDefinition classDef, RuntimeHierarchy hierarchy) {
-    this(to, classDef.getType(), hierarchy);
-  }
+    public DexInstruction_ConstClass(DexSingleRegister to, BaseClassDefinition classDef, RuntimeHierarchy hierarchy) {
+        this(to, classDef.getType(), hierarchy);
+    }
 
-  public static DexInstruction_ConstClass parse(Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
-    if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_CLASS) {
+    public static DexInstruction_ConstClass parse(Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
+        if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_CLASS) {
 
-      val hierarchy = parsingState.getHierarchy();
-    	
-      val insnConstClass = (Instruction21c) insn;
-      return new DexInstruction_ConstClass(
-    		  parsingState.getSingleRegister(insnConstClass.getRegisterA()),
-    		  DexReferenceType.parse(
-                ((TypeIdItem) insnConstClass.getReferencedItem()).getTypeDescriptor(),
-                hierarchy.getTypeCache()),
-              hierarchy);
+            val hierarchy = parsingState.getHierarchy();
 
-    } else
-      throw FORMAT_EXCEPTION;
-  }
+            val insnConstClass = (Instruction21c) insn;
+            return new DexInstruction_ConstClass(
+                       parsingState.getSingleRegister(insnConstClass.getRegisterA()),
+                       DexReferenceType.parse(
+                           ((TypeIdItem) insnConstClass.getReferencedItem()).getTypeDescriptor(),
+                           hierarchy.getTypeCache()),
+                       hierarchy);
 
-  @Override
-  public String toString() {
-    return "const-class " + regTo.toString() + ", " + value.getDescriptor();
-  }
+        } else
+            throw FORMAT_EXCEPTION;
+    }
 
-  @Override
-  public Set<? extends DexRegister> lvaDefinedRegisters() {
-    return Sets.newHashSet(regTo);
-  }
+    @Override
+    public String toString() {
+        return "const-class " + regTo.toString() + ", " + value.getDescriptor();
+    }
 
-  @Override
-  public void accept(DexInstructionVisitor visitor) {
-	visitor.visit(this);
-  }
-  
-  @Override
-  protected DexClassType[] throwsExceptions() {
-	return this.hierarchy.getTypeCache().LIST_Error;
-  }
+    @Override
+    public Set<? extends DexRegister> lvaDefinedRegisters() {
+        return Sets.newHashSet(regTo);
+    }
+
+    @Override
+    public void accept(DexInstructionVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    protected DexClassType[] throwsExceptions() {
+        return this.hierarchy.getTypeCache().LIST_Error;
+    }
 }

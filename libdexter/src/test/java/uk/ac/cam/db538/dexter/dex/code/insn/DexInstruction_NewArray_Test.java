@@ -9,11 +9,11 @@ import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
 public class DexInstruction_NewArray_Test extends HierarchyTest {
 
-  @Test
-  public void testParse_NewArray() {
-    Utils.parseAndCompare(
-      new Instruction22c(Opcode.NEW_ARRAY, (byte) 4, (byte) 8, Utils.getTypeItem("[I")),
-      "new-array v4, v8, [I",
-      this.hierarchy);
-  }
+    @Test
+    public void testParse_NewArray() {
+        Utils.parseAndCompare(
+            new Instruction22c(Opcode.NEW_ARRAY, (byte) 4, (byte) 8, Utils.getTypeItem("[I")),
+            "new-array v4, v8, [I",
+            this.hierarchy);
+    }
 }

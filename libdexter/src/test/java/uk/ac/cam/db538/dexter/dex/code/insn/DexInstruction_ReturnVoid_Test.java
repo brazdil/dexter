@@ -9,11 +9,11 @@ import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
 public class DexInstruction_ReturnVoid_Test extends HierarchyTest {
 
-  @Test
-  public void testParse() {
-    Utils.parseAndCompare(
-      new Instruction10x(Opcode.RETURN_VOID),
-      "return-void",
-      this.hierarchy);
-  }
+    @Test
+    public void testParse() {
+        Utils.parseAndCompare(
+            new Instruction10x(Opcode.RETURN_VOID),
+            "return-void",
+            this.hierarchy);
+    }
 }

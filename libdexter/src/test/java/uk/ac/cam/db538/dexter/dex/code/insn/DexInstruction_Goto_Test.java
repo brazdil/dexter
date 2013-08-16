@@ -14,87 +14,87 @@ import uk.ac.cam.db538.dexter.hierarchy.HierarchyTest;
 
 public class DexInstruction_Goto_Test extends HierarchyTest {
 
-  @Test
-  public void testGoto() {
-    Utils.parseAndCompare(
-      new Instruction[] {
-        new Instruction10x(Opcode.NOP),
-        new Instruction10t(Opcode.GOTO, -1),
-        new Instruction10x(Opcode.NOP)
-      }, new String[] {
-        "L0:",
-        "nop",
-        "goto L0",
-        "nop"
-      },
-      this.hierarchy);
-    Utils.parseAndCompare(
-      new Instruction[] {
-        new Instruction32x(Opcode.MOVE_16, 12345, 23456),
-        new Instruction10t(Opcode.GOTO, 1),
-        new Instruction10x(Opcode.NOP)
-      }, new String[] {
-        "move v12345, v23456",
-        "goto L4",
-        "L4:",
-        "nop"
-      },
-      this.hierarchy);
-  }
+    @Test
+    public void testGoto() {
+        Utils.parseAndCompare(
+            new Instruction[] {
+                new Instruction10x(Opcode.NOP),
+                new Instruction10t(Opcode.GOTO, -1),
+                new Instruction10x(Opcode.NOP)
+            }, new String[] {
+                "L0:",
+                "nop",
+                "goto L0",
+                "nop"
+            },
+            this.hierarchy);
+        Utils.parseAndCompare(
+            new Instruction[] {
+                new Instruction32x(Opcode.MOVE_16, 12345, 23456),
+                new Instruction10t(Opcode.GOTO, 1),
+                new Instruction10x(Opcode.NOP)
+            }, new String[] {
+                "move v12345, v23456",
+                "goto L4",
+                "L4:",
+                "nop"
+            },
+            this.hierarchy);
+    }
 
-  @Test
-  public void testGoto16() {
-    Utils.parseAndCompare(
-      new Instruction[] {
-        new Instruction10x(Opcode.NOP),
-        new Instruction20t(Opcode.GOTO_16, -1),
-        new Instruction10x(Opcode.NOP)
-      }, new String[] {
-        "L0:",
-        "nop",
-        "goto L0",
-        "nop"
-      },
-      this.hierarchy);
-    Utils.parseAndCompare(
-      new Instruction[] {
-        new Instruction32x(Opcode.MOVE_16, 12345, 23456),
-        new Instruction20t(Opcode.GOTO_16, 2),
-        new Instruction10x(Opcode.NOP)
-      }, new String[] {
-        "move v12345, v23456",
-        "goto L5",
-        "L5:",
-        "nop"
-      },
-      this.hierarchy);
-  }
+    @Test
+    public void testGoto16() {
+        Utils.parseAndCompare(
+            new Instruction[] {
+                new Instruction10x(Opcode.NOP),
+                new Instruction20t(Opcode.GOTO_16, -1),
+                new Instruction10x(Opcode.NOP)
+            }, new String[] {
+                "L0:",
+                "nop",
+                "goto L0",
+                "nop"
+            },
+            this.hierarchy);
+        Utils.parseAndCompare(
+            new Instruction[] {
+                new Instruction32x(Opcode.MOVE_16, 12345, 23456),
+                new Instruction20t(Opcode.GOTO_16, 2),
+                new Instruction10x(Opcode.NOP)
+            }, new String[] {
+                "move v12345, v23456",
+                "goto L5",
+                "L5:",
+                "nop"
+            },
+            this.hierarchy);
+    }
 
-  @Test
-  public void testGoto32() {
-    Utils.parseAndCompare(
-      new Instruction[] {
-        new Instruction10x(Opcode.NOP),
-        new Instruction30t(Opcode.GOTO_32, -1),
-        new Instruction10x(Opcode.NOP)
-      }, new String[] {
-        "L0:",
-        "nop",
-        "goto L0",
-        "nop"
-      },
-      this.hierarchy);
-    Utils.parseAndCompare(
-      new Instruction[] {
-        new Instruction32x(Opcode.MOVE_16, 12345, 23456),
-        new Instruction30t(Opcode.GOTO_32, 3),
-        new Instruction10x(Opcode.NOP)
-      }, new String[] {
-        "move v12345, v23456",
-        "goto L6",
-        "L6:",
-        "nop"
-      },
-      this.hierarchy);
-  }
+    @Test
+    public void testGoto32() {
+        Utils.parseAndCompare(
+            new Instruction[] {
+                new Instruction10x(Opcode.NOP),
+                new Instruction30t(Opcode.GOTO_32, -1),
+                new Instruction10x(Opcode.NOP)
+            }, new String[] {
+                "L0:",
+                "nop",
+                "goto L0",
+                "nop"
+            },
+            this.hierarchy);
+        Utils.parseAndCompare(
+            new Instruction[] {
+                new Instruction32x(Opcode.MOVE_16, 12345, 23456),
+                new Instruction30t(Opcode.GOTO_32, 3),
+                new Instruction10x(Opcode.NOP)
+            }, new String[] {
+                "move v12345, v23456",
+                "goto L6",
+                "L6:",
+                "nop"
+            },
+            this.hierarchy);
+    }
 }

@@ -165,7 +165,7 @@ public class Attributes implements Cloneable, Map<Object, Object> {
 
         @Override public boolean equals(Object object) {
             return object instanceof Name
-                    && ((Name) object).name.equalsIgnoreCase(name);
+                   && ((Name) object).name.equalsIgnoreCase(name);
         }
 
         @Override public int hashCode() {
