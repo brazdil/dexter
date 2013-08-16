@@ -129,7 +129,8 @@ public class DexCodeAnalyzer {
                     else
                         master.unify(definer);
                 }
-                assert master != null;
+                if (master == null)
+                	throw new AssertionError("Cannot find definer for " + usedReg.toString() + " inside basic block " + basicBlock.first.getInstructionIndex() + "-" + basicBlock.last.getInstructionIndex());
                 basicBlock.associateDefinitionSite(usedReg, master);
             }
         }

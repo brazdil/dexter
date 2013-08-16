@@ -109,8 +109,12 @@ public class PackageListActivity extends FragmentActivity implements PackageList
 
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
-        if (item.getItemId() == R.id.action_runTests)
-            startActivity(new Intent(this, UnitTestActivity.class));
+        int itemId = item.getItemId();
+        if (itemId == R.id.action_runTests) {
+            Intent intent = new Intent(this, UnitTestActivity.class);
+            intent.putExtra(UnitTestActivity.FLAG_INSTRUMENT, itemId == R.id.action_runTests);
+            startActivity(intent);
+        }
         return true;
     }
 }

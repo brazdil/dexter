@@ -813,10 +813,25 @@ public final class CodeGenerator {
     }
 
     public DexCodeElement setTaint_ArrayPrimitive(DexTaintRegister regFromTaint, DexTaintRegister regArrayTaint, DexSingleRegister regIndex) {
-        DexSingleRegister regAux = auxReg();
+    	DexSingleRegister regAux = auxReg();
+    	return new DexMacro(
+    			new DexInstruction_InstanceGet(regAux, regArrayTaint, dexAux.getField_TaintArrayPrimitive_TArray(), hierarchy),
+    			new DexInstruction_ArrayPut(regFromTaint, regAux, regIndex, Opcode_GetPut.IntFloat, hierarchy));
+    }
+    
+    public DexCodeElement setTaint_ArrayPrimitive(DexSingleRegister regTaint, DexSingleRegister regArray, int indexStart, int count) {
+        DexSingleRegister regTArray = auxReg();
+        DexSingleRegister regIndex = auxReg();
+        
+    	List<DexCodeElement> insns = new ArrayList<DexCodeElement>(count * 2);
+    	for (int i = 0; i < count; i++) {
+    		insns.add(constant(regIndex, i));
+    		insns.add(new DexInstruction_ArrayPut(regTaint, regTArray, regIndex, Opcode_GetPut.IntFloat, hierarchy));
+    	}
+        
         return new DexMacro(
-                   new DexInstruction_InstanceGet(regAux, regArrayTaint, dexAux.getField_TaintArrayPrimitive_TArray(), hierarchy),
-                   new DexInstruction_ArrayPut(regFromTaint, regAux, regIndex, Opcode_GetPut.IntFloat, hierarchy));
+                   new DexInstruction_InstanceGet(regTArray, taint(regArray), dexAux.getField_TaintArrayPrimitive_TArray(), hierarchy),
+                   new DexMacro(insns));
     }
 
     public DexCodeElement setTaint_ArrayReference(DexTaintRegister regFromTaint, DexTaintRegister regArrayTaint, DexSingleRegister regIndex) {
@@ -870,6 +885,10 @@ public final class CodeGenerator {
         return new DexMacro(
                    new DexInstruction_NewInstance(taint, dexAux.getType_TaintExternal().getClassDef(), hierarchy),
                    new DexInstruction_Invoke(dexAux.getMethod_TaintExternal_Constructor(), Arrays.asList(taint), hierarchy));
+    }
+
+    public DexCodeElement constant(DexSingleRegister reg, int value) {
+        return new DexInstruction_Const(reg, value, hierarchy);
     }
 
     public DexCodeElement ifZero(DexSingleRegister reg, DexLabel target) {

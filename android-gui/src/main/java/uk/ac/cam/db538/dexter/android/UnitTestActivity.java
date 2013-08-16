@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
@@ -14,13 +15,17 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.rx201.jarsigner.manifest.Streams;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.DexFileFromMemory;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -195,6 +200,7 @@ public class UnitTestActivity extends Activity {
 
     private final static String DEXTER_TEST_APK = "dexter_test.apk";
     private final static String DEXTER_TEST_DEX = "dexter_test.dex";
+    private final static String DEXTER_AUX_DEX = "dexter_aux.dex";
 
     private void prepareTestClasses(final Runnable whenDone) {
         if (testClassLoader != null) {
@@ -206,15 +212,18 @@ public class UnitTestActivity extends Activity {
         Thread t = new Thread() {
             @Override
             public void run() {
+                Intent intent = UnitTestActivity.this.getIntent();
+                final boolean flagInstrument = intent.getBooleanExtra(FLAG_INSTRUMENT, true);
+
                 try {
                     DexterApplication thisApp = (DexterApplication) getApplication();
+                    InputStream dexterAuxAsset = UnitTestActivity.this.getAssets().open(DEXTER_AUX_DEX);
 
                     setMessage("Loading files...");
 
                     DexFile fileTestApp = new DexFileFromMemory(
                             UnitTestActivity.this.getAssets().open(DEXTER_TEST_DEX));
-                    DexFile fileAux = new DexFileFromMemory(
-                            UnitTestActivity.this.getAssets().open("dexter_aux.dex"));
+                    DexFile fileAux = new DexFileFromMemory(dexterAuxAsset);
 
                     setMessage("Waiting for framework...");
                     thisApp.waitForHierarchy();
@@ -237,17 +246,20 @@ public class UnitTestActivity extends Activity {
                             hierarchy,
                             new AuxiliaryDex(fileAux, hierarchy, renamerAux));
 
-                    setMessage("Instrumenting...");
+                    if (flagInstrument) {
+                        setMessage("Instrumenting...");
 
-                    Transform transform = new TestingTaintTransform();
-                    transform.apply(dexTestApp);
+                        Transform transform = new TestingTaintTransform();
+                        transform.apply(dexTestApp);
+                    }
 
                     setMessage("Saving...");
 
                     byte[] dexInstrumented = dexTestApp.writeToFile();
-                    File fileApk = new File(UnitTestActivity.this.getFilesDir(), DEXTER_TEST_APK);
+
                     Manifest manifest = new Manifest();
                     manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+                    File fileApk = fileApk = new File(UnitTestActivity.this.getFilesDir(), DEXTER_TEST_APK);
                     JarOutputStream jos = new JarOutputStream(new FileOutputStream(fileApk), manifest);
                     JarEntry entryClassesDex = new JarEntry("classes.dex");
                     jos.putNextEntry(entryClassesDex);
@@ -291,4 +303,6 @@ public class UnitTestActivity extends Activity {
         };
         t.start();
     }
+
+    public static final String FLAG_INSTRUMENT = "INSTRUMENT";
 }

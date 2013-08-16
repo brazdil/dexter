@@ -36,6 +36,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
@@ -239,6 +240,9 @@ public class TaintTransform extends Transform {
 
         if (element instanceof DexInstruction_MoveException)
             return instrument_MoveException((DexInstruction_MoveException) element);
+
+        if (element instanceof DexInstruction_FillArrayData)
+            return instrument_FillArrayData((DexInstruction_FillArrayData) element);
 
         /*
          * Monitor instructions can throw the IllegalMonitorStateException,
@@ -626,6 +630,29 @@ public class TaintTransform extends Transform {
                        insn,
                        codeGen.getTaint_ArrayPrimitive(regToTaint, regArrayTaint, regIndexBackup));
         }
+    }
+
+    private DexCodeElement instrument_FillArrayData(DexInstruction_FillArrayData insn) {
+    	/*
+    	 * Argument is an array of primitive type. Data are inserted into the 
+    	 * array as if the instruction was a loop???
+    	 */
+    	
+    	// TODO: not sure about semantics
+    	// 1) put sensitive data into array
+    	// 2) do fill-array with more elements than what is the length of the array
+    	//    => throws bounds exception
+    	// 3) ? retrieve data from the array ?
+    	//    (has the fill-array instruction actually rewritten the data or not)
+    	// If the data are rewritten, this instrumentation needs to be changed so that
+    	// fill-array happens even if setting taint throws. (simple TRY block)
+    	// If the data are kept, it needs to be changed to assign afterwards.
+    	
+    	DexSingleRegister regEmptyTaint = codeGen.auxReg(); 
+    	return new DexMacro(
+			codeGen.setEmptyTaint(regEmptyTaint),
+			codeGen.setTaint_ArrayPrimitive(regEmptyTaint, insn.getRegArray(), 0, insn.getElementData().size()),
+			insn);
     }
 
     private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput) {

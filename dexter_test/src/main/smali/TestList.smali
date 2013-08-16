@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 41
+    const v0, 42
     new-array v0, v0, [Luk/ac/cam/db538/dexter/tests/TestExerciser;
 
     const v1, 0x0
@@ -72,234 +72,241 @@
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_Convert_ToShort;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_Convert_ToShort;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_Convert_ToDouble;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_Convert_ToDouble;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_Compare_Arg1;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_Compare_Arg1;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_Compare_Arg2;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_Compare_Arg2;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_External;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_External;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_UndecidableCall_Public;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_UndecidableCall_Public;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_UndecidableCall_NonPublic;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_UndecidableCall_NonPublic;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_ArrayPrimitive_Length;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_ArrayPrimitive_Length;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_ArrayPrimitive_Element;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_ArrayPrimitive_Element;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_ArrayReference_Length;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_ArrayReference_Length;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_ArrayReference_ElementExternal;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_ArrayReference_ElementExternal;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_ArrayReference_NestedArrays;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_ArrayReference_NestedArrays;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_NameConflict;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_NameConflict;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_NameConflict;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_NameConflict;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Primitive;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Primitive;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_Primitive;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_Primitive;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_External;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_External;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Internal;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Internal;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_Internal;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_Internal;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayPrimitive;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayPrimitive;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ArrayPrimitive;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ArrayPrimitive;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ArrayReference;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ArrayReference;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_Undecidable;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_Undecidable;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ExternalClass_PrimitiveField;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ExternalClass_PrimitiveField;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ExternalClass_PrimitiveField;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ExternalClass_PrimitiveField;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ExternalClass_ReferenceField;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ExternalClass_ReferenceField;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ExternalClass_ReferenceField;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ExternalClass_ReferenceField;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_InternalClass_InheritedField;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_InternalClass_InheritedField;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_OnlyExternalPropagation;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_OnlyExternalPropagation;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     add-int/lit8 v1, v1, 1
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_InstanceOf;
     invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_InstanceOf;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
     invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    aput-object v2, v0, v1
+
+    add-int/lit8 v1, v1, 1
+    new-instance v3, Luk/ac/cam/db538/dexter/tests/Test_FillArrayData;
+    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/Test_FillArrayData;-><init>()V
+    new-instance v2, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;
+    invoke-direct {v2, v3}, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
     aput-object v2, v0, v1
 
     sput-object v0, Luk/ac/cam/db538/dexter/tests/TestList;->tests:[Luk/ac/cam/db538/dexter/tests/TestExerciser;

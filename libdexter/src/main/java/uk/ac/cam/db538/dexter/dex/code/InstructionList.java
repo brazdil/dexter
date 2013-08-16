@@ -188,7 +188,8 @@ public class InstructionList implements Collection<DexCodeElement> {
     }
 
     public void dump() {
+    	int i = 0;
         for (val insn : instructionList)
-            System.err.println(insn.toString());
+            System.err.println(Integer.toString(i++) + ": " + insn.toString());
     }
 }
