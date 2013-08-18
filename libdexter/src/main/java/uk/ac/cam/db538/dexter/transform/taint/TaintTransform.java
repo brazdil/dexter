@@ -337,8 +337,7 @@ public class TaintTransform extends Transform {
 
         DexMacro initInternalOrigin = new DexMacro(
             codeGen.initPrimitiveTaints(primitiveTaints),
-            codeGen.setEmptyTaint(regInitTaint),
-            codeGen.initReferenceTaints(code, regInitTaint));
+            codeGen.initReferenceTaints(code));
 
         DexMacro init;
         if (canBeCalledFromExternalOrigin(method.getMethodDef()))
@@ -354,7 +353,7 @@ public class TaintTransform extends Transform {
                 // EXTERNAL ORIGIN
                 codeGen.setEmptyTaint(regInitTaint),
                 codeGen.setAllTo(primitiveTaints, regInitTaint),
-                codeGen.initReferenceTaints(code, regInitTaint),
+                codeGen.initReferenceTaints(code),
                 labelEnd);
         else
             init = initInternalOrigin;

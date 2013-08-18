@@ -222,7 +222,7 @@ public final class CodeGenerator {
                    getIntsFromArray(auxParamArray, taintRegs));
     }
 
-    public DexMacro initReferenceTaints(DexCode code, DexSingleRegister regInitialTaint) {
+    public DexMacro initReferenceTaints(DexCode code) {
         List<Parameter> params = code.getParameters();
         boolean skip = code.isConstructor();
         List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
@@ -240,7 +240,6 @@ public final class CodeGenerator {
             DexSingleRegister paramReg = (DexSingleRegister) param.getRegister();
 
             insns.add(taintLookup(paramReg, paramType));
-            insns.add(setTaint(regInitialTaint, paramReg));
         }
 
         return new DexMacro(insns);
