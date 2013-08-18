@@ -8,9 +8,9 @@ import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
-import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 
@@ -31,7 +31,8 @@ public class TestingTaintTransform extends TaintTransform {
 
     @Override
     public DexMethod doLast(DexMethod method) {
-        if (isTaintCheckMethod(method)) {
+        if (isGivenUtilsMethod(method, NAME_IS_TAINTED, PROTOTYPE_IS_TAINTED)) {
+        	
             DexCode oldCode = method.getMethodBody();
             DexRegister paramReg = oldCode.getParameters().get(0).getRegister();
 
@@ -44,33 +45,43 @@ public class TestingTaintTransform extends TaintTransform {
 
             DexCode newCode = new DexCode(oldCode, new InstructionList(newInstructions));
             method = new DexMethod(method, newCode);
+            
+        } else if (isGivenUtilsMethod(method, NAME_TAINT, PROTOTYPE_TAINT_PRIMITIVE)) {
+
+            DexCode oldCode = method.getMethodBody();
+            DexRegister paramReg = oldCode.getParameters().get(0).getRegister();
+            DexRegister paramRegTaint = paramReg.getTaintRegister();
+            
+            List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
+            for (DexCodeElement insn : oldCode.getInstructionList())
+                if (insn instanceof DexInstruction_ArrayGet && ((DexInstruction_ArrayGet) insn).getRegTo().equals(paramRegTaint))
+                    newInstructions.add(new DexInstruction_Const(paramRegTaint, 1, oldCode.getHierarchy()));
+                else
+                    newInstructions.add(insn);
+
+            DexCode newCode = new DexCode(oldCode, new InstructionList(newInstructions));
+            method = new DexMethod(method, newCode);
         }
+        
+        if (method.getMethodDef().getMethodId().getName().equals("propagate"))
+        	if (method.getMethodDef().getParentClass().getType().getPrettyName().endsWith("Test_InstanceField_ArrayReference"))
+        		method.getMethodBody().getInstructionList().dump();
 
         return super.doLast(method);
     }
 
-    @Override
-    public DexCodeElement doFirst(DexCodeElement element, DexCode code, DexMethod method) {
-        if (element instanceof DexInstruction_Const) {
-            DexInstruction_Const insnConst = (DexInstruction_Const) element;
-            if (insnConst.getValue() == 0xDEC0DEDL)
-                return new DexMacro(
-                           new DexInstruction_Const(insnConst.getRegTo().getTaintRegister(), 1L, code.getHierarchy()),
-                           insnConst);
-        }
+    private static final String TAINTUTILS_CLASS = "Luk/ac/cam/db538/dexter/tests/TaintUtils;";
+    private static final String NAME_IS_TAINTED = "isTainted";
+    private static final String PROTOTYPE_IS_TAINTED = "(I)Z";
+    private static final String NAME_TAINT = "taint";
+    private static final String PROTOTYPE_TAINT_PRIMITIVE = "(I)I";
+    private static final String PROTOTYPE_TAINT_REFERENCE = "(Ljava/lang/Object;)Ljava/lang/Object";
 
-        return super.doFirst(element, code, method);
-    }
-
-    private static final String TAINTCHECK_CLASS = "Luk/ac/cam/db538/dexter/tests/TaintChecker;";
-    private static final String TAINTCHECK_METHOD = "isTainted";
-    private static final String TAINTCHECK_PROTOTYPE = "(I)Z";
-
-    private boolean isTaintCheckMethod(DexMethod method) {
+    private boolean isGivenUtilsMethod(DexMethod method, String methodName, String methodPrototype) {
         return
-            method.getParentClass().getClassDef().getType().getDescriptor().equals(TAINTCHECK_CLASS) &&
-            method.getMethodDef().getMethodId().getName().equals(TAINTCHECK_METHOD) &&
-            method.getMethodDef().getMethodId().getPrototype().getDescriptor().equals(TAINTCHECK_PROTOTYPE) &&
+            method.getParentClass().getClassDef().getType().getDescriptor().equals(TAINTUTILS_CLASS) &&
+            method.getMethodDef().getMethodId().getName().equals(methodName) &&
+            method.getMethodDef().getMethodId().getPrototype().getDescriptor().equals(methodPrototype) &&
             method.getMethodDef().isStatic() &&
             method.getMethodBody() != null;
     }

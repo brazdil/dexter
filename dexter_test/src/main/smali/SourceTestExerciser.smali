@@ -46,7 +46,7 @@
 
     move-result v0
 
-    invoke-static {v0}, Luk/ac/cam/db538/dexter/tests/TaintChecker;->isTainted(I)Z
+    invoke-static {v0}, Luk/ac/cam/db538/dexter/tests/TaintUtils;->isTainted(I)Z
 
     move-result v0
 

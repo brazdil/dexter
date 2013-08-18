@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,6 +35,10 @@ public class InstructionList implements Collection<DexCodeElement> {
                 visited.add(insn);
 
         this.instructionList = Utils.finalList(insns);
+    }
+    
+    public InstructionList(DexCodeElement ... insns) {
+    	this(Arrays.asList(insns));
     }
 
     private static List<? extends DexCodeElement> expandMacros(List<? extends DexCodeElement> insns) {
