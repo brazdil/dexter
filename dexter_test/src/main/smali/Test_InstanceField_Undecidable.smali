@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;
+.class public LTest_InstanceField_Undecidable;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # instance fields
 .field private X:Ljava/lang/Object;
@@ -37,17 +37,17 @@
     .registers 6
 
     # create object
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
-    invoke-direct {v2, p1}, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;-><init>(I)V
+    new-instance v2, LMyClass_IntField;
+    invoke-direct {v2, p1}, LMyClass_IntField;-><init>(I)V
 
     # propagate
-    iput-object v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;->X:Ljava/lang/Object;
-    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_Undecidable;->X:Ljava/lang/Object;
+    iput-object v2, p0, LTest_InstanceField_Undecidable;->X:Ljava/lang/Object;
+    iget-object v1, p0, LTest_InstanceField_Undecidable;->X:Ljava/lang/Object;
 
-    check-cast v1, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
+    check-cast v1, LMyClass_IntField;
 
     # retrieve some primitive from the object
-    invoke-virtual {v1}, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;->getX()I
+    invoke-virtual {v1}, LMyClass_IntField;->getX()I
     move-result v0
 
     return v0

@@ -12,13 +12,13 @@
 .method public static main([Ljava/lang/String;)V
 	.registers 3
 
-    new-instance v0, Luk/ac/cam/db538/dexter/tests/Test_FillArrayData;
-    invoke-direct {v0}, Luk/ac/cam/db538/dexter/tests/Test_FillArrayData;-><init>()V
+    new-instance v0, LTest_FillArrayData;
+    invoke-direct {v0}, LTest_FillArrayData;-><init>()V
 
-    new-instance v1, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;
-    invoke-direct {v1, v0}, Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+    new-instance v1, LNoPropagationTestExerciser;
+    invoke-direct {v1, v0}, LNoPropagationTestExerciser;-><init>(LPropagationTest;)V
 
-    invoke-virtual {v1}, Luk/ac/cam/db538/dexter/tests/TestExerciser;->run()Z
+    invoke-virtual {v1}, LTestExerciser;->run()Z
 
 	return-void
 .end method

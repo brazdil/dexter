@@ -1,9 +1,9 @@
-.class public Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
-.super Luk/ac/cam/db538/dexter/tests/TestExerciser;
+.class public LPropagationTestExerciser;
+.super LTestExerciser;
 .source "PropagationTestExerciser.java"
 
 
-.field private final test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.field private final test:LPropagationTest;
 .field private final shouldPropagate:Z
 
 .field private static final RAND:Ljava/util/Random;
@@ -13,42 +13,42 @@
 
     new-instance v0, Ljava/util/Random;
     invoke-direct {v0}, Ljava/util/Random;-><init>()V
-    sput-object v0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->RAND:Ljava/util/Random;
+    sput-object v0, LPropagationTestExerciser;->RAND:Ljava/util/Random;
 
     return-void
 
 .end method
 
 # direct methods
-.method public constructor <init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;Z)V
+.method public constructor <init>(LPropagationTest;Z)V
     .registers 4
 
-    invoke-direct {p0}, Luk/ac/cam/db538/dexter/tests/TestExerciser;-><init>()V
+    invoke-direct {p0}, LTestExerciser;-><init>()V
 
-    iput-object p1, p0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
+    iput-object p1, p0, LPropagationTestExerciser;->test:LPropagationTest;
 
-    iput p2, p0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->shouldPropagate:Z
+    iput p2, p0, LPropagationTestExerciser;->shouldPropagate:Z
 
     return-void
 
 .end method
 
-.method public constructor <init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+.method public constructor <init>(LPropagationTest;)V
     .registers 3
 
     # set shouldPropagate = true
     const/4 v0, 1
-    invoke-direct {p0, p1, v0}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;Z)V
+    invoke-direct {p0, p1, v0}, LPropagationTestExerciser;-><init>(LPropagationTest;Z)V
 
     return-void
 
 .end method
 
 # virtual methods
-.method public getTest()Luk/ac/cam/db538/dexter/tests/Test;
+.method public getTest()LTest;
     .registers 2
 
-    iget-object v0, p0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
+    iget-object v0, p0, LPropagationTestExerciser;->test:LPropagationTest;
     return-object v0
 
 .end method
@@ -56,7 +56,7 @@
 .method private static rand()I
     .registers 2
 
-    sget-object v0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->RAND:Ljava/util/Random;
+    sget-object v0, LPropagationTestExerciser;->RAND:Ljava/util/Random;
 
     # generate a random positive int
 
@@ -73,38 +73,38 @@
 
     # First run with an untainted argument
 
-    invoke-static {}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->rand()I
+    invoke-static {}, LPropagationTestExerciser;->rand()I
     move-result v0
-    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
-    invoke-interface {v1, v0}, Luk/ac/cam/db538/dexter/tests/PropagationTest;->propagate(I)I
+    iget-object v1, p0, LPropagationTestExerciser;->test:LPropagationTest;
+    invoke-interface {v1, v0}, LPropagationTest;->propagate(I)I
     move-result v2
 
     # ... and check taint of the result
 
-    invoke-static {v2}, Luk/ac/cam/db538/dexter/tests/TaintUtils;->isTainted(I)Z
+    invoke-static {v2}, LTaintUtils;->isTainted(I)Z
     move-result v2
 
     # Now generate a tainted constant
 
-    invoke-static {}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->rand()I
+    invoke-static {}, LPropagationTestExerciser;->rand()I
     move-result v0
-    invoke-static {v0}, Luk/ac/cam/db538/dexter/tests/TaintUtils;->taint(I)I
+    invoke-static {v0}, LTaintUtils;->taint(I)I
     move-result v0
 
     # ... run again
 
-    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->test:Luk/ac/cam/db538/dexter/tests/PropagationTest;
-    invoke-interface {v1, v0}, Luk/ac/cam/db538/dexter/tests/PropagationTest;->propagate(I)I
+    iget-object v1, p0, LPropagationTestExerciser;->test:LPropagationTest;
+    invoke-interface {v1, v0}, LPropagationTest;->propagate(I)I
     move-result v3
 
     # ... and again check the taint of the outcome
 
-    invoke-static {v3}, Luk/ac/cam/db538/dexter/tests/TaintUtils;->isTainted(I)Z
+    invoke-static {v3}, LTaintUtils;->isTainted(I)Z
     move-result v3
 
     # Need: v2 == false && v3 == shouldPropagate
 
-    iget v0, p0, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;->shouldPropagate:Z
+    iget v0, p0, LPropagationTestExerciser;->shouldPropagate:Z
 
     if-nez v2, :return_false
     if-ne v3, v0, :return_false

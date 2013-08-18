@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_External;
+.class public LTest_External;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 
 # direct methods

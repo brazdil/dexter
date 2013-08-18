@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_UndecidableCall_NonPublic;
+.class public LTest_UndecidableCall_NonPublic;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 
 # direct methods
@@ -40,8 +40,8 @@
     invoke-direct {v2}, Landroid/os/Binder;-><init>()V
 
     # create internal object
-    new-instance v3, Luk/ac/cam/db538/dexter/tests/MyClass_BinderChild;
-    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/MyClass_BinderChild;-><init>()V
+    new-instance v3, LMyClass_BinderChild;
+    invoke-direct {v3}, LMyClass_BinderChild;-><init>()V
 
     # "randomly" swap them
     const/4 v0, 7
@@ -52,9 +52,9 @@
     :end
 
     # propagate through the undecidable objects
-    invoke-static {v2, p1}, Luk/ac/cam/db538/dexter/tests/MyClass_Binder;->exec(Landroid/os/Binder;I)I
+    invoke-static {v2, p1}, LMyClass_Binder;->exec(Landroid/os/Binder;I)I
     move-result v4
-    invoke-static {v3, v4}, Luk/ac/cam/db538/dexter/tests/MyClass_Binder;->exec(Landroid/os/Binder;I)I
+    invoke-static {v3, v4}, LMyClass_Binder;->exec(Landroid/os/Binder;I)I
     move-result v5
 
     return v5

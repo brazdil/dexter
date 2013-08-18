@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;
+.class public LTest_InstanceField_External;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # instance fields
 .field private X:Ljava/util/concurrent/Semaphore;
@@ -41,8 +41,8 @@
     invoke-direct {v2, p1}, Ljava/util/concurrent/Semaphore;-><init>(I)V
 
     # propagate
-    iput-object v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;->X:Ljava/util/concurrent/Semaphore;
-    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_External;->X:Ljava/util/concurrent/Semaphore;
+    iput-object v2, p0, LTest_InstanceField_External;->X:Ljava/util/concurrent/Semaphore;
+    iget-object v1, p0, LTest_InstanceField_External;->X:Ljava/util/concurrent/Semaphore;
 
     # retrieve some primitive from the object
     invoke-virtual {v1}, Ljava/util/concurrent/Semaphore;->getQueueLength()I

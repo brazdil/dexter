@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_StaticField_Primitive;
+.class public LTest_StaticField_Primitive;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # instance fields
 .field private static X:I
@@ -36,8 +36,8 @@
 .method public propagate(I)I
     .registers 3
 
-    sput p1, Luk/ac/cam/db538/dexter/tests/Test_StaticField_Primitive;->X:I
-    sget v0, Luk/ac/cam/db538/dexter/tests/Test_StaticField_Primitive;->X:I
+    sput p1, LTest_StaticField_Primitive;->X:I
+    sget v0, LTest_StaticField_Primitive;->X:I
 
     return v0
     

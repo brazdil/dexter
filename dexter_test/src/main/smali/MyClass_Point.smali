@@ -1,4 +1,4 @@
-.class public Luk/ac/cam/db538/dexter/tests/MyClass_Point;
+.class public LMyClass_Point;
 .super Landroid/graphics/Point;
 
 # direct methods
@@ -13,7 +13,7 @@
 .method public getX()I
     .registers 1
 
-    iget v0, p0, Luk/ac/cam/db538/dexter/tests/MyClass_Point;->x:I
+    iget v0, p0, LMyClass_Point;->x:I
     return v0
     
 .end method
@@ -21,7 +21,7 @@
 .method public setX(I)V
     .registers 2
 
-    iput p1, p0, Luk/ac/cam/db538/dexter/tests/MyClass_Point;->x:I
+    iput p1, p0, LMyClass_Point;->x:I
     return-void
     
 .end method

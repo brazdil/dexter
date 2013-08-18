@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_InstanceField_NameConflict;
+.class public LTest_InstanceField_NameConflict;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # instance fields
 .field private X:I
@@ -41,8 +41,8 @@
 .method public propagate(I)I
     .registers 3
 
-    iput p1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_NameConflict;->X:I
-    iget v0, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_NameConflict;->X:I
+    iput p1, p0, LTest_InstanceField_NameConflict;->X:I
+    iget v0, p0, LTest_InstanceField_NameConflict;->X:I
 
     return v0
     

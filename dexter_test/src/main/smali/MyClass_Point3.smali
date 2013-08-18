@@ -1,4 +1,4 @@
-.class public Luk/ac/cam/db538/dexter/tests/MyClass_Point3;
+.class public LMyClass_Point3;
 .super Landroid/graphics/Point;
 
 # instance fields

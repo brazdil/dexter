@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_BinOpLit_Standard;
+.class public LTest_BinOpLit_Standard;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 
 # direct methods

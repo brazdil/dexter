@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_StaticField_External;
+.class public LTest_StaticField_External;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # instance fields
 .field private static X:Ljava/util/concurrent/Semaphore;
@@ -41,8 +41,8 @@
     invoke-direct {v2, p1}, Ljava/util/concurrent/Semaphore;-><init>(I)V
 
     # propagate
-    sput-object v2, Luk/ac/cam/db538/dexter/tests/Test_StaticField_External;->X:Ljava/util/concurrent/Semaphore;
-    sget-object v1, Luk/ac/cam/db538/dexter/tests/Test_StaticField_External;->X:Ljava/util/concurrent/Semaphore;
+    sput-object v2, LTest_StaticField_External;->X:Ljava/util/concurrent/Semaphore;
+    sget-object v1, LTest_StaticField_External;->X:Ljava/util/concurrent/Semaphore;
 
     # retrieve some primitive from the object
     invoke-virtual {v1}, Ljava/util/concurrent/Semaphore;->getQueueLength()I

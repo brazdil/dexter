@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_InstanceField_OnlyExternalPropagation;
+.class public LTest_InstanceField_OnlyExternalPropagation;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # direct methods
 .method public constructor <init>()V
@@ -34,14 +34,14 @@
     .registers 7
 
     # create Point3 object
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/MyClass_Point3;
-    invoke-direct {v2}, Luk/ac/cam/db538/dexter/tests/MyClass_Point3;-><init>()V
+    new-instance v2, LMyClass_Point3;
+    invoke-direct {v2}, LMyClass_Point3;-><init>()V
 
     # propagate to external field
-    iput p1, v2, Luk/ac/cam/db538/dexter/tests/MyClass_Point3;->x:I
+    iput p1, v2, LMyClass_Point3;->x:I
 
     # read internal field
-    iget v0, v2, Luk/ac/cam/db538/dexter/tests/MyClass_Point3;->z:I
+    iget v0, v2, LMyClass_Point3;->z:I
 
     return v0
     

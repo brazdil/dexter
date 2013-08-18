@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;
+.class public LTest_InstanceField_ArrayReference;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # instance fields
 .field private X:[Ljava/lang/Object;
@@ -43,8 +43,8 @@
     new-array v2, p1, [Ljava/lang/Object;
 
     # propagate
-    iput-object v2, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;->X:[Ljava/lang/Object;
-    iget-object v1, p0, Luk/ac/cam/db538/dexter/tests/Test_InstanceField_ArrayReference;->X:[Ljava/lang/Object;
+    iput-object v2, p0, LTest_InstanceField_ArrayReference;->X:[Ljava/lang/Object;
+    iget-object v1, p0, LTest_InstanceField_ArrayReference;->X:[Ljava/lang/Object;
 
     # retrieve some primitive from the object
     array-length v0, v1

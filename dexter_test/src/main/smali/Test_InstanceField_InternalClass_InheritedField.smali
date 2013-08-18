@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_InstanceField_InternalClass_InheritedField;
+.class public LTest_InstanceField_InternalClass_InheritedField;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # direct methods
 .method public constructor <init>()V
@@ -34,18 +34,18 @@
     .registers 7
 
     # create two objects
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/MyClass_Point;
-    invoke-direct {v2}, Luk/ac/cam/db538/dexter/tests/MyClass_Point;-><init>()V
-    new-instance v3, Luk/ac/cam/db538/dexter/tests/MyClass_Point;
-    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/MyClass_Point;-><init>()V
+    new-instance v2, LMyClass_Point;
+    invoke-direct {v2}, LMyClass_Point;-><init>()V
+    new-instance v3, LMyClass_Point;
+    invoke-direct {v3}, LMyClass_Point;-><init>()V
 
     # propagate directly
-    iput p1, v2, Luk/ac/cam/db538/dexter/tests/MyClass_Point;->x:I
-    iget v1, v2, Luk/ac/cam/db538/dexter/tests/MyClass_Point;->x:I
+    iput p1, v2, LMyClass_Point;->x:I
+    iget v1, v2, LMyClass_Point;->x:I
 
     # propagate from inside the inheriting class
-    invoke-virtual {v3, v1}, Luk/ac/cam/db538/dexter/tests/MyClass_Point;->setX(I)V
-    invoke-virtual {v3}, Luk/ac/cam/db538/dexter/tests/MyClass_Point;->getX()I
+    invoke-virtual {v3, v1}, LMyClass_Point;->setX(I)V
+    invoke-virtual {v3}, LMyClass_Point;->getX()I
     move-result v0
 
     return v0

@@ -1,13 +1,13 @@
-.class public Luk/ac/cam/db538/dexter/tests/NoPropagationTestExerciser;
-.super Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;
+.class public LNoPropagationTestExerciser;
+.super LPropagationTestExerciser;
 
 # direct methods
-.method public constructor <init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;)V
+.method public constructor <init>(LPropagationTest;)V
     .registers 3
 
     # set shouldPropagate = false
     const/4 v0, 0
-    invoke-direct {p0, p1, v0}, Luk/ac/cam/db538/dexter/tests/PropagationTestExerciser;-><init>(Luk/ac/cam/db538/dexter/tests/PropagationTest;Z)V
+    invoke-direct {p0, p1, v0}, LPropagationTestExerciser;-><init>(LPropagationTest;Z)V
 
     return-void
     

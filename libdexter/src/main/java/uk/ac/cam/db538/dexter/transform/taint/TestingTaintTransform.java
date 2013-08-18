@@ -26,7 +26,7 @@ public class TestingTaintTransform extends TaintTransform {
     @Override
     public boolean exclude(DexClass clazz) {
         String name = clazz.getClassDef().getType().getDescriptor();
-        return name.equals("Luk/ac/cam/db538/dexter/tests/TestList;");
+        return name.equals("LTestList;");
     }
 
     @Override
@@ -63,14 +63,10 @@ public class TestingTaintTransform extends TaintTransform {
             method = new DexMethod(method, newCode);
         }
         
-        if (method.getMethodDef().getMethodId().getName().equals("propagate"))
-        	if (method.getMethodDef().getParentClass().getType().getPrettyName().endsWith("Test_InstanceField_ArrayReference"))
-        		method.getMethodBody().getInstructionList().dump();
-
         return super.doLast(method);
     }
 
-    private static final String TAINTUTILS_CLASS = "Luk/ac/cam/db538/dexter/tests/TaintUtils;";
+    private static final String TAINTUTILS_CLASS = "LTaintUtils;";
     private static final String NAME_IS_TAINTED = "isTainted";
     private static final String PROTOTYPE_IS_TAINTED = "(I)Z";
     private static final String NAME_TAINT = "taint";

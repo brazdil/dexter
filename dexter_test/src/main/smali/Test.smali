@@ -1,4 +1,4 @@
-.class public interface abstract Luk/ac/cam/db538/dexter/tests/Test;
+.class public interface abstract LTest;
 .super Ljava/lang/Object;
 .source "Test.java"
 

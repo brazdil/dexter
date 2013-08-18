@@ -1,9 +1,9 @@
-.class public interface abstract Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.class public interface abstract LPropagationTest;
 .super Ljava/lang/Object;
 .source "PropagationTest.java"
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/Test;
+.implements LTest;
 
 
 # virtual methods

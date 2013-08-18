@@ -1,4 +1,4 @@
-.class public Luk/ac/cam/db538/dexter/tests/MyClass_Intent;
+.class public LMyClass_Intent;
 .super Landroid/content/Intent;
 
 # instance fields
@@ -16,7 +16,7 @@
 .method public putExtra(Ljava/lang/String;I)Landroid/content/Intent;
 	.registers 3
 
-    iput p2, p0, Luk/ac/cam/db538/dexter/tests/MyClass_Intent;->val:I
+    iput p2, p0, LMyClass_Intent;->val:I
     return-object p0
 
 .end method
@@ -24,7 +24,7 @@
 .method public getIntExtra(Ljava/lang/String;I)I
 	.registers 4
 
-    iget v0, p0, Luk/ac/cam/db538/dexter/tests/MyClass_Intent;->val:I
+    iget v0, p0, LMyClass_Intent;->val:I
     return v0
 
 .end method

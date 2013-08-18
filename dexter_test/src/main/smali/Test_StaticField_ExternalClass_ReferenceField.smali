@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_StaticField_ExternalClass_ReferenceField;
+.class public LTest_StaticField_ExternalClass_ReferenceField;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # direct methods
 .method public constructor <init>()V

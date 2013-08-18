@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_UndecidableCall_Public;
+.class public LTest_UndecidableCall_Public;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 
 # direct methods
@@ -40,8 +40,8 @@
     invoke-direct {v2}, Landroid/content/Intent;-><init>()V
 
     # create internal object
-    new-instance v3, Luk/ac/cam/db538/dexter/tests/MyClass_Intent;
-    invoke-direct {v3}, Luk/ac/cam/db538/dexter/tests/MyClass_Intent;-><init>()V
+    new-instance v3, LMyClass_Intent;
+    invoke-direct {v3}, LMyClass_Intent;-><init>()V
 
     # "randomly" swap them
     const/4 v0, 7

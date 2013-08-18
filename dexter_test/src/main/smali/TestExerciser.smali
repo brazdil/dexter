@@ -1,4 +1,4 @@
-.class public abstract Luk/ac/cam/db538/dexter/tests/TestExerciser;
+.class public abstract LTestExerciser;
 .super Ljava/lang/Object;
 .source "TestExerciser.java"
 
@@ -16,7 +16,7 @@
 
 
 # virtual methods
-.method public abstract getTest()Luk/ac/cam/db538/dexter/tests/Test;
+.method public abstract getTest()LTest;
 .end method
 
 .method public abstract run()Z

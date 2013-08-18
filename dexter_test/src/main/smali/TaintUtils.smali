@@ -1,4 +1,4 @@
-.class public Luk/ac/cam/db538/dexter/tests/TaintUtils;
+.class public LTaintUtils;
 .super Ljava/lang/Object;
 
 # direct methods

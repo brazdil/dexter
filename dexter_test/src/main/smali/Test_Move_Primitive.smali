@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_Move_Primitive;
+.class public LTest_Move_Primitive;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 
 # direct methods

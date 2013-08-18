@@ -153,7 +153,7 @@ public class UnitTestActivity extends Activity {
     private Class<?> getTestClass() {
         try {
             synchronized (testClassLoader) {
-                return testClassLoader.loadClass("uk.ac.cam.db538.dexter.tests.TestList");
+                return testClassLoader.loadClass("TestList");
             }
         } catch (ClassNotFoundException ex) {
             throw new Error(ex);

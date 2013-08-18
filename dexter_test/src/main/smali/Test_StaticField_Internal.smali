@@ -1,11 +1,11 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_StaticField_Internal;
+.class public LTest_StaticField_Internal;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # instance fields
-.field private static X:Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
+.field private static X:LMyClass_IntField;
 
 # direct methods
 .method public constructor <init>()V
@@ -37,15 +37,15 @@
     .registers 6
 
     # create object
-    new-instance v2, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
-    invoke-direct {v2, p1}, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;-><init>(I)V
+    new-instance v2, LMyClass_IntField;
+    invoke-direct {v2, p1}, LMyClass_IntField;-><init>(I)V
 
     # propagate
-    sput-object v2, Luk/ac/cam/db538/dexter/tests/Test_StaticField_Internal;->X:Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
-    sget-object v1, Luk/ac/cam/db538/dexter/tests/Test_StaticField_Internal;->X:Luk/ac/cam/db538/dexter/tests/MyClass_IntField;
+    sput-object v2, LTest_StaticField_Internal;->X:LMyClass_IntField;
+    sget-object v1, LTest_StaticField_Internal;->X:LMyClass_IntField;
 
     # retrieve some primitive from the object
-    invoke-virtual {v1}, Luk/ac/cam/db538/dexter/tests/MyClass_IntField;->getX()I
+    invoke-virtual {v1}, LMyClass_IntField;->getX()I
     move-result v0
 
     return v0

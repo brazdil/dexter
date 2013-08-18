@@ -1,4 +1,4 @@
-.class public abstract Luk/ac/cam/db538/dexter/tests/MyClass_Binder;
+.class public abstract LMyClass_Binder;
 .super Landroid/os/Binder;
 
 # direct methods

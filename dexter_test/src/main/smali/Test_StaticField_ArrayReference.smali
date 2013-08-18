@@ -1,8 +1,8 @@
-.class public Luk/ac/cam/db538/dexter/tests/Test_StaticField_ArrayReference;
+.class public LTest_StaticField_ArrayReference;
 .super Ljava/lang/Object;
 
 # interfaces
-.implements Luk/ac/cam/db538/dexter/tests/PropagationTest;
+.implements LPropagationTest;
 
 # static fields
 .field private static X:[Ljava/lang/Object;
@@ -43,8 +43,8 @@
     new-array v2, p1, [Ljava/lang/Object;
 
     # propagate
-    sput-object v2, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ArrayReference;->X:[Ljava/lang/Object;
-    sget-object v1, Luk/ac/cam/db538/dexter/tests/Test_StaticField_ArrayReference;->X:[Ljava/lang/Object;
+    sput-object v2, LTest_StaticField_ArrayReference;->X:[Ljava/lang/Object;
+    sget-object v1, LTest_StaticField_ArrayReference;->X:[Ljava/lang/Object;
 
     # retrieve some primitive from the object
     array-length v0, v1
