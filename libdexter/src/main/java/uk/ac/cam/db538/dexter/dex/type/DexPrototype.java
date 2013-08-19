@@ -93,6 +93,10 @@ public class DexPrototype implements Serializable {
         return false;
     }
 
+    public boolean hasArguments() {
+    	return !parameterTypes.isEmpty();
+    }
+
     public String getDescriptor() {
         StringBuilder sb = new StringBuilder();
         sb.append("(");

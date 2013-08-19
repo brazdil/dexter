@@ -58,7 +58,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleAuxiliaryRegister;
@@ -94,6 +93,7 @@ import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 import com.rx201.dx.translator.DexCodeAnalyzer;
 import com.rx201.dx.translator.RopType;
 import com.rx201.dx.translator.TypeSolver;
+import com.rx201.dx.translator.RopType.Category;
 
 public class TaintTransform extends Transform {
 
@@ -328,16 +328,9 @@ public class TaintTransform extends Transform {
 
         DexSingleRegister regAnnotation = codeGen.auxReg();
         DexSingleRegister regCallerName = codeGen.auxReg();
-        DexSingleRegister regInitTaint = codeGen.auxReg();
 
         DexLabel labelExternal = codeGen.label();
         DexLabel labelEnd = codeGen.label();
-
-        List<DexTaintRegister> primitiveTaints = filterPrimitiveTaintRegisters(code.getParameters());
-
-        DexMacro initInternalOrigin = new DexMacro(
-            codeGen.initPrimitiveTaints(primitiveTaints),
-            codeGen.initReferenceTaints(code));
 
         DexMacro init;
         if (canBeCalledFromExternalOrigin(method.getMethodDef()))
@@ -347,21 +340,41 @@ public class TaintTransform extends Transform {
                 codeGen.getClassAnnotation(regAnnotation, regCallerName, dexAux.getAnno_InternalClass().getType()),
                 codeGen.ifZero(regAnnotation, labelExternal),
                 // INTERNAL ORIGIN
-                initInternalOrigin,
+                codeGen.initTaints(code, true),
                 codeGen.jump(labelEnd),
                 labelExternal,
                 // EXTERNAL ORIGIN
-                codeGen.setEmptyTaint(regInitTaint),
-                codeGen.setAllTo(primitiveTaints, regInitTaint),
-                codeGen.initReferenceTaints(code),
+                codeGen.initTaints(code, false),
                 labelEnd);
         else
-            init = initInternalOrigin;
+            init = codeGen.initTaints(code, true);
 
         return new DexCode(code, new InstructionList(Utils.concat(init.getInstructions(), code.getInstructionList())));
     }
 
     private DexCodeElement instrument_Const(DexInstruction_Const insn) {
+    	if (insn.getValue() == 0L) {
+        	RopType type = codeAnalysis.reverseLookup(insn).getDefinedRegisterType(insn.getRegTo());
+        	
+        	if (type.category == Category.Unknown || type.category == Category.Conflicted)
+        		throw new AssertionError("Cannot decide if zero value is NULL or not");
+        	else if (type.category == Category.Null || type.category == Category.Reference) {
+        		
+        		DexReferenceType objType;
+        		if (type.category == Category.Null)
+        			objType = hierarchy.getRoot().getType(); // java.lang.Object
+        		else
+        			objType = type.type;
+
+        		DexSingleRegister auxEmptyTaint = codeGen.auxReg();
+        		DexSingleRegister regToRef = (DexSingleRegister) insn.getRegTo();
+        		return new DexMacro(
+        			insn,
+        			codeGen.setEmptyTaint(auxEmptyTaint),
+        			codeGen.nullTaint(regToRef, auxEmptyTaint, objType));
+        	}
+    	}
+    	
         return new DexMacro(
                    codeGen.setEmptyTaint(insn.getRegTo().getTaintRegister()),
                    insn);
@@ -385,38 +398,64 @@ public class TaintTransform extends Transform {
         DexInstruction_MoveResult insnMoveResult = methodCall.getResult();
 
         DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
+        List<DexRegister> argRegisters = insnInvoke.getArgumentRegisters();
 
         // Need to store taints in the ThreadLocal ARGS array ?
 
         DexCodeElement macroSetParamTaints;
-        if (prototype.hasPrimitiveArgument())
-            macroSetParamTaints = codeGen.setParamTaints(filterPrimitiveTaintRegisters(insnInvoke));
+        if (prototype.hasArguments()) // doesn't count THIS
+            macroSetParamTaints = codeGen.setParamTaints(argRegisters, prototype, insnInvoke.isStaticCall());
         else
             macroSetParamTaints = codeGen.empty();
-
-
+        
         DexCodeElement macroHandleResult;
 
         // Need to retrieve taint from the ThreadLocal RES field ?
 
-        if (methodCall.hasResult() && prototype.getReturnType() instanceof DexPrimitiveType)
-            macroHandleResult = codeGen.getResultTaint(insnMoveResult.getRegTo().getTaintRegister());
-
+        if (methodCall.hasResult()) {
+        	
+        	if (prototype.getReturnType() instanceof DexPrimitiveType)
+        		macroHandleResult = codeGen.getResultTaint(insnMoveResult.getRegTo().getTaintRegister());
+        	
+        	else if (prototype.getReturnType() instanceof DexReferenceType) {
+        		
+        		DexSingleRegister regToRef = (DexSingleRegister) insnMoveResult.getRegTo();
+        		DexTaintRegister regToRefTaint = regToRef.getTaintRegister();
+        		
+        		DexLabel lNull = codeGen.label(), lAfter = codeGen.label();
+        		
+        		macroHandleResult = new DexMacro(
+        			codeGen.ifZero(regToRef, lNull),
+        			
+        			codeGen.taintLookup(regToRef, (DexReferenceType) prototype.getReturnType()),
+        			codeGen.jump(lAfter),
+        			
+        			lNull,
+        			codeGen.getResultTaint(regToRefTaint),
+        			codeGen.nullTaint(regToRef, regToRefTaint,  (DexReferenceType) prototype.getReturnType()),
+        			
+    				lAfter);
+        	
+        	} else
+        		throw new Error();
+        }
+            
         // Was this a call to a constructor ?
 
         else if (insnInvoke.getMethodId().isConstructor()) {
 
             assert(!methodCall.hasResult());
-            DexSingleRegister regThis = (DexSingleRegister) insnInvoke.getArgumentRegisters().get(0);
+            DexSingleRegister regThis = (DexSingleRegister) argRegisters.get(0);
 
             if (isCallToSuperclassConstructor(insnInvoke, code, methodDef))
                 // Handle calls to internal superclass constructor
-                macroHandleResult = codeGen.assigner_NewInternal(regThis);
+                macroHandleResult = codeGen.taintCreate_Internal(regThis);
             else
                 // Handle call to a standard internal constructor
                 macroHandleResult = codeGen.taintLookup(regThis, insnInvoke.getClassType());
 
         } else
+        	
             macroHandleResult = codeGen.empty();
 
         // generate instrumentation
@@ -443,7 +482,7 @@ public class TaintTransform extends Transform {
                        // Need to generate new TaintInternal object with it
 
                        codeGen.taintCreate_External(regThis, regCombinedTaint),
-                       codeGen.assigner_NewInternal(regThis));
+                       codeGen.taintCreate_Internal(regThis));
 
         } else {
 
@@ -456,13 +495,22 @@ public class TaintTransform extends Transform {
         }
     }
 
-    private DexCodeElement instrument_Return(DexInstruction_Return insnReturn) {
-        if (insnReturn.getOpcode() == RegisterType.REFERENCE)
-            return insnReturn;
-        else
+    private DexCodeElement instrument_Return(DexInstruction_Return insn) {
+        if (insn.getOpcode() == RegisterType.REFERENCE) {
+        	DexSingleRegister regFromRef = (DexSingleRegister) insn.getRegFrom();
+        	DexTaintRegister regFromTaint = regFromRef.getTaintRegister();
+        	DexLabel lAfter = codeGen.label();
+        	
             return new DexMacro(
-                       codeGen.setResultTaint(insnReturn.getRegFrom().getTaintRegister()),
-                       insnReturn);
+            		codeGen.ifNotZero(regFromRef, lAfter),
+            		codeGen.getTaint(regFromTaint, regFromRef), // overwrites the taint register (not needed, right?)
+            		codeGen.setResultTaint(regFromTaint),
+            		lAfter,
+            		insn);
+        } else
+            return new DexMacro(
+                       codeGen.setResultTaint(insn.getRegFrom().getTaintRegister()),
+                       insn);
     }
 
     private DexCodeElement instrument_Move(DexInstruction_Move insn) {
@@ -558,13 +606,13 @@ public class TaintTransform extends Transform {
                        codeGen.move_prim(auxSize, regSize),
                        codeGen.move_prim(auxSizeTaint, regSize.getTaintRegister()),
                        insn,
-                       codeGen.assigner_NewArrayPrimitive(regTo, auxSize, auxSizeTaint));
+                       codeGen.taintCreate_ArrayPrimitive(regTo, auxSize, auxSizeTaint));
         else
             return new DexMacro(
                        codeGen.move_prim(auxSize, regSize),
                        codeGen.move_prim(auxSizeTaint, regSize.getTaintRegister()),
                        insn,
-                       codeGen.assigner_NewArrayReference(regTo, auxSize, auxSizeTaint));
+                       codeGen.taintCreate_ArrayReference(regTo, auxSize, auxSizeTaint));
     }
 
     private DexCodeElement instrument_CheckCast(DexInstruction_CheckCast insn) {
@@ -896,32 +944,6 @@ public class TaintTransform extends Transform {
     }
 
     // UTILS
-
-    private static List<DexTaintRegister> filterPrimitiveTaintRegisters(DexInstruction_Invoke insnInvoke) {
-        DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
-        boolean isStatic = insnInvoke.getCallType() == Opcode_Invoke.Static;
-        int paramCount = prototype.getParameterCount(isStatic);
-
-        List<DexTaintRegister> taintRegs = new ArrayList<DexTaintRegister>(paramCount);
-
-        for (int i = 0; i < paramCount; i++) {
-            DexRegisterType paramType = prototype.getParameterType(i, isStatic, insnInvoke.getClassType());
-            if (paramType instanceof DexPrimitiveType)
-                taintRegs.add(insnInvoke.getArgumentRegisters().get(i).getTaintRegister());
-        }
-
-        return taintRegs;
-    }
-
-    private static List<DexTaintRegister> filterPrimitiveTaintRegisters(List<Parameter> params) {
-        List<DexTaintRegister> taintRegs = new ArrayList<DexTaintRegister>(params.size());
-
-        for (Parameter param : params)
-            if (param.getType() instanceof DexPrimitiveType)
-                taintRegs.add(param.getRegister().getTaintRegister());
-
-        return taintRegs;
-    }
 
     private boolean isCallToSuperclassConstructor(DexInstruction_Invoke insnInvoke, DexCode code, MethodDefinition insideMethodDef) {
         return

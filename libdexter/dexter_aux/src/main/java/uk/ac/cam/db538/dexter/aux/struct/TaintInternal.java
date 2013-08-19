@@ -25,7 +25,10 @@ public class TaintInternal implements Taint {
 		else
 			visited.add(this);
 
-		return this.obj.getTaint() | this.t_super.get();
+		if (this.obj == null)
+			return this.t_super.get();
+		else
+			return this.obj.getTaint() | this.t_super.get();
 	}
 	
 	public int getExternal() {
@@ -37,7 +40,8 @@ public class TaintInternal implements Taint {
 		if (!visited.contains(this)) {
 			visited.add(this);
 			
-			this.obj.setTaint(taint);
+			if (this.obj != null)
+				this.obj.setTaint(taint);
 			this.t_super.set(taint);
 		}
 	}

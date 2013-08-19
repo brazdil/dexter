@@ -15,7 +15,7 @@ public class RuntimeHierarchy {
 
     @Getter private final DexTypeCache typeCache;
     private final Map<DexClassType, BaseClassDefinition> definedClasses;
-    private final ClassDefinition root;
+    @Getter private final ClassDefinition root;
 
     public RuntimeHierarchy(Map<DexClassType, BaseClassDefinition> definedClasses, ClassDefinition root, DexTypeCache typeCache) {
         this.definedClasses = definedClasses;

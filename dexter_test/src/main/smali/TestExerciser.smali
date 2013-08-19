@@ -16,8 +16,8 @@
 
 
 # virtual methods
-.method public abstract getTest()LTest;
+.method public abstract run()Z
 .end method
 
-.method public abstract run()Z
+.method public abstract getTest()LTest;
 .end method

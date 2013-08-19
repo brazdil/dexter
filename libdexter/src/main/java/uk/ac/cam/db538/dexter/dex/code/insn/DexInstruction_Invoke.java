@@ -221,7 +221,7 @@ public class DexInstruction_Invoke extends DexInstruction {
         str.append(methodId.getPrototype().toString());
         str.append(" ");
 
-        if (callType == Opcode_Invoke.Static) {
+        if (isStaticCall()) {
 
             str.append("(");
             boolean first = true;
@@ -275,4 +275,8 @@ public class DexInstruction_Invoke extends DexInstruction {
     protected DexClassType[] throwsExceptions() {
         return this.hierarchy.getTypeCache().LIST_Throwable;
     }
+
+	public boolean isStaticCall() {
+		return callType.isStatic();
+	}
 }

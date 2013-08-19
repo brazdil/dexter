@@ -73,6 +73,7 @@ public class AuxiliaryDex extends Dex {
 
     @Getter private final DexMethod method_Assigner_NewExternal;
     @Getter private final DexMethod method_Assigner_NewInternal;
+    @Getter private final DexMethod method_Assigner_NewInternal_Null;
     @Getter private final DexMethod method_Assigner_NewArrayPrimitive;
     @Getter private final DexMethod method_Assigner_NewArrayReference;
     @Getter private final DexMethod method_Assigner_LookupExternal;
@@ -126,6 +127,7 @@ public class AuxiliaryDex extends Dex {
         val clsAssigner = getDexClass(Assigner.class, hierarchy, renamer);
         this.method_Assigner_NewExternal = findStaticMethodByName(clsAssigner, "newExternal");
         this.method_Assigner_NewInternal = findStaticMethodByName(clsAssigner, "newInternal");
+        this.method_Assigner_NewInternal_Null = findStaticMethodByName(clsAssigner, "newInternal_NULL");
         this.method_Assigner_NewArrayPrimitive = findStaticMethodByName(clsAssigner, "newArrayPrimitive");
         this.method_Assigner_NewArrayReference = findStaticMethodByName(clsAssigner, "newArrayReference");
         this.method_Assigner_LookupExternal = findStaticMethodByName(clsAssigner, "lookupExternal");
