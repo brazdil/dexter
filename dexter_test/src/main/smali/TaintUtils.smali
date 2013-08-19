@@ -18,8 +18,10 @@
 .end method
 
 .method public static taint(Ljava/lang/Object;)Ljava/lang/Object;
-    .registers 1
+    .registers 2
 
+    new-instance v0, Ljava/lang/Object; # to be replaced with Taint.set()
+    
     return-object p0
 
 .end method

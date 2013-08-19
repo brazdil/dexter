@@ -10,8 +10,11 @@ import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 
 public class TestingTaintTransform extends TaintTransform {
@@ -31,7 +34,7 @@ public class TestingTaintTransform extends TaintTransform {
 
     @Override
     public DexMethod doLast(DexMethod method) {
-        if (isGivenUtilsMethod(method, NAME_IS_TAINTED, PROTOTYPE_IS_TAINTED)) {
+        if (isGivenUtilsMethod(method, NAME_ISTAINTED, PROTOTYPE_ISTAINTED_PRIMITIVE)) {
         	
             DexCode oldCode = method.getMethodBody();
             DexRegister paramReg = oldCode.getParameters().get(0).getRegister();
@@ -46,11 +49,29 @@ public class TestingTaintTransform extends TaintTransform {
             DexCode newCode = new DexCode(oldCode, new InstructionList(newInstructions));
             method = new DexMethod(method, newCode);
             
+        } else if (isGivenUtilsMethod(method, NAME_ISTAINTED, PROTOTYPE_ISTAINTED_REFERENCE)) {
+        	
+            DexCode oldCode = method.getMethodBody();
+            DexSingleRegister paramReg = (DexSingleRegister) oldCode.getParameters().get(0).getRegister();
+            DexTaintRegister paramRegTaint = paramReg.getTaintRegister();
+
+            List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
+            for (DexCodeElement insn : oldCode.getInstructionList())
+                if (insn instanceof DexInstruction_Return) {
+                	newInstructions.add(codeGen.taintClearVisited());
+                	newInstructions.add(codeGen.getTaint(paramRegTaint, paramReg));
+                    newInstructions.add(new DexInstruction_Return(paramRegTaint, false, oldCode.getHierarchy()));
+                } else
+                    newInstructions.add(insn);
+
+            DexCode newCode = new DexCode(oldCode, new InstructionList(newInstructions));
+            method = new DexMethod(method, newCode);
+
         } else if (isGivenUtilsMethod(method, NAME_TAINT, PROTOTYPE_TAINT_PRIMITIVE)) {
 
             DexCode oldCode = method.getMethodBody();
             DexRegister paramReg = oldCode.getParameters().get(0).getRegister();
-            DexRegister paramRegTaint = paramReg.getTaintRegister();
+            DexTaintRegister paramRegTaint = paramReg.getTaintRegister();
             
             List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
             for (DexCodeElement insn : oldCode.getInstructionList())
@@ -61,17 +82,38 @@ public class TestingTaintTransform extends TaintTransform {
 
             DexCode newCode = new DexCode(oldCode, new InstructionList(newInstructions));
             method = new DexMethod(method, newCode);
+            
+        } else if (isGivenUtilsMethod(method, NAME_TAINT, PROTOTYPE_TAINT_REFERENCE)) {
+
+        	DexCode oldCode = method.getMethodBody();
+            DexRegister paramReg = oldCode.getParameters().get(0).getRegister();
+            DexTaintRegister paramRegTaint = paramReg.getTaintRegister();
+            
+            List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
+            for (DexCodeElement insn : oldCode.getInstructionList())
+                if (insn instanceof DexInstruction_NewInstance) { 
+                	DexSingleRegister regTaint = codeGen.auxReg();
+                	newInstructions.add(codeGen.taintClearVisited());
+                	newInstructions.add(codeGen.constant(regTaint, 1));
+                    newInstructions.add(codeGen.setTaint(regTaint, paramRegTaint));
+                } else
+                    newInstructions.add(insn);
+
+            DexCode newCode = new DexCode(oldCode, new InstructionList(newInstructions));
+            method = new DexMethod(method, newCode);
+        	
         }
         
         return super.doLast(method);
     }
 
     private static final String TAINTUTILS_CLASS = "LTaintUtils;";
-    private static final String NAME_IS_TAINTED = "isTainted";
-    private static final String PROTOTYPE_IS_TAINTED = "(I)Z";
+    private static final String NAME_ISTAINTED = "isTainted";
+    private static final String PROTOTYPE_ISTAINTED_PRIMITIVE = "(I)Z";
+    private static final String PROTOTYPE_ISTAINTED_REFERENCE = "(Ljava/lang/Object;)Z";
     private static final String NAME_TAINT = "taint";
     private static final String PROTOTYPE_TAINT_PRIMITIVE = "(I)I";
-    private static final String PROTOTYPE_TAINT_REFERENCE = "(Ljava/lang/Object;)Ljava/lang/Object";
+    private static final String PROTOTYPE_TAINT_REFERENCE = "(Ljava/lang/Object;)Ljava/lang/Object;";
 
     private boolean isGivenUtilsMethod(DexMethod method, String methodName, String methodPrototype) {
         return

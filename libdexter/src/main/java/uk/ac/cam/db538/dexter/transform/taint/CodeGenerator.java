@@ -214,7 +214,6 @@ public final class CodeGenerator {
     public DexMacro initTaints(DexCode code, boolean internalOrigin) {
         DexSingleAuxiliaryRegister auxParamArray = auxReg();
         DexSingleAuxiliaryRegister auxIndex = auxReg();
-        DexSingleAuxiliaryRegister auxRefNullTaint = auxReg();
 
         List<Parameter> args = code.getParameters();
         boolean skipThis = code.isConstructor();
@@ -242,6 +241,7 @@ public final class CodeGenerator {
             } else if (argType instanceof DexReferenceType) {
             	
                 DexSingleRegister argRegRef = (DexSingleRegister) arg.getRegister();
+                DexSingleRegister argRegRefTaint = argRegRef.getTaintRegister();
                 DexReferenceType argTypeRef = (DexReferenceType) arg.getType();
                 DexLabel lNull = label(), lAfter = label();
                 
@@ -252,10 +252,10 @@ public final class CodeGenerator {
                 insns.add(lNull);
             	if (internalOrigin) {
             		insns.add(constant(auxIndex, i));
-            		insns.add(new DexInstruction_ArrayGet(auxRefNullTaint, auxParamArray, auxIndex, Opcode_GetPut.IntFloat, hierarchy));
+            		insns.add(new DexInstruction_ArrayGet(argRegRefTaint, auxParamArray, auxIndex, Opcode_GetPut.IntFloat, hierarchy));
             	} else
-            		insns.add(setEmptyTaint(auxRefNullTaint));
-                insns.add(nullTaint(argRegRef, auxRefNullTaint, argTypeRef));
+            		insns.add(setEmptyTaint(argRegRefTaint));
+                insns.add(nullTaint(argRegRef, argRegRefTaint, argTypeRef));
                 
                 insns.add(lAfter);
                 
@@ -781,6 +781,10 @@ public final class CodeGenerator {
                    new DexInstruction_MoveResult(regTo, true, hierarchy));
     }
 
+    public DexCodeElement taintLookup(DexSingleRegister regTo, DexSingleRegister regObject, DexReferenceType type) {
+    	return taintLookup(regTo, regObject, hierarchy.classifyType(type));
+    }
+    
     public DexCodeElement taintLookup(DexSingleRegister regObject, TypeClassification type) {
         return taintLookup(regObject.getTaintRegister(), regObject, type);
     }
@@ -828,10 +832,12 @@ public final class CodeGenerator {
         return new DexInstruction_Invoke(dexAux.getMethod_Taint_SetExternal(), Arrays.asList(taint(regTaint), regFrom), hierarchy);
     }
 
-    public DexCodeElement propagateTaint(DexSingleRegister regTo, DexSingleRegister regFrom) {
+    public DexCodeElement propagateTaint(DexSingleRegister regTo, DexSingleRegister regFrom, DexReferenceType type) {
         DexSingleAuxiliaryRegister regAux = auxReg();
         return new DexMacro(
+        		   taintClearVisited(type),
                    getTaint(regAux, regFrom),
+                   taintClearVisited(type),
                    setTaint(regAux, regTo));
     }
 

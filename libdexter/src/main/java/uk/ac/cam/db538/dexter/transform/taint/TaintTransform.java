@@ -105,7 +105,7 @@ public class TaintTransform extends Transform {
 
     private Dex dex;
     private AuxiliaryDex dexAux;
-    private CodeGenerator codeGen;
+    protected CodeGenerator codeGen;
     private RuntimeHierarchy hierarchy;
     private DexTypeCache typeCache;
 
@@ -244,16 +244,9 @@ public class TaintTransform extends Transform {
         if (element instanceof DexInstruction_FillArrayData)
             return instrument_FillArrayData((DexInstruction_FillArrayData) element);
 
-        /*
-         * Monitor instructions can throw the IllegalMonitorStateException,
-         * but they do so to signal that a monitor was accessed from
-         * a thread that doesn't own it. The assumption made here is that
-         * this behaviour does not leak any information and therefore
-         * instrumentation is not necessary.
-         */
         if (element instanceof DexInstruction_Monitor)
-            return element;
-
+            return instrument_Monitor((DexInstruction_Monitor) element);
+        
         // instructions that do not require instrumentation
         if (element instanceof DexInstruction_Goto ||
                 element instanceof DexInstruction_IfTest ||
@@ -662,15 +655,11 @@ public class TaintTransform extends Transform {
             regIndexBackup = regIndex;
 
         if (insn.getOpcode() == Opcode_GetPut.Object) {
-            RopType returnType = codeAnalysis.reverseLookup(insn).getDefinedRegisterSolver(insn.getRegTo()).getType();
-            if (returnType.category != RopType.Category.Reference)
-                throw new RuntimeException("Unknown type of AGET return value");
-
             return new DexMacro(
                        codeGen.move_prim(regIndexBackup, regIndex),
                        insn,
                        codeGen.getTaint_ArrayReference(regToTaint, regArrayTaint, regIndexBackup),
-                       codeGen.cast(regToTaint, (DexReferenceType) taintType(returnType.type)));
+                       codeGen.cast(regToTaint, (DexReferenceType) taintType(analysis_DefReg(insn, insn.getRegTo()))));
         } else {
             return new DexMacro(
                        codeGen.move_prim(regIndexBackup, regIndex),
@@ -809,15 +798,22 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_MoveException(DexInstruction_MoveException insn) {
-        RopType exceptionType = codeAnalysis.reverseLookup(insn).getDefinedRegisterSolver(insn.getRegTo()).getType();
-        if (exceptionType.category != RopType.Category.Reference)
-            throw new AssertionError("Cannot decide the type of the moved exception");
-
         return new DexMacro(
                    insn,
-                   codeGen.taintLookup(insn.getRegTo(), exceptionType.type));
+                   codeGen.taintLookup(insn.getRegTo(), analysis_DefReg(insn, insn.getRegTo())));
     }
 
+    private DexCodeElement instrument_Monitor(DexInstruction_Monitor insn) {
+    	DexSingleRegister auxExObj = codeGen.auxReg();
+    	DexSingleRegister auxExTaint = codeGen.auxReg();
+    	
+    	return wrapWithTryBlock(
+    			insn,
+    			codeGen.propagateTaint(auxExTaint, insn.getRegMonitor(), analysis_RefReg(insn, insn.getRegMonitor())),
+    			auxExObj, auxExTaint);
+    				
+    }
+    
     private void generateGetTaint(DexClass clazz) {
         DexTypeCache cache = hierarchy.getTypeCache();
         DexMethod implementationOf = dexAux.getMethod_InternalStructure_GetTaint();
@@ -1068,6 +1064,39 @@ public class TaintTransform extends Transform {
         // Return
 
         return taintField;
+    }
+    
+    private DexCodeElement wrapWithTryBlock(DexCodeElement inside, DexCodeElement handler, DexSingleRegister regExObj, DexSingleRegister regExTaint) {
+    	DexTryStart block = codeGen.tryBlock(codeGen.catchAll());
+    	DexLabel lAfter = codeGen.label();
+    	
+    	return new DexMacro(
+    			block,
+    			inside,
+    			block.getEndMarker(),
+    			codeGen.jump(lAfter),
+    			block.getCatchAllHandler(),
+    			codeGen.move_ex(regExObj),
+    			codeGen.taintLookup(regExTaint, regExObj, hierarchy.getTypeCache().TYPE_Throwable),
+    			handler,
+    			codeGen.thrw(regExObj),
+    			lAfter);
+    }
+
+    private DexReferenceType analysis_DefReg(DexCodeElement insn, DexRegister reg) {
+        RopType type = codeAnalysis.reverseLookup(insn).getDefinedRegisterSolver(reg).getType();
+        if (type.category != RopType.Category.Reference)
+            throw new AssertionError("Cannot decide the type of register " + reg + " at " + insn);
+        
+        return type.type;
+    }
+    
+    private DexReferenceType analysis_RefReg(DexCodeElement insn, DexRegister reg) {
+        RopType type = codeAnalysis.reverseLookup(insn).getUsedRegisterSolver(reg).getType();
+        if (type.category != RopType.Category.Reference)
+            throw new AssertionError("Cannot decide the type of register " + reg + " at " + insn);
+        
+        return type.type;
     }
 
     private DexRegisterType taintType(DexRegisterType type) {

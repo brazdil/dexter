@@ -15,7 +15,7 @@
 
 .end method
 
-.method private static run(LExceptionTest;Ljava/lang/Object;)Ljava/lang/Class;
+.method private static run(LExceptionTest;Ljava/lang/Object;)Ljava/lang/Object;
     .registers 4
 
     :try_start
@@ -32,9 +32,6 @@
 
     :handler
     move-exception v1
-
-    invoke-virtual {v1}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
-    move-result v1
 
     return-object v1
 
@@ -67,7 +64,7 @@
     const-string v6, "Running untainted..."
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
-    invoke-static {v0, v2}, LExceptionTestExerciser;->run(LExceptionTest;Ljava/lang/Object;)Ljava/lang/Class;
+    invoke-static {v0, v2}, LExceptionTestExerciser;->run(LExceptionTest;Ljava/lang/Object;)Ljava/lang/Object;
     move-result v3
 
     # now taint the argument
@@ -78,33 +75,39 @@
     const-string v6, "Running tainted..."
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
-    invoke-static {v0, v2}, LExceptionTestExerciser;->run(LExceptionTest;Ljava/lang/Object;)Ljava/lang/Class;
+    invoke-static {v0, v2}, LExceptionTestExerciser;->run(LExceptionTest;Ljava/lang/Object;)Ljava/lang/Object;
     move-result v4
 
     const-string v6, "Testing..."
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
-    # both must match the expected outcome
-    const-string v6, " - first outcome correct"
-    invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
-    if-ne v1, v3, :return_false
-
-    const-string v6, " - second outcome correct"
-    invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
-    if-ne v1, v4, :return_false
-
     # are they tainted?
     const-string v6, " - first outcome not tainted"
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
     invoke-static {v3}, LTaintUtils;->isTainted(Ljava/lang/Object;)Z
-    move-result v3
-    if-nez v3, :return_false
+    move-result v0
+    if-nez v0, :return_false
 
     const-string v6, " - second outcome tainted"
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
     invoke-static {v4}, LTaintUtils;->isTainted(Ljava/lang/Object;)Z
+    move-result v0
+    if-eqz v0, :return_false
+
+    # both must match the expected outcome
+    const-string v6, " - first outcome correct"
+    invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
+    invoke-virtual {v3}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
     move-result v3
-    if-eqz v3, :return_false
+    if-ne v1, v3, :return_false
+
+    const-string v6, " - second outcome correct"
+    invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
+    invoke-virtual {v4}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
+    move-result v4
+    if-ne v1, v4, :return_false
 
     :return_true
     const/4 v0, 0x1
