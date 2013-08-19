@@ -1,8 +1,6 @@
 .class public LTest_StaticField_ArrayPrimitive;
-.super Ljava/lang/Object;
+.super LPropagationTest;
 
-# interfaces
-.implements LPropagationTest;
 
 # instance fields
 .field private static X:[S
@@ -11,7 +9,7 @@
 .method public constructor <init>()V
     .registers 2
 
-    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+    invoke-direct {p0}, LPropagationTest;-><init>()V
     return-void
     
 .end method

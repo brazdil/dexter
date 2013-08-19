@@ -1,15 +1,13 @@
 .class public LTest_Compare_Arg1;
-.super Ljava/lang/Object;
+.super LPropagationTest;
 
-# interfaces
-.implements LPropagationTest;
 
 
 # direct methods
 .method public constructor <init>()V
     .registers 1
 
-    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+    invoke-direct {p0}, LPropagationTest;-><init>()V
     return-void
     
 .end method

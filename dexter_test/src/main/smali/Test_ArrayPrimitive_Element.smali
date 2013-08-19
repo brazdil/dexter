@@ -1,14 +1,11 @@
 .class public LTest_ArrayPrimitive_Element;
-.super Ljava/lang/Object;
-
-# interfaces
-.implements LPropagationTest;
+.super LPropagationTest;
 
 # direct methods
 .method public constructor <init>()V
     .registers 1
 
-    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+    invoke-direct {p0}, LPropagationTest;-><init>()V
     return-void
     
 .end method

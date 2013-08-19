@@ -1,14 +1,12 @@
 .class public LTest_InstanceField_OnlyExternalPropagation;
-.super Ljava/lang/Object;
+.super LPropagationTest;
 
-# interfaces
-.implements LPropagationTest;
 
 # direct methods
 .method public constructor <init>()V
     .registers 2
 
-    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+    invoke-direct {p0}, LPropagationTest;-><init>()V
     return-void
     
 .end method
@@ -45,4 +43,13 @@
 
     return v0
     
+.end method
+
+.method public expected()Z
+    .registers 1
+
+    # return false
+    const/4 v0, 0
+    return v0
+
 .end method

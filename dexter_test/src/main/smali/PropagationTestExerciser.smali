@@ -1,7 +1,5 @@
 .class public LPropagationTestExerciser;
 .super LTestExerciser;
-.source "PropagationTestExerciser.java"
-
 
 .field private final test:LPropagationTest;
 .field private final shouldPropagate:Z
@@ -20,25 +18,12 @@
 .end method
 
 # direct methods
-.method public constructor <init>(LPropagationTest;Z)V
+.method public constructor <init>(LPropagationTest;)V
     .registers 4
 
     invoke-direct {p0}, LTestExerciser;-><init>()V
 
     iput-object p1, p0, LPropagationTestExerciser;->test:LPropagationTest;
-
-    iput p2, p0, LPropagationTestExerciser;->shouldPropagate:Z
-
-    return-void
-
-.end method
-
-.method public constructor <init>(LPropagationTest;)V
-    .registers 3
-
-    # set shouldPropagate = true
-    const/4 v0, 1
-    invoke-direct {p0, p1, v0}, LPropagationTestExerciser;-><init>(LPropagationTest;Z)V
 
     return-void
 
@@ -76,7 +61,7 @@
     invoke-static {}, LPropagationTestExerciser;->rand()I
     move-result v0
     iget-object v1, p0, LPropagationTestExerciser;->test:LPropagationTest;
-    invoke-interface {v1, v0}, LPropagationTest;->propagate(I)I
+    invoke-virtual {v1, v0}, LPropagationTest;->propagate(I)I
     move-result v2
 
     # ... and check taint of the result
@@ -94,7 +79,7 @@
     # ... run again
 
     iget-object v1, p0, LPropagationTestExerciser;->test:LPropagationTest;
-    invoke-interface {v1, v0}, LPropagationTest;->propagate(I)I
+    invoke-virtual {v1, v0}, LPropagationTest;->propagate(I)I
     move-result v3
 
     # ... and again check the taint of the outcome
@@ -102,9 +87,10 @@
     invoke-static {v3}, LTaintUtils;->isTainted(I)Z
     move-result v3
 
-    # Need: v2 == false && v3 == shouldPropagate
+    # Need: v2 == false && v3 == test.expected()
 
-    iget v0, p0, LPropagationTestExerciser;->shouldPropagate:Z
+    invoke-virtual {v1}, LPropagationTest;->expected()Z
+    move-result v0
 
     if-nez v2, :return_false
     if-ne v3, v0, :return_false

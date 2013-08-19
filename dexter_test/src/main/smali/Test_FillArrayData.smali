@@ -1,15 +1,13 @@
 .class public LTest_FillArrayData;
-.super Ljava/lang/Object;
+.super LPropagationTest;
 
-# interfaces
-.implements LPropagationTest;
 
 
 # direct methods
 .method public constructor <init>()V
     .registers 1
 
-    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+    invoke-direct {p0}, LPropagationTest;-><init>()V
     return-void
     
 .end method
@@ -56,4 +54,13 @@
         0xfft 0xeet 0xddt 0xcct
     .end array-data
     
+.end method
+
+.method public expected()Z
+    .registers 1
+
+    # return false
+    const/4 v0, 0
+    return v0
+
 .end method

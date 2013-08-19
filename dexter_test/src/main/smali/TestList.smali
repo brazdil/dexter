@@ -284,8 +284,8 @@
     
     new-instance v3, LTest_InstanceField_OnlyExternalPropagation;
     invoke-direct {v3}, LTest_InstanceField_OnlyExternalPropagation;-><init>()V
-    new-instance v2, LNoPropagationTestExerciser;
-    invoke-direct {v2, v3}, LNoPropagationTestExerciser;-><init>(LPropagationTest;)V
+    new-instance v2, LPropagationTestExerciser;
+    invoke-direct {v2, v3}, LPropagationTestExerciser;-><init>(LPropagationTest;)V
     aput-object v2, v0, v1
     add-int/lit8 v1, v1, 1
     
@@ -298,8 +298,8 @@
     
     new-instance v3, LTest_FillArrayData;
     invoke-direct {v3}, LTest_FillArrayData;-><init>()V
-    new-instance v2, LNoPropagationTestExerciser;
-    invoke-direct {v2, v3}, LNoPropagationTestExerciser;-><init>(LPropagationTest;)V
+    new-instance v2, LPropagationTestExerciser;
+    invoke-direct {v2, v3}, LPropagationTestExerciser;-><init>(LPropagationTest;)V
     aput-object v2, v0, v1
     add-int/lit8 v1, v1, 1
     
