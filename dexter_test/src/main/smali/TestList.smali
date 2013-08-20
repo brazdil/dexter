@@ -93,8 +93,8 @@
     aput-object v2, v0, v1
     add-int/lit8 v1, v1, 1
     
-    new-instance v3, LTest_External;
-    invoke-direct {v3}, LTest_External;-><init>()V
+    new-instance v3, LTest_ExternalCall;
+    invoke-direct {v3}, LTest_ExternalCall;-><init>()V
     new-instance v2, LPropagationTestExerciser;
     invoke-direct {v2, v3}, LPropagationTestExerciser;-><init>(LPropagationTest;)V
     aput-object v2, v0, v1

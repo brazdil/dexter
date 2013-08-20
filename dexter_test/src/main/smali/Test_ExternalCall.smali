@@ -1,4 +1,4 @@
-.class public LTest_External;
+.class public LTest_ExternalCall;
 .super LPropagationTest;
 
 
@@ -17,7 +17,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "External"
+    const-string v0, "External call"
     return-object v0
     
 .end method
