@@ -708,9 +708,9 @@ public class TaintTransform extends Transform {
     	
     	DexSingleRegister regEmptyTaint = codeGen.auxReg(); 
     	return new DexMacro(
-			codeGen.setEmptyTaint(regEmptyTaint),
-			codeGen.setTaint_ArrayPrimitive(regEmptyTaint, insn.getRegArray(), 0, insn.getElementData().size()),
-			insn);
+    			codeGen.setEmptyTaint(regEmptyTaint),
+    			codeGen.setTaint_ArrayPrimitive(regEmptyTaint, insn.getRegArray(), 0, insn.getElementData().size()),
+    			insn);
     }
 
     private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput) {
