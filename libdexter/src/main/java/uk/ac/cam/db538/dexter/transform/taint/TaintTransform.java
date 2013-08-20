@@ -636,7 +636,6 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_InstanceOf(DexInstruction_InstanceOf insn) {
-        // TODO: if the argument is NULL, it will always return FALSE
         return new DexMacro(
                    codeGen.getTaint(insn.getRegTo().getTaintRegister(), insn.getRegObject()),
                    insn);
