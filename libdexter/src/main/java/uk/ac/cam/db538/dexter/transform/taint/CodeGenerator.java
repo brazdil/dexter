@@ -435,7 +435,7 @@ public final class CodeGenerator {
                 }
             });
 
-            // DISTRIBUTE TAINT TO ALL MUTABLE PARAMETERS
+            // DISTRIBUTE TAINT TO ALL MUTABLE NON-NULL PARAMETERS
 
             if (countMutableParameters(insnInvoke) > 0) {
 
@@ -447,8 +447,12 @@ public final class CodeGenerator {
                 forEachValidParameter(insnInvoke, new ParamCallback() {
                     @Override
                     public void apply(DexRegister regParam, DexRegisterType typeParam) {
-                        if (isMutable(typeParam))
+                        if (isMutable(typeParam)) {
+                        	DexLabel lAfter = label();
+                        	insns.add(ifZero((DexSingleRegister) regParam, lAfter));
                             insns.add(setTaint(regCombinedTaint, regParam.getTaintRegister()));
+                            insns.add(lAfter);
+                        }
                     }
                 });
 

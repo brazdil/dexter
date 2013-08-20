@@ -104,6 +104,9 @@ public class TestingTaintTransform extends TaintTransform {
         	
         }
         
+        if (method.getParentClass().getClassDef().getType().getDescriptor().contains("LTest_ExternalCall_ExtNullArgRes;"))
+        	method.getMethodBody().getInstructionList().dump();
+        
         return super.doLast(method);
     }
 

@@ -25,3 +25,16 @@
 	return v0
 
 .end method
+
+.method protected ref2int(Ljava/lang/Object;)I
+	.registers 3
+
+	new-instance v0, Ljava/lang/Object;
+	invoke-direct {v0}, Ljava/lang/Object;-><init>()V
+
+	invoke-virtual {v0, p1}, Ljava/lang/Object;->equals(Ljava/lang/Object;)Z
+	move-result v1
+
+	return v1
+
+.end method
