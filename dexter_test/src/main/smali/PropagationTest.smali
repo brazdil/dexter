@@ -26,6 +26,26 @@
 
 .end method
 
+.method protected int2null(I)Ljava/lang/Object;
+	.registers 4
+
+    # create ArrayList
+    new-instance v1, Ljava/util/ArrayList;
+    invoke-direct {v1}, Ljava/util/ArrayList;-><init>()V
+
+    # add NULL
+    const/4 v0, 0x0
+    invoke-virtual {v1, v0}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
+
+    # now retrieve it again with tainted index
+    sub-int p1, p1, p1
+    invoke-virtual {v1, p1}, Ljava/util/ArrayList;->get(I)Ljava/lang/Object;
+    move-result v0
+
+    return-object v0
+
+.end method
+
 .method protected ref2int(Ljava/lang/Object;)I
 	.registers 3
 

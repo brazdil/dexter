@@ -609,8 +609,29 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_CheckCast(DexInstruction_CheckCast insn) {
+    	DexSingleRegister regObject = insn.getRegObject();
+    	DexSingleRegister regObjectTaint = regObject.getTaintRegister();
+    	DexSingleRegister regTaint = codeGen.auxReg();
+    	DexLabel lNull = codeGen.label(), lAfter = codeGen.label();
+    	
         return new DexMacro(
-                   codeGen.cast(insn.getRegObject().getTaintRegister(), (DexReferenceType) taintType(insn.getValue())),
+        		   codeGen.ifZero(regObject, lNull),
+        		   
+        		   // Non-NULL objects must have the correct taint assigned already, but maybe not cast
+        		   // to the correct type, i.e. TaintInternal being passed as Taint;
+        		   // so just do the correct cast
+        		   
+                   codeGen.cast(regObjectTaint, (DexReferenceType) taintType(insn.getValue())),
+                   
+                   codeGen.jump(lAfter),
+                   lNull,
+                   
+                   // NULL objects can be cast from anything to anything. Need to recreate the Taint object
+                   
+                   codeGen.getTaint(regTaint, regObjectTaint), // don't need to clear visited set (with NULL it can't loop)
+                   codeGen.nullTaint(regObject, regTaint, insn.getValue()), // method will pick the correct Taint class
+                   
+                   lAfter,
                    insn);
     }
 

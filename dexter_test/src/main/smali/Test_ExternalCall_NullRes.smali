@@ -27,19 +27,6 @@
     
 .end method
 
-.method private static int2string(I)Ljava/lang/String;
-    .registers 2
-
-    new-instance v0, Ljava/lang/Integer;
-    invoke-direct {v0, p0}, Ljava/lang/Integer;-><init>(I)V
-
-    invoke-virtual {v0}, Ljava/lang/Object;->toString()Ljava/lang/String;
-    move-result v0
-
-    return-object v0
-
-.end method
-
 .method public propagate(I)I
     .registers 5
 
