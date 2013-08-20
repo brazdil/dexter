@@ -643,9 +643,11 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_ArrayLength(DexInstruction_ArrayLength insn) {
-        return new DexMacro(
-                   codeGen.getTaint_Array_Length(insn.getRegTo().getTaintRegister(), insn.getRegArray().getTaintRegister()),
-                   insn);
+    	return wrapWithTryBlock(insn,
+    			new DexMacro(
+                   insn,
+                   codeGen.getTaint_Array_Length(insn.getRegTo().getTaintRegister(), insn.getRegArray().getTaintRegister())),
+       			insn.getRegArray());
     }
 
     private DexCodeElement instrument_ArrayPut(DexInstruction_ArrayPut insn) {
@@ -825,14 +827,9 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_Monitor(DexInstruction_Monitor insn) {
-    	DexSingleRegister auxExObj = codeGen.auxReg();
-    	DexSingleRegister auxExTaint = codeGen.auxReg();
-    	
-    	return wrapWithTryBlock(
+    	return wrapWithTryBlock(insn,
     			insn,
-    			codeGen.propagateTaint(auxExTaint, insn.getRegMonitor(), analysis_RefReg(insn, insn.getRegMonitor())),
-    			auxExObj, auxExTaint);
-    				
+    			insn.getRegMonitor());
     }
     
     private void generateGetTaint(DexClass clazz) {
@@ -1102,6 +1099,21 @@ public class TaintTransform extends Transform {
     			handler,
     			codeGen.thrw(regExObj),
     			lAfter);
+    }
+    
+    private DexCodeElement wrapWithTryBlock(DexCodeElement originalInsn, DexCodeElement inside, DexSingleRegister ... regRefObjs) {
+    	DexSingleRegister auxExObj = codeGen.auxReg();
+    	DexSingleRegister auxExTaint = codeGen.auxReg();
+    	
+    	List<DexCodeElement> handler = new ArrayList<DexCodeElement>();
+    	for (DexSingleRegister regRefObj : regRefObjs)
+    		handler.add(codeGen.propagateTaint(auxExTaint, regRefObj, analysis_RefReg(originalInsn, regRefObj)));
+    	
+    	return wrapWithTryBlock(
+    			inside,
+       			new DexMacro(handler),
+    			auxExObj, auxExTaint);
+    	
     }
 
     private DexReferenceType analysis_DefReg(DexCodeElement insn, DexRegister reg) {

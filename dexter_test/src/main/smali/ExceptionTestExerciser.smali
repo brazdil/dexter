@@ -16,7 +16,9 @@
 .end method
 
 .method private static run(LExceptionTest;Ljava/lang/Object;)Ljava/lang/Object;
-    .registers 4
+    .registers 7
+
+    const-string v2, "DexterTest"
 
     :try_start
         invoke-virtual {p0, p1}, LExceptionTest;->execute(Ljava/lang/Object;)V
@@ -25,13 +27,20 @@
 
     # SUCCESS  => return NULL
 
+    const-string v3, "... didn't throw an exception"
+    invoke-static {v2, v3}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
     const/4 v0, 0x0
     return-object v0
 
-    # EXCEPTION  => return ex.getClass()
+    # EXCEPTION  => return ex
 
     :handler
     move-exception v1
+
+    const-string v3, "... threw an exception"
+    invoke-static {v2, v3}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+    invoke-virtual {v1}, Ljava/lang/Throwable;->printStackTrace()V    
 
     return-object v1
 
