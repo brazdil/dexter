@@ -19,7 +19,7 @@ public class Cache {
 
 	static final Taint get(Object key) {
     	// generate hash code and table index
-		int objTableIndex = key.getClass().hashCode() & mask;
+		int objTableIndex = System.identityHashCode(key) & mask;
 
 		synchronized (table) {
 			Entry currentEntry = table[objTableIndex];
@@ -62,7 +62,7 @@ public class Cache {
 
 	static final void set(Object key, Taint value) {
 		// generate hash code and table index
-		int objTableIndex = key.getClass().hashCode() & mask;
+		int objTableIndex = System.identityHashCode(key) & mask;
 
 		synchronized (table) {
 			// try to update existing entry
@@ -111,7 +111,7 @@ public class Cache {
 	
 	static final void insert(Object key, Taint value) {
     	// generate hash code and table index
-		int objTableIndex = key.getClass().hashCode() & mask;
+		int objTableIndex = System.identityHashCode(key) & mask;
 		
 		// create new entry and put it at the beginning of the list
 		Entry newEntry = new Entry();
