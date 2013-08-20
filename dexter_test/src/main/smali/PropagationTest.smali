@@ -38,3 +38,17 @@
 	return v1
 
 .end method
+
+.method protected int2string(I)Ljava/lang/String;
+    .registers 3
+
+    new-instance v0, Ljava/lang/Integer;
+    invoke-direct {v0, p1}, Ljava/lang/Integer;-><init>(I)V
+
+    invoke-virtual {v0}, Ljava/lang/Object;->toString()Ljava/lang/String;
+    move-result v0
+
+    return-object v0
+
+.end method
+

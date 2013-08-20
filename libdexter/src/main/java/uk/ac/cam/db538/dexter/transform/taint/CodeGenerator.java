@@ -569,10 +569,16 @@ public final class CodeGenerator {
         else {
             DexSingleRegister regTo = (DexSingleRegister) insnMoveResult.getRegTo();
             DexReferenceType returnType = (DexReferenceType) prototype.getReturnType();
+            DexLabel lNull = label(), lAfter = label();
             return new DexMacro(
+            		   ifZero(regTo, lNull),
                        taintLookup(regTo, returnType),
                        taintClearVisited(returnType),
-                       setTaint(regCombinedTaint, regTo));
+                       setTaint(regCombinedTaint, regTo),
+                       jump(lAfter),
+                       lNull,
+                       nullTaint(regTo, regCombinedTaint, returnType),
+                       lAfter);
         }
     }
 
@@ -679,7 +685,7 @@ public final class CodeGenerator {
                    // invoke the getAnnotation method
                    invoke_result_obj(regTo, method_Method_getAnnotation, regMethodObject, regAnnoClass));
     }
-
+    
     public DexCodeElement taintCreate_External(DexSingleRegister regObject, DexSingleRegister regTaint) {
         return taintCreate_External(regObject.getTaintRegister(), regObject, regTaint);
     }
