@@ -5,26 +5,50 @@ import uk.ac.cam.db538.dexter.aux.struct.Taint;
 
 public class InvokeTaintStore {
 
-	public static ThreadLocalArguments ARGS = new ThreadLocalArguments();
+	public static ThreadLocalPrimitiveArguments ARGS_PRIM = new ThreadLocalPrimitiveArguments();
+	public static ThreadLocalReferenceArguments ARGS_REF = new ThreadLocalReferenceArguments();
 	public static ThreadLocalPrimitiveResult RES_PRIM = new ThreadLocalPrimitiveResult();
 	public static ThreadLocalReferenceResult RES_REF = new ThreadLocalReferenceResult();
 	
-	public static class ThreadLocalArguments extends ThreadLocal<int[]> {
+	public static class ThreadLocalPrimitiveArguments extends ThreadLocal<int[]> {
 
 		@Override
 		protected int[] initialValue() {
 			return new int[256];
 		}
+
+		@Override
+		public void set(int[] value) {
+			RuntimeUtils.die("Argument taint array cannot be modified");
+		}
+	}
+
+	public static class ThreadLocalReferenceArguments extends ThreadLocal<Taint[]> {
+
+		@Override
+		protected Taint[] initialValue() {
+			return new Taint[256];
+		}
 		
+		@Override
+		public void set(Taint[] value) {
+			RuntimeUtils.die("Argument taint array cannot be modified");
+		}
 	}
 
 	public static class ThreadLocalPrimitiveResult extends ThreadLocal<Integer> {
 
 		@Override
 		protected Integer initialValue() {
-			return 0;
+			return null;
 		}
 		
+		@Override
+		public Integer get() {
+			Integer result = super.get();
+			set(null);
+			return result;
+		}
 	}
 
 	public static class ThreadLocalReferenceResult extends ThreadLocal<Taint> {
@@ -33,6 +57,12 @@ public class InvokeTaintStore {
 		protected Taint initialValue() {
 			return null;
 		}
-		
+
+		@Override
+		public Taint get() {
+			Taint result = super.get();
+			set(null);
+			return result;
+		}
 	}
 }

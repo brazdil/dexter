@@ -96,6 +96,7 @@ public final class CodeGenerator {
     private final MethodDefinition method_Integer_valueOf;
     private final MethodDefinition method_Throwable_constructor;
     private final MethodDefinition method_Throwable_getStackTrace;
+    private final MethodDefinition method_Throwable_printStackTrace;
     private final MethodDefinition method_StackTraceElement_getClassName;
     private final MethodDefinition method_Class_forName;
     private final MethodDefinition method_Class_getAnnotation;
@@ -153,6 +154,7 @@ public final class CodeGenerator {
         DexMethodId methodId_valueOf_int_to_Integer = DexMethodId.parseMethodId("valueOf", prototype_int_to_Integer, cache);
         DexMethodId methodId_constructor_void_to_void = DexMethodId.parseMethodId("<init>", prototype_void_to_void, cache);
         DexMethodId methodId_getStackTrace_void_to_TraceElemArray = DexMethodId.parseMethodId("getStackTrace", prototype_void_to_TraceElemArray, cache);
+        DexMethodId methodId_printStackTrace_void_to_void = DexMethodId.parseMethodId("printStackTrace", prototype_void_to_void, cache);
         DexMethodId methodId_getClassName_void_to_String = DexMethodId.parseMethodId("getClassName", prototype_void_to_String, cache);
         DexMethodId methodId_forName_String_to_Class = DexMethodId.parseMethodId("forName", prototype_String_to_Class, cache);
         DexMethodId methodId_getAnnotation_Class_to_Annotation = DexMethodId.parseMethodId("getAnnotation", prototype_Class_to_Annotation, cache);
@@ -167,6 +169,7 @@ public final class CodeGenerator {
         this.method_Integer_valueOf = lookupMethod(typeInteger, methodId_valueOf_int_to_Integer);
         this.method_Throwable_constructor = lookupMethod(typeThrowable, methodId_constructor_void_to_void);
         this.method_Throwable_getStackTrace = lookupMethod(typeThrowable, methodId_getStackTrace_void_to_TraceElemArray);
+        this.method_Throwable_printStackTrace = lookupMethod(typeThrowable, methodId_printStackTrace_void_to_void);
         this.method_StackTraceElement_getClassName = lookupMethod(typeStackTraceElement, methodId_getClassName_void_to_String);
         this.method_Class_forName = lookupMethod(typeClass, methodId_forName_String_to_Class);
         this.method_Class_getAnnotation = lookupMethod(typeClass, methodId_getAnnotation_Class_to_Annotation);
@@ -212,54 +215,52 @@ public final class CodeGenerator {
     }
 
     public DexMacro initTaints(DexCode code, boolean internalOrigin) {
-        DexSingleAuxiliaryRegister auxParamArray = auxReg();
+        DexSingleAuxiliaryRegister auxPrimitiveParamArray = auxReg();
+        DexSingleAuxiliaryRegister auxReferenceParamArray = auxReg();
         DexSingleAuxiliaryRegister auxAddedTaint = auxReg();
         DexSingleAuxiliaryRegister auxIndex = auxReg();
 
         List<Parameter> args = code.getParameters();
-        boolean skipThis = code.isConstructor();
+        boolean skipThisForConstructor = code.isConstructor();
         List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
-        insns.add(getParamArray(auxParamArray));
+        
+        if (internalOrigin) {
+        	insns.add(getPrimitiveParamArray(auxPrimitiveParamArray));
+        	insns.add(getReferenceParamArray(auxReferenceParamArray));
+        }
+        
         insns.add(setEmptyTaint(auxAddedTaint));
 
         int i = -1;
         for (Parameter arg : args) {
         	i++;
         	
-            if (skipThis) {
-                skipThis = false;
+            if (skipThisForConstructor) {
+                skipThisForConstructor = false;
                 continue;
             }
             
+    		insns.add(constant(auxIndex, i));
+    		
+            DexSingleRegister argRegTaint = arg.getRegister().getTaintRegister();
             DexRegisterType argType = arg.getType();
-            if (argType instanceof DexPrimitiveType) {
             
-            	if (internalOrigin) {
-            		insns.add(constant(auxIndex, i));
-            		insns.add(new DexInstruction_ArrayGet(arg.getRegister().getTaintRegister(), auxParamArray, auxIndex, Opcode_GetPut.IntFloat, hierarchy));
-            	} else
-            		insns.add(setEmptyTaint(arg.getRegister().getTaintRegister()));
+            if (argType instanceof DexPrimitiveType) {
+
+            	if (internalOrigin)
+            		insns.add(new DexInstruction_ArrayGet(argRegTaint, auxPrimitiveParamArray, auxIndex, Opcode_GetPut.IntFloat, hierarchy));
+            	else
+            		insns.add(combineTaint(argRegTaint, auxAddedTaint));
             	
             } else if (argType instanceof DexReferenceType) {
             	
-                DexSingleRegister argRegRef = (DexSingleRegister) arg.getRegister();
-                DexSingleRegister argRegRefTaint = argRegRef.getTaintRegister();
-                DexReferenceType argTypeRef = (DexReferenceType) arg.getType();
-                DexLabel lNull = label(), lAfter = label();
+                DexReferenceType argTypeRef = (DexReferenceType) argType;
                 
-                insns.add(ifZero(argRegRef, lNull));
-                insns.add(taintLookup(argRegRef.getTaintRegister(), argRegRef, auxAddedTaint, hierarchy.classifyType(argTypeRef)));
-                insns.add(jump(lAfter));
-                
-                insns.add(lNull);
             	if (internalOrigin) {
-            		insns.add(constant(auxIndex, i));
-            		insns.add(new DexInstruction_ArrayGet(argRegRefTaint, auxParamArray, auxIndex, Opcode_GetPut.IntFloat, hierarchy));
+            		insns.add(new DexInstruction_ArrayGet(argRegTaint, auxReferenceParamArray, auxIndex, Opcode_GetPut.Object, hierarchy));
+            		insns.add(cast(argRegTaint, (DexReferenceType) taintType(argTypeRef)));
             	} else
-            		insns.add(setEmptyTaint(argRegRefTaint));
-                insns.add(nullTaint(argRegRef, argRegRefTaint, argTypeRef));
-                
-                insns.add(lAfter);
+            		insns.add(taintLookup(argRegTaint, (DexSingleRegister) arg.getRegister(), auxAddedTaint, hierarchy.classifyType(argTypeRef)));
                 
             } else
             	throw new Error();
@@ -269,54 +270,54 @@ public final class CodeGenerator {
         return new DexMacro(insns);
     }
 
-    public DexMacro setParamTaints(List<DexRegister> argRegs, DexPrototype prototype, boolean isStatic) {
-        DexSingleAuxiliaryRegister auxParamArray = auxReg();
+    public DexMacro setParamTaints(List<DexRegister> argRegs, DexPrototype prototype, DexReferenceType calledClass, boolean isStatic, boolean isConstructor) {
+        DexSingleAuxiliaryRegister auxPrimitiveParamArray = auxReg();
+        DexSingleAuxiliaryRegister auxReferenceParamArray = auxReg();
         DexSingleAuxiliaryRegister auxIndex = auxReg();
-        DexSingleAuxiliaryRegister auxRefTaint = auxReg();
 
         int argCount = prototype.getParameterCount(isStatic); 
-        List<DexCodeElement> argCode = new ArrayList<DexCodeElement>(argCount * 3);
-        for (int i = (isStatic ? 0 : 1); i < argCount; i++) {
-        	argCode.add(constant(auxIndex, i));
+        List<DexCodeElement> insns = new ArrayList<DexCodeElement>(argCount * 3);
+        
+        insns.add(getPrimitiveParamArray(auxPrimitiveParamArray));
+        insns.add(getReferenceParamArray(auxReferenceParamArray));
+        
+        for (int i = (isConstructor ? 1 : 0); i < argCount; i++) {
+        	insns.add(constant(auxIndex, i));
         	
         	DexRegister regArg = argRegs.get(i);
-        	DexRegisterType argType = prototype.getParameterType(i, isStatic, null);  // don't care about THIS
+        	DexTaintRegister regArgTaint = regArg.getTaintRegister();
+        	DexRegisterType argType = prototype.getParameterType(i, isStatic, calledClass);
 
-        	if (argType instanceof DexPrimitiveType) 
-        		argCode.add(new DexInstruction_ArrayPut(regArg.getTaintRegister(), auxParamArray, auxIndex, Opcode_GetPut.IntFloat, hierarchy));
-        	else if (argType instanceof DexReferenceType) {
-        		// TODO: add case for immutables
-        		DexSingleRegister regArgRef = (DexSingleRegister) regArg;
-        		DexLabel lAfter = label();
-        		
-        		// test for NULL
-        		argCode.add(ifNotZero(regArgRef, lAfter));
-    			argCode.add(taintClearVisited(argType));
-    			argCode.add(getTaint(auxRefTaint, regArgRef));
-    			argCode.add(new DexInstruction_ArrayPut(auxRefTaint, auxParamArray, auxIndex, Opcode_GetPut.IntFloat, hierarchy));
-    			argCode.add(lAfter);
-        		
-        	} else
+        	if (argType instanceof DexPrimitiveType)
+        		insns.add(new DexInstruction_ArrayPut(regArgTaint, auxPrimitiveParamArray, auxIndex, Opcode_GetPut.IntFloat, hierarchy));
+        	else if (argType instanceof DexReferenceType)
+    			insns.add(new DexInstruction_ArrayPut(regArgTaint, auxReferenceParamArray, auxIndex, Opcode_GetPut.Object, hierarchy));
+        	else
         		throw new Error();
         }
         
-        return new DexMacro(
-                   getParamArray(auxParamArray),
-                   new DexMacro(argCode));
+        return new DexMacro(insns);
     }
 
-    private DexMacro getParamArray(DexSingleRegister regTo) {
+    private DexMacro getPrimitiveParamArray(DexSingleRegister regTo) {
         return new DexMacro(
-                   sget(regTo, dexAux.getField_CallParamTaint().getFieldDef()),
+                   sget(regTo, dexAux.getField_CallPrimitiveParamTaint().getFieldDef()),
                    invoke_result_obj(regTo, method_ThreadLocal_Get, regTo),
                    cast(regTo, typeIntArray));
+    }
+
+    private DexMacro getReferenceParamArray(DexSingleRegister regTo) {
+        return new DexMacro(
+                   sget(regTo, dexAux.getField_CallReferenceParamTaint().getFieldDef()),
+                   invoke_result_obj(regTo, method_ThreadLocal_Get, regTo),
+                   cast(regTo, dexAux.getArraytype_Taint()));
     }
 
     public DexMacro getResultPrimitiveTaint(DexTaintRegister regTo) {
         DexSingleAuxiliaryRegister auxReg = auxReg();
 
         return new DexMacro(
-                   sget(auxReg, dexAux.getField_CallResultPrimitiveTaint().getFieldDef()),
+                   sget(auxReg, dexAux.getField_CallPrimitiveResultTaint().getFieldDef()),
                    invoke_result_obj(auxReg, method_ThreadLocal_Get, auxReg),
                    cast(auxReg, typeInteger),
                    invoke_result_prim(regTo, method_Integer_intValue, auxReg));
@@ -324,7 +325,7 @@ public final class CodeGenerator {
 
     public DexMacro getResultReferenceTaint(DexTaintRegister regTo, DexReferenceType taintType) {
         return new DexMacro(
-        		   sget(regTo, dexAux.getField_CallResultReferenceTaint().getFieldDef()),
+        		   sget(regTo, dexAux.getField_CallReferenceResultTaint().getFieldDef()),
         		   invoke_result_obj(regTo, method_ThreadLocal_Get, regTo),
         		   cast(regTo, taintType));
     }
@@ -334,7 +335,7 @@ public final class CodeGenerator {
 
         return new DexMacro(
         		   invoke_result_obj(auxReg1, method_Integer_valueOf, regFrom),
-        		   sget(auxReg2, dexAux.getField_CallResultPrimitiveTaint().getFieldDef()),
+        		   sget(auxReg2, dexAux.getField_CallPrimitiveResultTaint().getFieldDef()),
         		   invoke(method_ThreadLocal_Set, auxReg2, auxReg1));
     }
 
@@ -342,7 +343,7 @@ public final class CodeGenerator {
     	DexSingleRegister auxReg = auxReg();
     	
         return new DexMacro(
-        		   sget(auxReg, dexAux.getField_CallResultReferenceTaint().getFieldDef()),
+        		   sget(auxReg, dexAux.getField_CallReferenceResultTaint().getFieldDef()),
         		   invoke(method_ThreadLocal_Set, auxReg, regFrom));
     }
 
@@ -359,22 +360,20 @@ public final class CodeGenerator {
         return new DexMacro(
                    // auxException = new Exception()
                    new DexInstruction_NewInstance(auxException, defThrowable, hierarchy),
-                   new DexInstruction_Invoke(method_Throwable_constructor, Arrays.asList(auxException), hierarchy),
+                   invoke(method_Throwable_constructor, auxException),
                    // auxStackTrace = auxException.getStackTrace()
-                   new DexInstruction_Invoke(method_Throwable_getStackTrace, Arrays.asList(auxException), hierarchy),
-                   new DexInstruction_MoveResult(auxStackTrace, true, hierarchy),
+                   invoke_result_obj(auxStackTrace, method_Throwable_getStackTrace, auxException),
                    // if (auxStackTrace.length <= 1) => definitely external
-                   new DexInstruction_Const(auxOne, 1, hierarchy),
+                   constant(auxOne, 1),
                    new DexInstruction_ArrayLength(auxStackTraceLength, auxStackTrace, hierarchy),
                    new DexInstruction_IfTest(auxStackTraceLength, auxOne, labelEmptyStack, Opcode_IfTest.le, hierarchy),
                    // stack non-empty
                    // auxCallerTrace = auxStackTrace[1]
                    new DexInstruction_ArrayGet(auxCallerTrace, auxStackTrace, auxOne, Opcode_GetPut.Object, hierarchy),
                    // regName = auxCallerTrace.getClassName()
-                   new DexInstruction_Invoke(method_StackTraceElement_getClassName, Arrays.asList(auxCallerTrace), hierarchy),
-                   new DexInstruction_MoveResult(regName, true, hierarchy),
+                   invoke_result_obj(regName, method_StackTraceElement_getClassName, auxCallerTrace),
                    // goto L_END
-                   new DexInstruction_Goto(labelEnd, hierarchy),
+                   jump(labelEnd),
                    // else
                    labelEmptyStack,
                    // stack empty
@@ -785,7 +784,7 @@ public final class CodeGenerator {
                    new DexInstruction_MoveResult(regTo, true, hierarchy));
     }
 
-    public DexCodeElement taintLookup_NoTaint(DexSingleRegister regTo, DexSingleRegister regObject, TypeClassification type) {
+    public DexCodeElement taintLookup_NoExtraTaint(DexSingleRegister regTo, DexSingleRegister regObject, TypeClassification type) {
     	DexSingleRegister auxZero = auxReg();
     	return new DexMacro(
     			setEmptyTaint(auxZero),
@@ -1084,5 +1083,24 @@ public final class CodeGenerator {
 
     public DexMacro empty() {
         return DexMacro.empty();
+    }
+    
+    public DexRegisterType taintType(DexRegisterType type) {
+        switch(hierarchy.classifyType(type)) {
+        case PRIMITIVE:
+            return hierarchy.getTypeCache().getCachedType_Integer();
+        case REF_EXTERNAL:
+            return dexAux.getType_TaintExternal().getClassDef().getType();
+        case REF_INTERNAL:
+            return dexAux.getType_TaintInternal().getClassDef().getType();
+        case ARRAY_PRIMITIVE:
+            return dexAux.getType_TaintArrayPrimitive().getClassDef().getType();
+        case ARRAY_REFERENCE:
+            return dexAux.getType_TaintArrayReference().getClassDef().getType();
+        case REF_UNDECIDABLE:
+            return dexAux.getType_Taint().getClassDef().getType();
+        default:
+            throw new UnsupportedOperationException();
+        }
     }
 }

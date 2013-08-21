@@ -7,7 +7,7 @@ import uk.ac.cam.db538.dexter.aux.TaintConstants;
 public class TaintInternal implements Taint {
 
 	private final InternalDataStructure obj;
-	private final TaintExternal t_super;
+	private final TaintExternal t_super; 
 	
 	public TaintInternal(InternalDataStructure obj, Taint t_super) {
 		this.obj = obj;

@@ -4,6 +4,12 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
+import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 
 public class MethodCall extends DexCodeElement {
 
@@ -12,6 +18,36 @@ public class MethodCall extends DexCodeElement {
 
     public MethodCall(DexInstruction_Invoke invoke, DexInstruction_MoveResult result) {
         this.insnInvoke = invoke;
+        
+        DexType returnType = insnInvoke.getMethodId().getPrototype().getReturnType();
+        if (result != null) {
+        	assert (!(returnType instanceof DexVoid));
+        	
+        	switch (result.getType()) {
+        	case REFERENCE:
+        		if (!(returnType instanceof DexReferenceType)) {
+        			assert(returnType instanceof DexPrimitiveType);
+        			assert (((DexPrimitiveType) returnType).getTypeWidth() == RegisterWidth.SINGLE);
+        			
+        			result = new DexInstruction_MoveResult((DexSingleRegister) result.getRegTo(), false, result.getHierarchy());
+        		}
+        		break;
+        		
+        	case SINGLE_PRIMITIVE:
+        		if (!(returnType instanceof DexPrimitiveType)) {
+        			assert(returnType instanceof DexReferenceType);
+        			
+        			result = new DexInstruction_MoveResult((DexSingleRegister) result.getRegTo(), true, result.getHierarchy());
+        		}
+        		break;
+        		
+        	case WIDE_PRIMITIVE:
+        		assert (returnType instanceof DexPrimitiveType);
+        		assert (((DexPrimitiveType) returnType).getTypeWidth() == RegisterWidth.WIDE);
+        		break;
+        	}
+        }        	
+
         this.insnResult = result;
     }
 

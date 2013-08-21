@@ -26,6 +26,7 @@ import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
+import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
@@ -39,9 +40,10 @@ import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
 public class AuxiliaryDex extends Dex {
 
-    @Getter private final DexStaticField field_CallParamTaint;
-    @Getter private final DexStaticField field_CallResultPrimitiveTaint;
-    @Getter private final DexStaticField field_CallResultReferenceTaint;
+    @Getter private final DexStaticField field_CallPrimitiveParamTaint;
+    @Getter private final DexStaticField field_CallReferenceParamTaint;
+    @Getter private final DexStaticField field_CallPrimitiveResultTaint;
+    @Getter private final DexStaticField field_CallReferenceResultTaint;
 
     @Getter private final DexClass type_StaticTaintFields;
 
@@ -57,6 +59,7 @@ public class AuxiliaryDex extends Dex {
     @Getter private final DexMethod method_Taint_Set;
     @Getter private final DexMethod method_Taint_GetExternal;
     @Getter private final DexMethod method_Taint_SetExternal;
+    @Getter private final DexArrayType arraytype_Taint;
 
     @Getter private final DexClass type_TaintExternal;
     @Getter private final DexMethod method_TaintExternal_Constructor;
@@ -88,9 +91,10 @@ public class AuxiliaryDex extends Dex {
 
         // InvokeTaintStore class
         val clsInvokeTaintStore = getDexClass(InvokeTaintStore.class, hierarchy, renamer);
-        this.field_CallParamTaint = findStaticFieldByName(clsInvokeTaintStore, "ARGS");
-        this.field_CallResultPrimitiveTaint = findStaticFieldByName(clsInvokeTaintStore, "RES_PRIM");
-        this.field_CallResultReferenceTaint = findStaticFieldByName(clsInvokeTaintStore, "RES_REF");
+        this.field_CallPrimitiveParamTaint = findStaticFieldByName(clsInvokeTaintStore, "ARGS_PRIM");
+        this.field_CallReferenceParamTaint = findStaticFieldByName(clsInvokeTaintStore, "ARGS_REF");
+        this.field_CallPrimitiveResultTaint = findStaticFieldByName(clsInvokeTaintStore, "RES_PRIM");
+        this.field_CallReferenceResultTaint = findStaticFieldByName(clsInvokeTaintStore, "RES_REF");
 
         this.type_StaticTaintFields = getDexClass(StaticTaintFields.class, hierarchy, renamer);
 
@@ -105,6 +109,7 @@ public class AuxiliaryDex extends Dex {
 
         // Taint types
         this.type_Taint = getDexClass(Taint.class, hierarchy, renamer);
+        this.arraytype_Taint = DexArrayType.parse("[" + type_Taint.getClassDef().getType().getDescriptor(), hierarchy.getTypeCache()); 
         this.method_Taint_Get = findInstanceMethodByName(type_Taint, "get");
         this.method_Taint_Set = findInstanceMethodByName(type_Taint, "set");
         this.method_Taint_GetExternal = findInstanceMethodByName(type_Taint, "getExternal");

@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.aux.struct;
 
+import uk.ac.cam.db538.dexter.aux.RuntimeUtils;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
 
 public final class Assigner {
@@ -7,15 +8,18 @@ public final class Assigner {
 	private Assigner() { }
 
 	public static final TaintExternal newExternal(Object obj, int initialTaint) {
-		TaintExternal tobj = new TaintExternal(initialTaint);
-		if (obj != null)
+		if (TaintConstants.isImmutable(obj))
+			return new TaintImmutable(initialTaint);
+		else {
+			TaintExternal tobj = new TaintExternal(initialTaint);
 			Cache.insert(obj, tobj);
-		return tobj;
+			return tobj;
+		}
 	}
 
 	public static final TaintInternal newInternal(Object obj) {
 		if (obj == null)
-			die("Cannot create internal taint for NULL");
+			RuntimeUtils.die("Cannot create internal taint for NULL");
 
 		Taint t_super = Cache.get(obj);
 		if (t_super == null) {
@@ -68,11 +72,11 @@ public final class Assigner {
 	
 	public static final TaintInternal lookupInternal(Object obj, int taint) {
 		if (obj == null)
-			die("Cannot lookup internal taint of NULL");
+			RuntimeUtils.die("Cannot lookup internal taint of NULL");
 		
 		TaintInternal tobj = (TaintInternal) Cache.get(obj);
 		if (tobj == null)
-			die("Internal object is not initialized");
+			RuntimeUtils.die("Internal object is not initialized");
 		
 		if (taint != TaintConstants.TAINT_EMPTY) {
 			TaintInternal.clearVisited();
@@ -92,19 +96,14 @@ public final class Assigner {
 	public static final TaintArrayPrimitive lookupArrayPrimitive(Object obj) {
 		TaintArrayPrimitive tobj = (TaintArrayPrimitive) Cache.get(obj);
 		if (tobj == null)
-			die("Array of primitives is not initialized");
+			RuntimeUtils.die("Array of primitives is not initialized");
 		return tobj;
 	}
 	
 	public static final TaintArrayReference lookupArrayReference(Object obj) {
 		TaintArrayReference tobj = (TaintArrayReference) Cache.get(obj);
 		if (tobj == null)
-			die("Array of references is not initialized");
+			RuntimeUtils.die("Array of references is not initialized");
 		return tobj;
-	}
-	
-	private static void die(String msg) {
-		System.err.println(msg);
-		System.exit(1);
 	}
 }

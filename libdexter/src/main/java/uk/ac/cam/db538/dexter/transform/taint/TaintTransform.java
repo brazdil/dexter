@@ -393,11 +393,14 @@ public class TaintTransform extends Transform {
         DexPrototype prototype = insnInvoke.getMethodId().getPrototype();
         List<DexRegister> argRegisters = insnInvoke.getArgumentRegisters();
 
+        boolean isStatic = insnInvoke.isStaticCall();
+        boolean isConstructor = methodCall.getInvoke().getMethodId().isConstructor();
+        
         // Need to store taints in the ThreadLocal ARGS array ?
 
         DexCodeElement macroSetParamTaints;
-        if (prototype.hasArguments()) // doesn't count THIS
-            macroSetParamTaints = codeGen.setParamTaints(argRegisters, prototype, insnInvoke.isStaticCall());
+        if ((!isStatic && !isConstructor) || prototype.hasArguments())
+            macroSetParamTaints = codeGen.setParamTaints(argRegisters, prototype, insnInvoke.getClassType(), isStatic, isConstructor);
         else
             macroSetParamTaints = codeGen.empty();
         
@@ -413,7 +416,7 @@ public class TaintTransform extends Transform {
         	if (resType instanceof DexPrimitiveType)
         		macroHandleResult = codeGen.getResultPrimitiveTaint(regResTaint);
         	else if (resType instanceof DexReferenceType)
-        		macroHandleResult = codeGen.getResultReferenceTaint(regResTaint, (DexReferenceType) taintType(resType));
+        		macroHandleResult = codeGen.getResultReferenceTaint(regResTaint, (DexReferenceType) codeGen.taintType(resType));
         	else
         		throw new Error();
         }
@@ -430,7 +433,7 @@ public class TaintTransform extends Transform {
                 macroHandleResult = codeGen.taintCreate_Internal(regThis);
             else
                 // Handle call to a standard internal constructor
-                macroHandleResult = codeGen.taintLookup_NoTaint(regThis.getTaintRegister(), regThis, hierarchy.classifyType(insnInvoke.getClassType()));
+                macroHandleResult = codeGen.taintLookup_NoExtraTaint(regThis.getTaintRegister(), regThis, hierarchy.classifyType(insnInvoke.getClassType()));
 
         } else
         	
@@ -601,7 +604,7 @@ public class TaintTransform extends Transform {
         		   // to the correct type, i.e. TaintInternal being passed as Taint;
         		   // so just do the correct cast
         		   
-                   codeGen.cast(regObjectTaint, (DexReferenceType) taintType(insn.getValue())),
+                   codeGen.cast(regObjectTaint, (DexReferenceType) codeGen.taintType(insn.getValue())),
                    
                    codeGen.jump(lAfter),
                    lNull,
@@ -661,7 +664,7 @@ public class TaintTransform extends Transform {
                        codeGen.move_prim(regIndexBackup, regIndex),
                        insn,
                        codeGen.getTaint_ArrayReference(regToTaint, regArrayTaint, regIndexBackup),
-                       codeGen.cast(regToTaint, (DexReferenceType) taintType(analysis_DefReg(insn, insn.getRegTo()))));
+                       codeGen.cast(regToTaint, (DexReferenceType) codeGen.taintType(analysis_DefReg(insn, insn.getRegTo()))));
         } else {
             return new DexMacro(
                        codeGen.move_prim(regIndexBackup, regIndex),
@@ -768,7 +771,7 @@ public class TaintTransform extends Transform {
                 return new DexMacro(
                            codeGen.move_obj(regObjectTaintBackup, regObject.getTaintRegister()),
                            insnIget,
-                           codeGen.taintLookup_NoTaint(regTo.getTaintRegister(), regTo, hierarchy.classifyType(resultType)),
+                           codeGen.taintLookup_NoExtraTaint(regTo.getTaintRegister(), regTo, hierarchy.classifyType(resultType)),
                            codeGen.propagateTaintExternal(regTo, regObjectTaintBackup));
 
             }
@@ -802,7 +805,7 @@ public class TaintTransform extends Transform {
     private DexCodeElement instrument_MoveException(DexInstruction_MoveException insn) {
         return new DexMacro(
                    insn,
-                   codeGen.taintLookup_NoTaint(insn.getRegTo().getTaintRegister(), insn.getRegTo(), hierarchy.classifyType(analysis_DefReg(insn, insn.getRegTo()))));
+                   codeGen.taintLookup_NoExtraTaint(insn.getRegTo().getTaintRegister(), insn.getRegTo(), hierarchy.classifyType(analysis_DefReg(insn, insn.getRegTo()))));
     }
 
     private DexCodeElement instrument_Monitor(DexInstruction_Monitor insn) {
@@ -990,7 +993,7 @@ public class TaintTransform extends Transform {
 
         // Generate the new taint field
 
-        DexFieldId fieldId = DexFieldId.parseFieldId(newName, taintType(field.getFieldDef().getFieldId().getType()), typeCache);
+        DexFieldId fieldId = DexFieldId.parseFieldId(newName, codeGen.taintType(field.getFieldDef().getFieldId().getType()), typeCache);
         int fieldAccessFlags = DexUtils.assembleAccessFlags(field.getFieldDef().getAccessFlags());
         InstanceFieldDefinition fieldDef = new InstanceFieldDefinition(classDef, fieldId, fieldAccessFlags);
         classDef.addDeclaredInstanceField(fieldDef);
@@ -1046,7 +1049,7 @@ public class TaintTransform extends Transform {
 
         // Generate the new taint field
 
-        DexFieldId taintFieldId = DexFieldId.parseFieldId(newName, taintType(fieldDef.getFieldId().getType()), typeCache);
+        DexFieldId taintFieldId = DexFieldId.parseFieldId(newName, codeGen.taintType(fieldDef.getFieldId().getType()), typeCache);
         int fieldAccessFlags = DexUtils.assembleAccessFlags(fieldDef.getAccessFlags());
         StaticFieldDefinition taintFieldDef = new StaticFieldDefinition(classDef, taintFieldId, fieldAccessFlags);
         classDef.addDeclaredStaticField(taintFieldDef);
@@ -1074,7 +1077,7 @@ public class TaintTransform extends Transform {
     			codeGen.jump(lAfter),
     			block.getCatchAllHandler(),
     			codeGen.move_ex(regExObj),
-    			codeGen.taintLookup_NoTaint(regExTaint, regExObj, hierarchy.classifyType(hierarchy.getTypeCache().TYPE_Throwable)),
+    			codeGen.taintLookup_NoExtraTaint(regExTaint, regExObj, hierarchy.classifyType(hierarchy.getTypeCache().TYPE_Throwable)),
     			handler,
     			codeGen.thrw(regExObj),
     			lAfter);
@@ -1109,24 +1112,5 @@ public class TaintTransform extends Transform {
             throw new AssertionError("Cannot decide the type of register " + reg + " at " + insn);
         
         return type.type;
-    }
-
-    private DexRegisterType taintType(DexRegisterType type) {
-        switch(hierarchy.classifyType(type)) {
-        case PRIMITIVE:
-            return typeCache.getCachedType_Integer();
-        case REF_EXTERNAL:
-            return dexAux.getType_TaintExternal().getClassDef().getType();
-        case REF_INTERNAL:
-            return dexAux.getType_TaintInternal().getClassDef().getType();
-        case ARRAY_PRIMITIVE:
-            return dexAux.getType_TaintArrayPrimitive().getClassDef().getType();
-        case ARRAY_REFERENCE:
-            return dexAux.getType_TaintArrayReference().getClassDef().getType();
-        case REF_UNDECIDABLE:
-            return dexAux.getType_Taint().getClassDef().getType();
-        default:
-            throw new UnsupportedOperationException();
-        }
     }
 }
