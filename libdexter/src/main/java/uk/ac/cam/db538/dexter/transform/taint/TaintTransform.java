@@ -706,10 +706,10 @@ public class TaintTransform extends Transform {
     	// fill-array happens even if setting taint throws. (simple TRY block)
     	// If the data are kept, it needs to be changed to assign afterwards.
     	
-    	DexSingleRegister regEmptyTaint = codeGen.auxReg(); 
+    	DexSingleRegister regEmptyTaint = codeGen.auxReg();
     	return new DexMacro(
-    			codeGen.setEmptyTaint(regEmptyTaint),
-    			codeGen.setTaint_ArrayPrimitive(regEmptyTaint, insn.getRegArray(), 0, insn.getElementData().size()),
+//    			codeGen.setEmptyTaint(regEmptyTaint),
+//    			codeGen.setTaint_ArrayPrimitive(regEmptyTaint, insn.getRegArray(), 0, insn.getElementData().size()),
     			insn);
     }
 
