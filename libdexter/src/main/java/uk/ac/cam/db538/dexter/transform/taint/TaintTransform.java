@@ -106,7 +106,7 @@ public class TaintTransform extends Transform {
     private Dex dex;
     private AuxiliaryDex dexAux;
     protected CodeGenerator codeGen;
-    private RuntimeHierarchy hierarchy;
+    protected RuntimeHierarchy hierarchy;
     private DexTypeCache typeCache;
 
     private Map<DexInstanceField, DexInstanceField> taintInstanceFields;
@@ -1089,7 +1089,7 @@ public class TaintTransform extends Transform {
     	
     	List<DexCodeElement> handler = new ArrayList<DexCodeElement>();
     	for (DexSingleRegister regRefObj : regRefObjs)
-    		handler.add(codeGen.propagateTaint(auxExTaint, regRefObj, analysis_RefReg(originalInsn, regRefObj)));
+    		handler.add(codeGen.propagateTaint(auxExTaint, regRefObj, hierarchy.getTypeCache().TYPE_Throwable, analysis_RefReg(originalInsn, regRefObj)));
     	
     	return wrapWithTryBlock(
     			inside,

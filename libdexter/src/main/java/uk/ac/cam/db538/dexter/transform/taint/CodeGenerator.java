@@ -830,12 +830,12 @@ public final class CodeGenerator {
         return new DexInstruction_Invoke(dexAux.getMethod_Taint_SetExternal(), Arrays.asList(taint(regTaint), regFrom), hierarchy);
     }
 
-    public DexCodeElement propagateTaint(DexSingleRegister regTo, DexSingleRegister regFrom, DexReferenceType type) {
+    public DexCodeElement propagateTaint(DexSingleRegister regTo, DexSingleRegister regFrom, DexReferenceType typeTo, DexReferenceType typeFrom) {
         DexSingleAuxiliaryRegister regAux = auxReg();
         return new DexMacro(
-        		   taintClearVisited(type),
+        		   taintClearVisited(typeFrom),
                    getTaint(regAux, regFrom),
-                   taintClearVisited(type),
+                   taintClearVisited(typeTo),
                    setTaint(regAux, regTo));
     }
 

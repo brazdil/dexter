@@ -57,15 +57,23 @@ public final class Assigner {
 	}
 
 	public static final TaintExternal lookupExternal(Object obj, int taint) {
-		if (TaintConstants.isImmutable(obj))
+		System.out.println("lookupExternal");
+		System.out.println(obj.getClass().getName());
+		
+		if (TaintConstants.isImmutable(obj)) {
+			System.out.println("immutable");
 			return new TaintImmutable(taint);
+		}
 		
 		TaintExternal tobj = (TaintExternal) Cache.get(obj);
 		if (tobj == null) {
+			System.out.println("new external");
 			tobj = new TaintExternal(taint);
 			Cache.insert(obj, tobj);
-		} else if (taint != TaintConstants.TAINT_EMPTY)
+		} else if (taint != TaintConstants.TAINT_EMPTY) {
+			System.out.println("old + assigning");
 			tobj.set(taint);
+		}
 		
 		return tobj;
 	}

@@ -8,6 +8,7 @@ import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
@@ -16,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy.TypeClassification;
 
 public class TestingTaintTransform extends TaintTransform {
 
@@ -86,16 +88,22 @@ public class TestingTaintTransform extends TaintTransform {
         } else if (isGivenUtilsMethod(method, NAME_TAINT, PROTOTYPE_TAINT_REFERENCE)) {
 
         	DexCode oldCode = method.getMethodBody();
-            DexRegister paramReg = oldCode.getParameters().get(0).getRegister();
+            DexSingleRegister paramReg = (DexSingleRegister) oldCode.getParameters().get(0).getRegister();
             DexTaintRegister paramRegTaint = paramReg.getTaintRegister();
+            DexLabel lNull = codeGen.label(), lAfter = codeGen.label();
             
             List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
             for (DexCodeElement insn : oldCode.getInstructionList())
                 if (insn instanceof DexInstruction_NewInstance) { 
                 	DexSingleRegister regTaint = codeGen.auxReg();
-                	newInstructions.add(codeGen.taintClearVisited());
                 	newInstructions.add(codeGen.constant(regTaint, 1));
+                	newInstructions.add(codeGen.ifZero(paramReg, lNull));
+                	newInstructions.add(codeGen.taintClearVisited());
                     newInstructions.add(codeGen.setTaint(regTaint, paramRegTaint));
+                    newInstructions.add(codeGen.jump(lAfter));
+                    newInstructions.add(lNull);
+                    newInstructions.add(codeGen.nullTaint(paramRegTaint, paramReg, regTaint, TypeClassification.REF_EXTERNAL));                    
+                    newInstructions.add(lAfter);
                 } else
                     newInstructions.add(insn);
 
