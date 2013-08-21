@@ -839,13 +839,6 @@ public final class CodeGenerator {
                    setTaint(regAux, regTo));
     }
 
-    public DexCodeElement propagateTaintExternal(DexSingleRegister regTo, DexSingleRegister regFrom) {
-        DexSingleAuxiliaryRegister regAux = auxReg();
-        return new DexMacro(
-                   getTaintExternal(regAux, regFrom),
-                   setTaintExternal(regAux, regTo));
-    }
-
     /*
      * Combines taint of all the given registers. Does not matter if the given registers
      * are taint registers or not, because it automatically converts all of them to taint registers.

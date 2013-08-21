@@ -723,11 +723,13 @@ public class TaintTransform extends Transform {
                 return new DexMacro(
                            codeGen.setTaintExternal(insnIput.getRegFrom().getTaintRegister(), insnIput.getRegObject()),
                            insnIput);
-            else
+            else {
+                DexSingleAuxiliaryRegister regAux = codeGen.auxReg();
                 return new DexMacro(
-                           codeGen.propagateTaintExternal(insnIput.getRegObject(), (DexSingleRegister) insnIput.getRegFrom()),
-                           insnIput);
-
+                       codeGen.getTaint(regAux, (DexSingleRegister) insnIput.getRegFrom()),
+                       codeGen.setTaintExternal(regAux, insnIput.getRegObject()),
+                       insnIput);
+            }
         }
 
     }
@@ -759,21 +761,15 @@ public class TaintTransform extends Transform {
 
             else {
 
-                DexSingleRegister regObjectTaintBackup;
                 DexSingleRegister regTo = (DexSingleRegister) insnIget.getRegTo();
+                DexSingleRegister regToTaint = regTo.getTaintRegister();
                 DexSingleRegister regObject = insnIget.getRegObject();
-
-                if (regObject.equals(regTo))
-                    regObjectTaintBackup = codeGen.auxReg();
-                else
-                    regObjectTaintBackup = regObject.getTaintRegister();
+                DexSingleRegister regObjectTaint = regObject.getTaintRegister();
 
                 return new DexMacro(
-                           codeGen.move_obj(regObjectTaintBackup, regObject.getTaintRegister()),
                            insnIget,
-                           codeGen.taintLookup_NoExtraTaint(regTo.getTaintRegister(), regTo, hierarchy.classifyType(resultType)),
-                           codeGen.propagateTaintExternal(regTo, regObjectTaintBackup));
-
+                           codeGen.getTaintExternal(regToTaint, regObjectTaint),
+                           codeGen.taintLookup(regToTaint, regObject, regToTaint, hierarchy.classifyType(resultType)));
             }
         }
     }
