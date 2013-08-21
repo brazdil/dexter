@@ -51,7 +51,7 @@ public class TaintConstants {
   }
   
   public static final boolean isImmutable(Object obj) {
-	return obj == null || TaintConstants.IMMUTABLES.contains(obj);
+	return obj == null || TaintConstants.IMMUTABLES.contains(obj.getClass());
   }
   
   public static final List<Class<?>> IMMUTABLES = Arrays.asList(

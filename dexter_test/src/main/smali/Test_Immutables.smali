@@ -34,9 +34,8 @@
     .registers 4
 
     # create untainted String
-    const/4 v0, 4
-    invoke-static {p1}, Ljava/lang/Integer;->toString(I)Ljava/lang/String;
-    move-result v0
+    new-instance v0, Ljava/lang/String;
+    invoke-direct {v0}, Ljava/lang/String;-><init>()V
 
     # create tainted ArrayList
     rem-int/lit8 p1, p1, 4
