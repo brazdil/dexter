@@ -2,6 +2,8 @@ package uk.ac.cam.db538.dexter.aux;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 
 public class TaintConstants {
 
@@ -48,7 +50,11 @@ public class TaintConstants {
     return 0;
   }
   
-  public static final Class<?>[] IMMUTABLES = new Class[] {
+  public static final boolean isImmutable(Object obj) {
+	return obj == null || TaintConstants.IMMUTABLES.contains(obj);
+  }
+  
+  public static final List<Class<?>> IMMUTABLES = Arrays.asList(
 	  String.class,
 	  Integer.class,
 	  Boolean.class,
@@ -60,6 +66,6 @@ public class TaintConstants {
 	  Short.class,
 	  Void.class,
 	  BigDecimal.class,
-	  BigInteger.class,
-  };
+	  BigInteger.class
+  );
 }

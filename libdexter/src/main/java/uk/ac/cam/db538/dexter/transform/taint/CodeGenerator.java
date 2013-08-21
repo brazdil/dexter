@@ -213,12 +213,14 @@ public final class CodeGenerator {
 
     public DexMacro initTaints(DexCode code, boolean internalOrigin) {
         DexSingleAuxiliaryRegister auxParamArray = auxReg();
+        DexSingleAuxiliaryRegister auxAddedTaint = auxReg();
         DexSingleAuxiliaryRegister auxIndex = auxReg();
 
         List<Parameter> args = code.getParameters();
         boolean skipThis = code.isConstructor();
         List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
         insns.add(getParamArray(auxParamArray));
+        insns.add(setEmptyTaint(auxAddedTaint));
 
         int i = -1;
         for (Parameter arg : args) {
@@ -246,7 +248,7 @@ public final class CodeGenerator {
                 DexLabel lNull = label(), lAfter = label();
                 
                 insns.add(ifZero(argRegRef, lNull));
-                insns.add(taintLookup(argRegRef, argTypeRef));
+                insns.add(taintLookup(argRegRef.getTaintRegister(), argRegRef, auxAddedTaint, hierarchy.classifyType(argTypeRef)));
                 insns.add(jump(lAfter));
                 
                 insns.add(lNull);
@@ -305,49 +307,43 @@ public final class CodeGenerator {
 
     private DexMacro getParamArray(DexSingleRegister regTo) {
         return new DexMacro(
-                   // retrieve ThreadLocal<int[]> ARGS => auxReg1
-                   new DexInstruction_StaticGet(regTo, dexAux.getField_CallParamTaint().getFieldDef(), hierarchy),
-
-                   // call auxReg1.get(); automatically initializes the array
-                   new DexInstruction_Invoke(method_ThreadLocal_Get, Arrays.asList(regTo), hierarchy),
-                   new DexInstruction_MoveResult(regTo, true, hierarchy),
-
-                   // cast auxReg1 to int[]
-                   new DexInstruction_CheckCast(regTo, typeIntArray, hierarchy));
+                   sget(regTo, dexAux.getField_CallParamTaint().getFieldDef()),
+                   invoke_result_obj(regTo, method_ThreadLocal_Get, regTo),
+                   cast(regTo, typeIntArray));
     }
 
-    public DexMacro getResultTaint(DexTaintRegister regTo) {
+    public DexMacro getResultPrimitiveTaint(DexTaintRegister regTo) {
         DexSingleAuxiliaryRegister auxReg = auxReg();
 
         return new DexMacro(
-                   // retrieve ThreadLocal<Integer> RES => auxReg1
-                   new DexInstruction_StaticGet(auxReg, dexAux.getField_CallResultTaint().getFieldDef(), hierarchy),
-
-                   // virtual call auxReg1.get() => auxReg1
-                   new DexInstruction_Invoke(method_ThreadLocal_Get, Arrays.asList(auxReg), hierarchy),
-                   new DexInstruction_MoveResult(auxReg, true, hierarchy),
-
-                   // cast auxReg1 to Integer
-                   new DexInstruction_CheckCast(auxReg, typeInteger, hierarchy),
-
-                   // virtual call auxReg1.intValue()
-                   new DexInstruction_Invoke(method_Integer_intValue, Arrays.asList(auxReg), hierarchy),
-                   new DexInstruction_MoveResult(regTo, false, hierarchy));
+                   sget(auxReg, dexAux.getField_CallResultPrimitiveTaint().getFieldDef()),
+                   invoke_result_obj(auxReg, method_ThreadLocal_Get, auxReg),
+                   cast(auxReg, typeInteger),
+                   invoke_result_prim(regTo, method_Integer_intValue, auxReg));
     }
 
-    public DexMacro setResultTaint(DexTaintRegister regFrom) {
+    public DexMacro getResultReferenceTaint(DexTaintRegister regTo, DexReferenceType taintType) {
+        return new DexMacro(
+        		   sget(regTo, dexAux.getField_CallResultReferenceTaint().getFieldDef()),
+        		   invoke_result_obj(regTo, method_ThreadLocal_Get, regTo),
+        		   cast(regTo, taintType));
+    }
+
+    public DexMacro setResultPrimitiveTaint(DexTaintRegister regFrom) {
         DexSingleAuxiliaryRegister auxReg1 = auxReg(), auxReg2 = auxReg();
 
         return new DexMacro(
-                   // static call Integer.valueOf(regFrom) => auxReg1
-                   new DexInstruction_Invoke(method_Integer_valueOf, Arrays.asList(regFrom), hierarchy),
-                   new DexInstruction_MoveResult(auxReg1, true, hierarchy),
+        		   invoke_result_obj(auxReg1, method_Integer_valueOf, regFrom),
+        		   sget(auxReg2, dexAux.getField_CallResultPrimitiveTaint().getFieldDef()),
+        		   invoke(method_ThreadLocal_Set, auxReg2, auxReg1));
+    }
 
-                   // retrieve ThreadLocal<Integer> RES => auxReg2
-                   new DexInstruction_StaticGet(auxReg2, dexAux.getField_CallResultTaint().getFieldDef(), hierarchy),
-
-                   // virtual call auxReg2.set(auxReg1)
-                   new DexInstruction_Invoke(method_ThreadLocal_Set, Arrays.asList(auxReg2, auxReg1), hierarchy));
+    public DexMacro setResultReferenceTaint(DexTaintRegister regFrom) {
+    	DexSingleRegister auxReg = auxReg();
+    	
+        return new DexMacro(
+        		   sget(auxReg, dexAux.getField_CallResultReferenceTaint().getFieldDef()),
+        		   invoke(method_ThreadLocal_Set, auxReg, regFrom));
     }
 
     public DexMacro getMethodCaller(DexSingleRegister regName) {
@@ -572,9 +568,7 @@ public final class CodeGenerator {
             DexLabel lNull = label(), lAfter = label();
             return new DexMacro(
             		   ifZero(regTo, lNull),
-                       taintLookup(regTo, returnType),
-                       taintClearVisited(returnType),
-                       setTaint(regCombinedTaint, regTo),
+                       taintLookup(regTo.getTaintRegister(), regTo, regCombinedTaint, hierarchy.classifyType(returnType)),
                        jump(lAfter),
                        lNull,
                        nullTaint(regTo, regCombinedTaint, returnType),
@@ -764,7 +758,7 @@ public final class CodeGenerator {
         return nullTaint(regNullObject, regNullTaint, hierarchy.classifyType(type));
     }
     
-    public DexCodeElement taintLookup(DexSingleRegister regTo, DexSingleRegister regObject, TypeClassification type) {
+    public DexCodeElement taintLookup(DexSingleRegister regTo, DexSingleRegister regObject, DexSingleRegister regAddedTaint, TypeClassification type) {
         DexMethod lookupMethod;
         switch (type) {
         case REF_EXTERNAL:
@@ -787,20 +781,15 @@ public final class CodeGenerator {
         }
 
         return new DexMacro(
-                   new DexInstruction_Invoke(lookupMethod, Arrays.asList(regObject), hierarchy),
+                   new DexInstruction_Invoke(lookupMethod, Arrays.asList(regObject, regAddedTaint), hierarchy),
                    new DexInstruction_MoveResult(regTo, true, hierarchy));
     }
 
-    public DexCodeElement taintLookup(DexSingleRegister regTo, DexSingleRegister regObject, DexReferenceType type) {
-    	return taintLookup(regTo, regObject, hierarchy.classifyType(type));
-    }
-    
-    public DexCodeElement taintLookup(DexSingleRegister regObject, TypeClassification type) {
-        return taintLookup(regObject.getTaintRegister(), regObject, type);
-    }
-
-    public DexCodeElement taintLookup(DexSingleRegister regObject, DexReferenceType type) {
-        return taintLookup(regObject, hierarchy.classifyType(type));
+    public DexCodeElement taintLookup_NoTaint(DexSingleRegister regTo, DexSingleRegister regObject, TypeClassification type) {
+    	DexSingleRegister auxZero = auxReg();
+    	return new DexMacro(
+    			setEmptyTaint(auxZero),
+    			taintLookup(regTo, regObject, auxZero, type));
     }
 
     private boolean isStatic(DexInstruction_Invoke insnInvoke) {
@@ -1045,11 +1034,19 @@ public final class CodeGenerator {
     public DexCodeElement invoke_result_prim(DexSingleRegister regTo, MethodDefinition method, DexRegister ... args) {
         return new DexMacro(
                    new DexInstruction_Invoke(method, Arrays.asList(args), hierarchy),
-                   new DexInstruction_MoveResult(regTo, false, hierarchy));
+                   regTo == null ? empty() : new DexInstruction_MoveResult(regTo, false, hierarchy));
     }
 
     public DexCodeElement invoke_result_prim(DexSingleRegister regTo, DexMethod method, DexRegister ... args) {
         return invoke_result_prim(regTo, method.getMethodDef(), args);
+    }
+
+    public DexCodeElement invoke(DexMethod method, DexRegister ... args) {
+        return invoke(method.getMethodDef(), args);
+    }
+
+    public DexCodeElement invoke(MethodDefinition methodDef, DexRegister ... args) {
+        return invoke_result_prim(null, methodDef, args);
     }
 
     public DexCodeElement invoke_result_obj(DexSingleRegister regTo, DexMethod method, DexRegister ... args) {

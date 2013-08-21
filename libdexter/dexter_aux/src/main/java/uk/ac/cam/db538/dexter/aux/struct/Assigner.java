@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.aux.struct;
 
+import uk.ac.cam.db538.dexter.aux.TaintConstants;
+
 public final class Assigner {
 
 	private Assigner() { }
@@ -50,33 +52,41 @@ public final class Assigner {
 		return tobj;
 	}
 
-	public static final TaintExternal lookupExternal(Object obj) {
-		if (obj == null)
-			die("Cannot lookup taint of NULL");
+	public static final TaintExternal lookupExternal(Object obj, int taint) {
+		if (TaintConstants.isImmutable(obj))
+			return new TaintImmutable(taint);
 		
 		TaintExternal tobj = (TaintExternal) Cache.get(obj);
 		if (tobj == null) {
-			tobj = new TaintExternal();
+			tobj = new TaintExternal(taint);
 			Cache.insert(obj, tobj);
-		}
+		} else if (taint != TaintConstants.TAINT_EMPTY)
+			tobj.set(taint);
+		
 		return tobj;
 	}
 	
-	public static final TaintInternal lookupInternal(Object obj) {
+	public static final TaintInternal lookupInternal(Object obj, int taint) {
 		if (obj == null)
-			die("Cannot lookup taint of NULL");
+			die("Cannot lookup internal taint of NULL");
 		
 		TaintInternal tobj = (TaintInternal) Cache.get(obj);
 		if (tobj == null)
 			die("Internal object is not initialized");
+		
+		if (taint != TaintConstants.TAINT_EMPTY) {
+			TaintInternal.clearVisited();
+			tobj.set(taint);
+		}
 		return tobj;
 	}
 
-	public static final Taint lookupUndecidable(Object obj) {
+	public static final Taint lookupUndecidable(Object obj, int taint) {
 		if (obj instanceof InternalDataStructure)
-			return lookupInternal((InternalDataStructure) obj);
+			return lookupInternal((InternalDataStructure) obj, taint);
+		// TODO: arrays!
 		else
-			return lookupExternal(obj);
+			return lookupExternal(obj, taint);
 	}
 	
 	public static final TaintArrayPrimitive lookupArrayPrimitive(Object obj) {
@@ -97,21 +107,4 @@ public final class Assigner {
 		System.err.println(msg);
 		System.exit(1);
 	}
-
-//	private static final boolean isImmutable(Object obj) {
-//      LIST OF IMMUTABLES IN TaintConstants CLASS
-//		return
-//			obj instanceof String ||
-//			obj instanceof Integer ||
-//			obj instanceof Boolean ||
-//			obj instanceof Byte ||
-//			obj instanceof Character ||
-//			obj instanceof Double ||
-//			obj instanceof Float ||
-//			obj instanceof Long ||
-//			obj instanceof Short ||
-//			obj instanceof Void ||
-//			obj instanceof BigDecimal ||
-//			obj instanceof BigInteger;
-//	}
 }

@@ -40,7 +40,8 @@ import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 public class AuxiliaryDex extends Dex {
 
     @Getter private final DexStaticField field_CallParamTaint;
-    @Getter private final DexStaticField field_CallResultTaint;
+    @Getter private final DexStaticField field_CallResultPrimitiveTaint;
+    @Getter private final DexStaticField field_CallResultReferenceTaint;
 
     @Getter private final DexClass type_StaticTaintFields;
 
@@ -88,7 +89,8 @@ public class AuxiliaryDex extends Dex {
         // InvokeTaintStore class
         val clsInvokeTaintStore = getDexClass(InvokeTaintStore.class, hierarchy, renamer);
         this.field_CallParamTaint = findStaticFieldByName(clsInvokeTaintStore, "ARGS");
-        this.field_CallResultTaint = findStaticFieldByName(clsInvokeTaintStore, "RES");
+        this.field_CallResultPrimitiveTaint = findStaticFieldByName(clsInvokeTaintStore, "RES_PRIM");
+        this.field_CallResultReferenceTaint = findStaticFieldByName(clsInvokeTaintStore, "RES_REF");
 
         this.type_StaticTaintFields = getDexClass(StaticTaintFields.class, hierarchy, renamer);
 
