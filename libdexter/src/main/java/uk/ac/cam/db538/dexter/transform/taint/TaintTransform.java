@@ -592,7 +592,7 @@ public class TaintTransform extends Transform {
     	DexSingleRegister regTaint = codeGen.auxReg();
     	DexLabel lNull = codeGen.label(), lAfter = codeGen.label();
     	
-        return new DexMacro(
+        DexMacro instrumentation = new DexMacro(
         		   codeGen.ifZero(regObject, lNull),
         		   
         		   // Non-NULL objects must have the correct taint assigned already, but maybe not cast
@@ -611,6 +611,8 @@ public class TaintTransform extends Transform {
                    
                    lAfter,
                    insn);
+        
+        return wrapWithTryBlock(insn, instrumentation);
     }
 
     private DexCodeElement instrument_InstanceOf(DexInstruction_InstanceOf insn) {
