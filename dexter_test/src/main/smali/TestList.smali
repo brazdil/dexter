@@ -479,14 +479,52 @@
 .end method
 
 .method public static main([Ljava/lang/String;)V
-    .registers 3
+    .registers 7
 
-    new-instance v0, LTest_FillArrayData_NULL;
-    invoke-direct {v0}, LTest_FillArrayData_NULL;-><init>()V
+    sget-object v6, Ljava/lang/System;->out:Ljava/io/PrintStream;
+    sget-object v0, LTestList;->tests:[LTestExerciser;
 
-    const/4 v1, 0x0
-    invoke-virtual {v0, v1}, LTest_FillArrayData_NULL;->execute(Ljava/lang/Object;)V
+    # v1 = test count
+    # v2 = loop counter
+    array-length v1, v0
+    const/4 v2, 0x0
 
+    :loop
+    if-ge v2, v1, :end
+
+    # v3 = test exerciser object
+    aget-object v3, v0, v2
+
+    # v4 = test name
+    invoke-virtual {v3}, LTestExerciser;->getTest()LTest;
+    move-result-object v4
+    invoke-interface {v4}, LTest;->getName()Ljava/lang/String;
+    move-result-object v4
+
+    invoke-virtual {v6, v4}, Ljava/io/PrintStream;->print(Ljava/lang/String;)V
+    const-string v4, "... "
+    invoke-virtual {v6, v4}, Ljava/io/PrintStream;->print(Ljava/lang/String;)V
+
+    # v5 = test result
+    invoke-virtual {v3}, LTestExerciser;->run()Z
+    move-result v5
+
+    if-eqz v5, :print_false
+
+    :print_true
+    const-string v4, "ok"
+    invoke-virtual {v6, v4}, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
+    goto :end_loop
+
+    :print_false
+    const-string v4, "ERROR"
+    invoke-virtual {v6, v4}, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
+
+    :end_loop
+    add-int/lit8 v2, v2, 1
+    goto :loop
+
+    :end
     return-void
 
 .end method

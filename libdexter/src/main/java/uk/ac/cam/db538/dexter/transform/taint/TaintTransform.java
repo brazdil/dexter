@@ -636,15 +636,18 @@ public class TaintTransform extends Transform {
         DexTaintRegister regFromTaint = insn.getRegFrom().getTaintRegister();
         DexTaintRegister regArrayTaint = insn.getRegArray().getTaintRegister();
 
+        DexMacro insnInstrumented;
         if (insn.getOpcode() == Opcode_GetPut.Object) {
-            return new DexMacro(
+            insnInstrumented = new DexMacro(
                        codeGen.setTaint_ArrayReference(regFromTaint, regArrayTaint, insn.getRegIndex()),
                        insn);
         } else {
-            return new DexMacro(
+        	insnInstrumented = new DexMacro(
                        codeGen.setTaint_ArrayPrimitive(regFromTaint, regArrayTaint, insn.getRegIndex()),
                        insn);
         }
+
+        return wrapWithTryBlock(insn, insnInstrumented, insn.getRegArray());
     }
 
     private DexCodeElement instrument_ArrayGet(DexInstruction_ArrayGet insn) {
@@ -659,18 +662,21 @@ public class TaintTransform extends Transform {
         else
             regIndexBackup = regIndex;
 
+        DexMacro insnInstrumented;
         if (insn.getOpcode() == Opcode_GetPut.Object) {
-            return new DexMacro(
+            insnInstrumented = new DexMacro(
                        codeGen.move_prim(regIndexBackup, regIndex),
                        insn,
                        codeGen.getTaint_ArrayReference(regToTaint, regArrayTaint, regIndexBackup),
                        codeGen.cast(regToTaint, (DexReferenceType) codeGen.taintType(analysis_DefReg(insn, insn.getRegTo()))));
         } else {
-            return new DexMacro(
+            insnInstrumented = new DexMacro(
                        codeGen.move_prim(regIndexBackup, regIndex),
                        insn,
                        codeGen.getTaint_ArrayPrimitive(regToTaint, regArrayTaint, regIndexBackup));
         }
+        
+        return wrapWithTryBlock(insn, insnInstrumented, insn.getRegArray());
     }
 
     private DexCodeElement instrument_FillArrayData(DexInstruction_FillArrayData insn) {
