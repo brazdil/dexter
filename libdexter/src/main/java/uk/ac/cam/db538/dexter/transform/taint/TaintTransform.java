@@ -565,28 +565,23 @@ public class TaintTransform extends Transform {
         DexSingleRegister regSize = insn.getRegSize();
 
         DexSingleRegister auxSize;
-        DexSingleRegister auxSizeTaint;
+        DexSingleRegister auxSizeTaint = regSize.getTaintRegister();
 
         // We need to be careful if the instruction overwrites the size register
 
-        if (regTo.equals(regSize)) {
+        if (regTo.equals(regSize))
             auxSize = codeGen.auxReg();
-            auxSizeTaint = codeGen.auxReg();
-        } else {
+        else
             auxSize = regSize;
-            auxSizeTaint = regSize.getTaintRegister();
-        }
 
         if (insn.getValue().getElementType() instanceof DexPrimitiveType)
             return new DexMacro(
                        codeGen.move_prim(auxSize, regSize),
-                       codeGen.move_prim(auxSizeTaint, regSize.getTaintRegister()),
                        insn,
                        codeGen.taintCreate_ArrayPrimitive(regTo, auxSize, auxSizeTaint));
         else
             return new DexMacro(
                        codeGen.move_prim(auxSize, regSize),
-                       codeGen.move_prim(auxSizeTaint, regSize.getTaintRegister()),
                        insn,
                        codeGen.taintCreate_ArrayReference(regTo, auxSize, auxSizeTaint));
     }
@@ -628,57 +623,80 @@ public class TaintTransform extends Transform {
     	return wrapWithTryBlock(insn,
     			new DexMacro(
                    insn,
-                   codeGen.getTaint_Array_Length(insn.getRegTo().getTaintRegister(), insn.getRegArray().getTaintRegister())),
-       			insn.getRegArray());
+                   codeGen.getTaint_Array_Length(insn.getRegTo().getTaintRegister(), insn.getRegArray().getTaintRegister())));
     }
 
     private DexCodeElement instrument_ArrayPut(DexInstruction_ArrayPut insn) {
+        DexCodeElement insnInstrumented;
+        
+    	/*
+    	 * TODO: needs to include the taint of the index as well?
+    	 */
+    	
         DexTaintRegister regFromTaint = insn.getRegFrom().getTaintRegister();
         DexTaintRegister regArrayTaint = insn.getRegArray().getTaintRegister();
 
-        DexMacro insnInstrumented;
-        if (insn.getOpcode() == Opcode_GetPut.Object) {
-            insnInstrumented = new DexMacro(
-                       codeGen.setTaint_ArrayReference(regFromTaint, regArrayTaint, insn.getRegIndex()),
-                       insn);
-        } else {
-        	insnInstrumented = new DexMacro(
-                       codeGen.setTaint_ArrayPrimitive(regFromTaint, regArrayTaint, insn.getRegIndex()),
-                       insn);
+        if (isNull(insn, insn.getRegArray()))
+        	insnInstrumented = insn; // leave uninstrumented
+        
+        else {
+	        if (insn.getOpcode() == Opcode_GetPut.Object) {
+	            insnInstrumented = new DexMacro(
+	                       codeGen.setTaint_ArrayReference(regFromTaint, regArrayTaint, insn.getRegIndex()),
+	                       insn);
+	        } else {
+	        	insnInstrumented = new DexMacro(
+	                       codeGen.setTaint_ArrayPrimitive(regFromTaint, regArrayTaint, insn.getRegIndex()),
+	                       insn);
+	        }
         }
 
-        return wrapWithTryBlock(insn, insnInstrumented, insn.getRegArray());
+//        return wrapWithTryBlock(insn, insnInstrumented);
+        return insnInstrumented;
     }
 
     private DexCodeElement instrument_ArrayGet(DexInstruction_ArrayGet insn) {
+    	DexCodeElement insnInstrumented;
+    	
+    	/*
+    	 * TODO: needs to include the taint of the index as well?
+    	 */
+    	
         DexTaintRegister regToTaint = insn.getRegTo().getTaintRegister();
         DexTaintRegister regArrayTaint = insn.getRegArray().getTaintRegister();
 
-        DexRegister regTo = insn.getRegTo();
-        DexSingleRegister regIndex = insn.getRegIndex();
-        DexSingleRegister regIndexBackup;
-        if (regTo.equals(regIndex))
-            regIndexBackup = codeGen.auxReg();
-        else
-            regIndexBackup = regIndex;
+        if (isNull(insn, insn.getRegArray()))
+        	insnInstrumented = new DexMacro(insn, codeGen.setZero(regToTaint)); // leave uninstrumented
+        
+        else {
+        
+	        DexRegister regTo = insn.getRegTo();
+	        DexSingleRegister regIndex = insn.getRegIndex();
+	        DexSingleRegister regIndexBackup;
+	        if (regTo.equals(regIndex))
+	            regIndexBackup = codeGen.auxReg();
+	        else
+	            regIndexBackup = regIndex;
+	
+	        if (insn.getOpcode() == Opcode_GetPut.Object) {
+	            insnInstrumented = new DexMacro(
+	                       codeGen.move_prim(regIndexBackup, regIndex),
+	                       insn,
+	                       codeGen.getTaint_ArrayReference(regToTaint, regArrayTaint, regIndexBackup),
+	                       codeGen.cast(regToTaint, (DexReferenceType) codeGen.taintType(analysis_DefReg(insn, regTo))));
+	        } else {
+	            insnInstrumented = new DexMacro(
+	                       codeGen.move_prim(regIndexBackup, regIndex),
+	                       insn,
+	                       codeGen.getTaint_ArrayPrimitive(regToTaint, regArrayTaint, regIndexBackup));
+	        }
 
-        DexMacro insnInstrumented;
-        if (insn.getOpcode() == Opcode_GetPut.Object) {
-            insnInstrumented = new DexMacro(
-                       codeGen.move_prim(regIndexBackup, regIndex),
-                       insn,
-                       codeGen.getTaint_ArrayReference(regToTaint, regArrayTaint, regIndexBackup),
-                       codeGen.cast(regToTaint, (DexReferenceType) codeGen.taintType(analysis_DefReg(insn, insn.getRegTo()))));
-        } else {
-            insnInstrumented = new DexMacro(
-                       codeGen.move_prim(regIndexBackup, regIndex),
-                       insn,
-                       codeGen.getTaint_ArrayPrimitive(regToTaint, regArrayTaint, regIndexBackup));
         }
         
-        return wrapWithTryBlock(insn, insnInstrumented, insn.getRegArray());
+//        return wrapWithTryBlock(insn, insnInstrumented);
+        return insnInstrumented;
     }
-
+    
     private DexCodeElement instrument_FillArrayData(DexInstruction_FillArrayData insn) {
     	/*
     	 * Argument is an array of primitive type. Data are inserted into the 
@@ -811,9 +829,7 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_Monitor(DexInstruction_Monitor insn) {
-    	return wrapWithTryBlock(insn,
-    			insn,
-    			insn.getRegMonitor());
+    	return wrapWithTryBlock(insn, insn);
     }
     
     private void generateGetTaint(DexClass clazz) {
@@ -1068,9 +1084,12 @@ public class TaintTransform extends Transform {
         return taintField;
     }
     
-    private DexCodeElement wrapWithTryBlock(DexCodeElement inside, DexCodeElement handler, DexSingleRegister regExObj, DexSingleRegister regExTaint) {
+    private DexCodeElement wrapWithTryBlock(DexCodeElement inside, DexCodeElement taintCombination, DexSingleRegister regCombinedTaint) {
     	DexTryStart block = codeGen.tryBlock(codeGen.catchAll());
     	DexLabel lAfter = codeGen.label();
+    	
+    	DexSingleRegister auxExObj = codeGen.auxReg();
+    	DexSingleRegister auxExTaint = codeGen.auxReg();
     	
     	return new DexMacro(
     			block,
@@ -1078,41 +1097,70 @@ public class TaintTransform extends Transform {
     			block.getEndMarker(),
     			codeGen.jump(lAfter),
     			block.getCatchAllHandler(),
-    			codeGen.move_ex(regExObj),
-    			codeGen.taintLookup_NoExtraTaint(regExTaint, regExObj, hierarchy.classifyType(hierarchy.getTypeCache().TYPE_Throwable)),
-    			handler,
-    			codeGen.thrw(regExObj),
+    			codeGen.move_ex(auxExObj),
+    			taintCombination,
+    			codeGen.taintLookup(auxExTaint, auxExObj, regCombinedTaint, hierarchy.classifyType(hierarchy.getTypeCache().TYPE_Throwable)),
+    			codeGen.thrw(auxExObj),
     			lAfter);
     }
     
-    private DexCodeElement wrapWithTryBlock(DexCodeElement originalInsn, DexCodeElement inside, DexSingleRegister ... regRefObjs) {
-    	DexSingleRegister auxExObj = codeGen.auxReg();
-    	DexSingleRegister auxExTaint = codeGen.auxReg();
-    	
-    	List<DexCodeElement> handler = new ArrayList<DexCodeElement>();
-    	for (DexSingleRegister regRefObj : regRefObjs)
-    		handler.add(codeGen.propagateTaint(auxExTaint, regRefObj, hierarchy.getTypeCache().TYPE_Throwable, analysis_RefReg(originalInsn, regRefObj)));
-    	
+    private DexCodeElement wrapWithTryBlock(DexCodeElement originalInsn, DexCodeElement inside) {
+
+    	DexSingleRegister auxCombinedTaint = codeGen.auxReg();
+    	DexSingleRegister auxObjTaint = codeGen.auxReg();
+
+    	List<DexCodeElement> taintCombination = new ArrayList<DexCodeElement>();
+    	taintCombination.add(codeGen.setEmptyTaint(auxCombinedTaint));
+    	for (DexRegister regRef : originalInsn.lvaReferencedRegisters()) {
+    		RopType type = codeAnalysis.reverseLookup(originalInsn).getUsedRegisterSolver(regRef).getType();
+    		switch(type.category) {
+    		case Boolean:
+    		case Byte:
+    		case Char:
+    		case DoubleHi:
+    		case DoubleLo:
+    		case Float:
+    		case Integer:
+    		case IntFloat:
+    		case LongHi:
+    		case LongLo:
+    		case One:
+    		case Zero:
+    		case Primitive:
+    		case Short:
+    		case Wide:
+    			taintCombination.add(codeGen.combineTaint(auxCombinedTaint, auxCombinedTaint, regRef.getTaintRegister()));
+    			break;
+    			
+    		case Reference:
+    			taintCombination.add(codeGen.taintClearVisited(type.type));
+    		case Null:
+    			taintCombination.add(codeGen.getTaint(auxObjTaint, regRef.getTaintRegister()));
+    			taintCombination.add(codeGen.combineTaint(auxCombinedTaint, auxCombinedTaint, auxObjTaint));
+    			break;
+    			
+    		default:
+    			throw new AssertionError("Type of referenced register " + regRef + " is " + type.category.name() + " in " + originalInsn);
+    		}
+    	}
+    		    	
     	return wrapWithTryBlock(
     			inside,
-       			new DexMacro(handler),
-    			auxExObj, auxExTaint);
-    	
+       			new DexMacro(taintCombination),
+    			auxCombinedTaint);
     }
 
     private DexReferenceType analysis_DefReg(DexCodeElement insn, DexRegister reg) {
         RopType type = codeAnalysis.reverseLookup(insn).getDefinedRegisterSolver(reg).getType();
-        if (type.category != RopType.Category.Reference)
-            throw new AssertionError("Cannot decide the type of register " + reg + " at " + insn);
-        
-        return type.type;
+        if (type.category == RopType.Category.Reference)
+        	return type.type;
+        else
+            throw new AssertionError("Cannot decide the type of register " + reg + " (" + type.category.name() + ") at " + insn);
     }
-    
-    private DexReferenceType analysis_RefReg(DexCodeElement insn, DexRegister reg) {
+
+    private boolean isNull(DexInstruction insn, DexSingleRegister reg) {
         RopType type = codeAnalysis.reverseLookup(insn).getUsedRegisterSolver(reg).getType();
-        if (type.category != RopType.Category.Reference)
-            throw new AssertionError("Cannot decide the type of register " + reg + " at " + insn);
-        
-        return type.type;
+    	return type.category == Category.Null;
     }
+
 }
