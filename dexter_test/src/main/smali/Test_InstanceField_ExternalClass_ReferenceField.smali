@@ -37,7 +37,7 @@
 
     # create String from argument
     invoke-static {p1}, Ljava/lang/Integer;->toString(I)Ljava/lang/String;
-    move-result v1
+    move-result-object v1
 
     # propagate
     iput-object v1, v2, Landroid/content/pm/FeatureInfo;->name:Ljava/lang/String;

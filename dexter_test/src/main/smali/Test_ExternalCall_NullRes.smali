@@ -47,10 +47,10 @@
     # now retrieve it again
     const/4 v0, 0x0
     invoke-virtual {v1, v0}, Ljava/util/ArrayList;->get(I)Ljava/lang/Object;
-    move-result v0
+    move-result-object v0
 
     # convert the NULL to an int and return
-    invoke-virtual {p0, v0}, LTest_ExternalCall_NullRes;->ref2int(Ljava/lang/Object;)I
+    invoke-static {v0}, LPropagationTest;->ref2int(Ljava/lang/Object;)I
     move-result v0
     
     return v0

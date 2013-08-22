@@ -32,7 +32,7 @@
 
     # convert argument to NULL
     invoke-virtual {p0, p1}, LPropagationTest;->int2null(I)Ljava/lang/Object;
-    move-result v0
+    move-result-object v0
 
 
     # cast to internal
@@ -52,7 +52,7 @@
 
 
     # convert back to an int
-    invoke-virtual {p0, v0}, LPropagationTest;->ref2int(Ljava/lang/Object;)I
+    invoke-static {v0}, LPropagationTest;->ref2int(Ljava/lang/Object;)I
     move-result v1
 
     return v1

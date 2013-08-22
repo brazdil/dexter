@@ -40,19 +40,19 @@
     # now retrieve it again with tainted index
     sub-int p1, p1, p1
     invoke-virtual {v1, p1}, Ljava/util/ArrayList;->get(I)Ljava/lang/Object;
-    move-result v0
+    move-result-object v0
 
     return-object v0
 
 .end method
 
-.method protected ref2int(Ljava/lang/Object;)I
+.method public static ref2int(Ljava/lang/Object;)I
 	.registers 3
 
 	new-instance v0, Ljava/lang/Object;
 	invoke-direct {v0}, Ljava/lang/Object;-><init>()V
 
-	invoke-virtual {v0, p1}, Ljava/lang/Object;->equals(Ljava/lang/Object;)Z
+	invoke-virtual {v0, p0}, Ljava/lang/Object;->equals(Ljava/lang/Object;)Z
 	move-result v1
 
 	return v1
@@ -66,7 +66,7 @@
     invoke-direct {v0, p1}, Ljava/lang/Integer;-><init>(I)V
 
     invoke-virtual {v0}, Ljava/lang/Object;->toString()Ljava/lang/String;
-    move-result v0
+    move-result-object v0
 
     return-object v0
 

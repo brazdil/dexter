@@ -1,4 +1,4 @@
-.class public LTest_FillArrayData_NULL;
+.class public LTest_ArrayPut_NULL_Index;
 .super LNullExceptionTest;
 
 # direct methods
@@ -14,7 +14,7 @@
 .method public getName()Ljava/lang/String;
     .registers 2
     
-    const-string v0, "FillArrayData: NULL array"
+    const-string v0, "ArrayPut: NULL array, tainted index"
     return-object v0
     
 .end method
@@ -22,22 +22,21 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "fill-array-data NULL[+], :data"
+    const-string v0, "aput rX, NULL, [+]"
     return-object v0
     
 .end method
 
 .method public execute(Ljava/lang/Object;)V
-    .registers 7
+    .registers 3
 
-    check-cast p1, [I
-    fill-array-data p1, :array_data
+    # turn ref into int
+    invoke-static {p1}, LPropagationTest;->ref2int(Ljava/lang/Object;)I
+    move-result v0
+    
+    const/4 v1, 0x0
+    aput-object p1, v1, v0
+
     return-void
-
-    :array_data
-    .array-data 0x4
-        0x00t 0x11t 0x22t 0x33t
-        0xfft 0xeet 0xddt 0xcct
-    .end array-data
-
+    
 .end method

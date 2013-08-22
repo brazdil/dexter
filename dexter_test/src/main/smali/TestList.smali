@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 48
+    const v0, 52
     new-array v0, v0, [LTestExerciser;
     const v1, 0
 
@@ -345,6 +345,34 @@
     aput-object v2, v0, v1
     add-int/lit8 v1, v1, 1
 
+    new-instance v3, LTest_ArrayGet_NULL;
+    invoke-direct {v3}, LTest_ArrayGet_NULL;-><init>()V
+    new-instance v2, LExceptionTestExerciser;
+    invoke-direct {v2, v3}, LExceptionTestExerciser;-><init>(LExceptionTest;)V
+    aput-object v2, v0, v1
+    add-int/lit8 v1, v1, 1
+
+    new-instance v3, LTest_ArrayGet_NULL_Index;
+    invoke-direct {v3}, LTest_ArrayGet_NULL_Index;-><init>()V
+    new-instance v2, LExceptionTestExerciser;
+    invoke-direct {v2, v3}, LExceptionTestExerciser;-><init>(LExceptionTest;)V
+    aput-object v2, v0, v1
+    add-int/lit8 v1, v1, 1
+
+    new-instance v3, LTest_ArrayPut_NULL;
+    invoke-direct {v3}, LTest_ArrayPut_NULL;-><init>()V
+    new-instance v2, LExceptionTestExerciser;
+    invoke-direct {v2, v3}, LExceptionTestExerciser;-><init>(LExceptionTest;)V
+    aput-object v2, v0, v1
+    add-int/lit8 v1, v1, 1
+
+    new-instance v3, LTest_ArrayPut_NULL_Index;
+    invoke-direct {v3}, LTest_ArrayPut_NULL_Index;-><init>()V
+    new-instance v2, LExceptionTestExerciser;
+    invoke-direct {v2, v3}, LExceptionTestExerciser;-><init>(LExceptionTest;)V
+    aput-object v2, v0, v1
+    add-int/lit8 v1, v1, 1
+
     new-instance v3, LTest_FillArrayData_NULL;
     invoke-direct {v3}, LTest_FillArrayData_NULL;-><init>()V
     new-instance v2, LExceptionTestExerciser;
@@ -437,21 +465,28 @@
 
 .method public static runTest(I)Ljava/lang/Boolean;
     .registers 2
-    .parameter "index"
 
-    .prologue
-    .line 22
     sget-object v0, LTestList;->tests:[LTestExerciser;
-
     aget-object v0, v0, p0
 
     invoke-virtual {v0}, LTestExerciser;->run()Z
-
     move-result v0
 
     invoke-static {v0}, Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean;
-
     move-result-object v0
-
     return-object v0
+
+.end method
+
+.method public static main([Ljava/lang/String;)V
+    .registers 3
+
+    new-instance v0, LTest_FillArrayData_NULL;
+    invoke-direct {v0}, LTest_FillArrayData_NULL;-><init>()V
+
+    const/4 v1, 0x0
+    invoke-virtual {v0, v1}, LTest_FillArrayData_NULL;->execute(Ljava/lang/Object;)V
+
+    return-void
+
 .end method

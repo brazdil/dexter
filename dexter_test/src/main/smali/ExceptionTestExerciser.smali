@@ -58,34 +58,34 @@
     const-string v6, "EXCEPTION TEST"
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
     invoke-interface {v0}, LTest;->getName()Ljava/lang/String;
-    move-result v6
+    move-result-object v6
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
     # get the expected outcome = v1
     invoke-virtual {v0}, LExceptionTest;->expected()Ljava/lang/Class;
-    move-result v1
+    move-result-object v1
 
     # get the argument = v2
     invoke-virtual {v0}, LExceptionTest;->arg()Ljava/lang/Object;
-    move-result v2
+    move-result-object v2
 
     # run with the argument => v3
     const-string v6, "Running untainted..."
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
     invoke-static {v0, v2}, LExceptionTestExerciser;->run(LExceptionTest;Ljava/lang/Object;)Ljava/lang/Object;
-    move-result v3
+    move-result-object v3
 
     # now taint the argument
     invoke-static {v2}, LTaintUtils;->taint(Ljava/lang/Object;)Ljava/lang/Object;
-    move-result v2
+    move-result-object v2
 
     # run with the tainted argument => v4
     const-string v6, "Running tainted..."
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
     invoke-static {v0, v2}, LExceptionTestExerciser;->run(LExceptionTest;Ljava/lang/Object;)Ljava/lang/Object;
-    move-result v4
+    move-result-object v4
 
     const-string v6, "Testing..."
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
@@ -108,14 +108,14 @@
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
     invoke-virtual {v3}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
-    move-result v3
+    move-result-object v3
     if-ne v1, v3, :return_false
 
     const-string v6, " - second outcome correct"
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
     invoke-virtual {v4}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
-    move-result v4
+    move-result-object v4
     if-ne v1, v4, :return_false
 
     :return_true

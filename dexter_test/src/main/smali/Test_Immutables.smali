@@ -47,7 +47,7 @@
     invoke-virtual {v1, v0}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
 
     # convert immutable to an int
-    invoke-virtual {p0, v0}, LPropagationTest;->ref2int(Ljava/lang/Object;)I
+    invoke-static {v0}, LPropagationTest;->ref2int(Ljava/lang/Object;)I
     move-result v0
 
     return v0
