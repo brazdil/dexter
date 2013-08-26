@@ -19,7 +19,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.transform.taint.TestingTaintTransform;
 
 import com.rx201.dx.translator.DexCodeGeneration;
 
@@ -89,7 +91,8 @@ public class TranslationTest {
 
         System.out.println("Instrumenting application");
         DexCodeGeneration.DEBUG = false;
-        // dexApp.instrument(false);
+        Transform transform = new TestingTaintTransform();
+        transform.apply(dexApp);
 
         System.out.println("Recompiling application");
         dexApp.writeToFile();

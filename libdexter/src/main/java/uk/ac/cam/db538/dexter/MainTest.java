@@ -12,7 +12,9 @@ import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.transform.taint.TestingTaintTransform;
 
 import com.rx201.dx.translator.DexCodeGeneration;
 
@@ -90,7 +92,7 @@ public class MainTest {
 
         System.out.println("Scanning application");
         val fileApp = new DexFile(apkFile);
-        val fileAux = new DexFileFromMemory(ClassLoader.getSystemResourceAsStream("merge-classes.dex"));
+        val fileAux = new DexFile("dexter_aux/build/libs/dexter_aux.dex");
 
         System.out.println("Building hierarchy");
         val buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);
@@ -101,12 +103,13 @@ public class MainTest {
         AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux);
         Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
 
+        Transform transform = new TestingTaintTransform();
         if (args.length == 3) {
             DexCodeGeneration.DEBUG = false;
-//      System.out.println("Instrumenting application");
-//      dex.instrument(false);
+//            System.out.println("Instrumenting application");
+//            transform.apply(dexApp);
         } else {
-//    	dex.instrument(false);
+//            transform.apply(dexApp);
         }
 
 //    writeToJar(dexApp, apkFile_new);
