@@ -17,6 +17,7 @@ import org.jf.dexlib.Code.Format.Instruction31t;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Utils;
 
@@ -77,5 +78,10 @@ public class DexInstruction_FillArrayData extends DexInstruction {
     @Override
     public void accept(DexInstructionVisitor visitor) {
         visitor.visit(this);
+    }
+    
+    @Override
+    protected DexClassType[] throwsExceptions() {
+        return this.hierarchy.getTypeCache().LIST_Error_Null_ArrayIndexOutOfBounds;
     }
 }
