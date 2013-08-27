@@ -225,7 +225,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
     private List<AnalyzedDexInstruction> getCatchers(Rop opcode) {
         ArrayList<AnalyzedDexInstruction> result = new ArrayList<AnalyzedDexInstruction>();
 
-        boolean canThrow = opcode.getExceptions().size() > 0;
+        boolean canThrow = opcode == null || opcode.getExceptions().size() > 0;
 
         if (canThrow) {
             for(DexCodeElement successor : curInst.getInstruction().cfgGetExceptionSuccessors(instructionList)) {
@@ -697,6 +697,8 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
         result.addInstruction(new FillArrayDataInsn(Rops.FILL_ARRAY_DATA, SourcePosition.NO_INFO,
                               makeOperands(instruction.getRegArray()), values, arrayType));
+        // Rops.FILL_ARRAY_DATA claims it is non-throwing, but experiments suggest otherwise.
+        doThrowingSuccessors(getCatchers(null));
     }
 
 
