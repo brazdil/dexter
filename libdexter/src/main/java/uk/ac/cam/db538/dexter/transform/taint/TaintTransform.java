@@ -699,24 +699,34 @@ public class TaintTransform extends Transform {
     private DexCodeElement instrument_FillArrayData(DexInstruction_FillArrayData insn) {
     	/*
     	 * Argument is an array of primitive type. Data are inserted into the 
-    	 * array as if the instruction was a loop???
+    	 * array all at once, so if the array is too short, it will throw an
+    	 * ArrayIndexOutOfBounds exception and nothing will be overwritten.
     	 */
     	
-    	// TODO: not sure about semantics
-    	// 1) put sensitive data into array
-    	// 2) do fill-array with more elements than what is the length of the array
-    	//    => throws bounds exception
-    	// 3) ? retrieve data from the array ?
-    	//    (has the fill-array instruction actually rewritten the data or not)
-    	// If the data are rewritten, this instrumentation needs to be changed so that
-    	// fill-array happens even if setting taint throws. (simple TRY block)
-    	// If the data are kept, it needs to be changed to assign afterwards.
+    	DexTypeCache cache = hierarchy.getTypeCache();
+    	MethodDefinition hashcodeDef = hierarchy.getRoot().getMethod(
+			DexMethodId.parseMethodId(
+				"hashCode", 
+				DexPrototype.parse(cache.getCachedType_Integer(), null, cache),
+				cache));
     	
     	DexSingleRegister regEmptyTaint = codeGen.auxReg();
     	return new DexMacro(
+    			wrapWithTryBlock(
+					insn, 
+					new DexMacro(
+						/*
+						 * This is a workaround for a bug in DX, which thinks 
+						 * that FillArrayData is a non-throwing instruction
+						 * and therefore removes the TRY block. By inserting
+						 * two meaningless method calls, it is forced to keep 
+						 * the TRY block there.
+						 */
+						codeGen.invoke(hashcodeDef, insn.getRegArray()),
+						insn,
+						codeGen.invoke(hashcodeDef, insn.getRegArray()))),
     			codeGen.setEmptyTaint(regEmptyTaint),
-    			codeGen.setTaint_ArrayPrimitive(regEmptyTaint, insn.getRegArray(), 0, insn.getElementData().size()),
-    			insn);
+    			codeGen.setTaint_ArrayPrimitive(regEmptyTaint, insn.getRegArray(), 0, insn.getElementData().size()));
     }
 
     private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput) {

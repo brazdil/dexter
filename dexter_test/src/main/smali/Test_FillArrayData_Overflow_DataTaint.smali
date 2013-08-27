@@ -39,26 +39,26 @@
     aput p1, v0, v1
 
     # now overwrite with the constant data
-#    :try_start
-#    fill-array-data v0, :array_data
-#    :try_end
-#    .catch Ljava/lang/ArrayIndexOutOfBoundsException; {:try_start .. :try_end} :handler
+    :try_start
+    fill-array-data v0, :array_data
+    :try_end
+    .catch Ljava/lang/ArrayIndexOutOfBoundsException; {:try_start .. :try_end} :handler
 
     # should never happen
     return v1
 
-#    :handler
-#
-#    # retrieve and return
-#    aget v0, v0, v1
-#    return v0
-#
-#    :array_data
-#    .array-data 0x4
-#        0x00t 0x11t 0x22t 0x33t
-#        0xfft 0xeet 0xddt 0xcct
-#        0xfft 0xeet 0xddt 0xcct
-#        0xfft 0xeet 0xddt 0xcct
-#    .end array-data
+    :handler
+
+    # retrieve and return
+    aget v0, v0, v1
+    return v0
+
+    :array_data
+    .array-data 0x4
+        0x00t 0x11t 0x22t 0x33t
+        0xfft 0xeet 0xddt 0xcct
+        0xfft 0xeet 0xddt 0xcct
+        0xfft 0xeet 0xddt 0xcct
+    .end array-data
     
 .end method
