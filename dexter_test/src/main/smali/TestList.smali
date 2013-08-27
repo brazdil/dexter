@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 53
+    const v0, 55
     new-array v0, v0, [LTestExerciser;
     const v1, 0
 
@@ -377,6 +377,20 @@
     invoke-direct {v3}, LTest_FillArrayData_NULL;-><init>()V
     new-instance v2, LExceptionTestExerciser;
     invoke-direct {v2, v3}, LExceptionTestExerciser;-><init>(LExceptionTest;)V
+    aput-object v2, v0, v1
+    add-int/lit8 v1, v1, 1
+
+    new-instance v3, LTest_FillArrayData_Overflow_ExceptionTaint;
+    invoke-direct {v3}, LTest_FillArrayData_Overflow_ExceptionTaint;-><init>()V
+    new-instance v2, LExceptionTestExerciser;
+    invoke-direct {v2, v3}, LExceptionTestExerciser;-><init>(LExceptionTest;)V
+    aput-object v2, v0, v1
+    add-int/lit8 v1, v1, 1
+
+    new-instance v3, LTest_FillArrayData_Overflow_DataTaint;
+    invoke-direct {v3}, LTest_FillArrayData_Overflow_DataTaint;-><init>()V
+    new-instance v2, LPropagationTestExerciser;
+    invoke-direct {v2, v3}, LPropagationTestExerciser;-><init>(LPropagationTest;)V
     aput-object v2, v0, v1
     add-int/lit8 v1, v1, 1
 
