@@ -626,8 +626,6 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_ArrayPut(DexInstruction_ArrayPut insn) {
-        DexCodeElement insnInstrumented;
-        
     	/*
     	 * TODO: needs to include the taint of the index as well?
     	 */
@@ -636,27 +634,21 @@ public class TaintTransform extends Transform {
         DexTaintRegister regArrayTaint = insn.getRegArray().getTaintRegister();
 
         if (isNull(insn, insn.getRegArray()))
-        	insnInstrumented = insn; // leave uninstrumented
+        	return wrapWithTryBlock(insn); // leave uninstrumented
         
         else {
-	        if (insn.getOpcode() == Opcode_GetPut.Object) {
-	            insnInstrumented = new DexMacro(
-	                       codeGen.setTaint_ArrayReference(regFromTaint, regArrayTaint, insn.getRegIndex()),
-	                       insn);
-	        } else {
-	        	insnInstrumented = new DexMacro(
-	                       codeGen.setTaint_ArrayPrimitive(regFromTaint, regArrayTaint, insn.getRegIndex()),
-	                       insn);
-	        }
+	        if (insn.getOpcode() == Opcode_GetPut.Object)
+	            return new DexMacro(
+	            		   wrapWithTryBlock(insn),
+	                       codeGen.setTaint_ArrayReference(regFromTaint, regArrayTaint, insn.getRegIndex()));
+	        else
+	        	return new DexMacro(
+   	        			   wrapWithTryBlock(insn),
+	                       codeGen.setTaint_ArrayPrimitive(regFromTaint, regArrayTaint, insn.getRegIndex()));
         }
-
-//        return wrapWithTryBlock(insn, insnInstrumented);
-        return insnInstrumented;
     }
 
     private DexCodeElement instrument_ArrayGet(DexInstruction_ArrayGet insn) {
-    	DexCodeElement insnInstrumented;
-    	
     	/*
     	 * TODO: needs to include the taint of the index as well?
     	 */
@@ -665,7 +657,9 @@ public class TaintTransform extends Transform {
         DexTaintRegister regArrayTaint = insn.getRegArray().getTaintRegister();
 
         if (isNull(insn, insn.getRegArray()))
-        	insnInstrumented = new DexMacro(insn, codeGen.setZero(regToTaint)); // leave uninstrumented
+        	return new DexMacro(
+    			wrapWithTryBlock(insn), 
+    			codeGen.setZero(regToTaint)); // leave uninstrumented (always throws)
         
         else {
         
@@ -677,23 +671,18 @@ public class TaintTransform extends Transform {
 	        else
 	            regIndexBackup = regIndex;
 	
-	        if (insn.getOpcode() == Opcode_GetPut.Object) {
-	            insnInstrumented = new DexMacro(
+	        if (insn.getOpcode() == Opcode_GetPut.Object)
+	            return new DexMacro(
 	                       codeGen.move_prim(regIndexBackup, regIndex),
-	                       insn,
+	                       wrapWithTryBlock(insn),
 	                       codeGen.getTaint_ArrayReference(regToTaint, regArrayTaint, regIndexBackup),
 	                       codeGen.cast(regToTaint, (DexReferenceType) codeGen.taintType(analysis_DefReg(insn, regTo))));
-	        } else {
-	            insnInstrumented = new DexMacro(
+	        else
+	            return new DexMacro(
 	                       codeGen.move_prim(regIndexBackup, regIndex),
-	                       insn,
+	                       wrapWithTryBlock(insn),
 	                       codeGen.getTaint_ArrayPrimitive(regToTaint, regArrayTaint, regIndexBackup));
-	        }
-
         }
-        
-//        return wrapWithTryBlock(insn, insnInstrumented);
-        return insnInstrumented;
     }
     
     private DexCodeElement instrument_FillArrayData(DexInstruction_FillArrayData insn) {
