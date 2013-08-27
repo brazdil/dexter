@@ -731,72 +731,82 @@ public class TaintTransform extends Transform {
          * during parsing). Therefore we can check whether the containing class is
          * internal/external.
          */
+        
+        DexRegister regFrom = insnIput.getRegFrom();
+        DexTaintRegister regFromTaint = regFrom.getTaintRegister();
+        DexSingleRegister regObject = insnIput.getRegObject();
+
+        DexCodeElement instrumentedInsn = wrapWithTryBlock(insnIput, insnIput);
 
         if (classDef.isInternal()) {
 
             DexClass parentClass = dex.getClass(classDef);
             DexInstanceField field = parentClass.getInstanceField(fieldDef);
             DexInstanceField taintField = getTaintField(field);
-            DexTaintRegister regFromTaint = insnIput.getRegFrom().getTaintRegister();
 
             return new DexMacro(
-                       codeGen.iput(regFromTaint, insnIput.getRegObject(), taintField.getFieldDef()),
-                       insnIput);
+                       instrumentedInsn,
+                       codeGen.iput(regFromTaint, regObject, taintField.getFieldDef()));
 
         } else {
 
             if (fieldDef.getFieldId().getType() instanceof DexPrimitiveType)
-                return new DexMacro(
-                           codeGen.setTaintExternal(insnIput.getRegFrom().getTaintRegister(), insnIput.getRegObject()),
-                           insnIput);
+            	return new DexMacro(
+                           instrumentedInsn,
+                           codeGen.setTaintExternal(regFromTaint, regObject));
             else {
                 DexSingleAuxiliaryRegister regAux = codeGen.auxReg();
                 return new DexMacro(
-                       codeGen.getTaint(regAux, (DexSingleRegister) insnIput.getRegFrom()),
-                       codeGen.setTaintExternal(regAux, insnIput.getRegObject()),
-                       insnIput);
+                       instrumentedInsn,
+                       codeGen.getTaint(regAux, (DexSingleRegister) regFrom),
+                       codeGen.setTaintExternal(regAux, regObject));
             }
         }
-
     }
 
     private DexCodeElement instrument_InstanceGet(DexInstruction_InstanceGet insnIget) {
         InstanceFieldDefinition fieldDef = insnIget.getFieldDef();
         ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
 
+        DexRegister regTo = insnIget.getRegTo();
+        DexTaintRegister regToTaint = regTo.getTaintRegister();
+        DexSingleRegister regObject = insnIget.getRegObject();
+        DexSingleRegister regObjectTaint = regObject.getTaintRegister();
+
+        DexSingleRegister regObjectBackup;
+        if (regTo.equals(regObject))
+        	regObjectBackup = codeGen.auxReg();
+        else
+        	regObjectBackup = regObject;
+        
+        DexCodeElement instrumentedInsn = new DexMacro(
+        	codeGen.move_obj(regObjectBackup, regObject),
+    		wrapWithTryBlock(insnIget, insnIget));
+        
         if (classDef.isInternal()) {
 
             DexClass parentClass = dex.getClass(classDef);
             DexInstanceField field = parentClass.getInstanceField(fieldDef);
             DexInstanceField taintField = getTaintField(field);
-            DexTaintRegister regToTaint = insnIget.getRegTo().getTaintRegister();
 
             return new DexMacro(
-                       codeGen.iget(regToTaint, insnIget.getRegObject(), taintField.getFieldDef()),
-                       insnIget);
+                       instrumentedInsn,
+                       codeGen.iget(regToTaint, regObjectBackup, taintField.getFieldDef()));
 
         } else {
 
             DexRegisterType resultType = insnIget.getFieldDef().getFieldId().getType();
 
             if (resultType instanceof DexPrimitiveType)
+            	return new DexMacro(
+                           instrumentedInsn,
+                           codeGen.getTaintExternal(regToTaint, regObjectTaint));
 
+            else
                 return new DexMacro(
-                           codeGen.getTaintExternal(insnIget.getRegTo().getTaintRegister(), insnIget.getRegObject()),
-                           insnIget);
-
-            else {
-
-                DexSingleRegister regTo = (DexSingleRegister) insnIget.getRegTo();
-                DexSingleRegister regToTaint = regTo.getTaintRegister();
-                DexSingleRegister regObject = insnIget.getRegObject();
-                DexSingleRegister regObjectTaint = regObject.getTaintRegister();
-
-                return new DexMacro(
-                           insnIget,
+                		   instrumentedInsn,
                            codeGen.getTaintExternal(regToTaint, regObjectTaint),
-                           codeGen.taintLookup(regToTaint, regObject, regToTaint, hierarchy.classifyType(resultType)));
-            }
+                           codeGen.taintLookup(regToTaint, regObjectBackup, regToTaint, hierarchy.classifyType(resultType)));
         }
     }
 
