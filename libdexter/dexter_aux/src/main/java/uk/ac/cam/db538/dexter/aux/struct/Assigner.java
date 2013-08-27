@@ -86,24 +86,63 @@ public final class Assigner {
 	}
 
 	public static final Taint lookupUndecidable(Object obj, int taint) {
-		if (obj instanceof InternalDataStructure)
+		if (obj == null)
+			return new TaintImmutable(taint);
+		else if (obj instanceof InternalDataStructure)
 			return lookupInternal((InternalDataStructure) obj, taint);
-		// TODO: arrays!
+		else if (obj instanceof Object[])
+			return lookupArrayReference(obj, taint);
+		else if (obj.getClass().isArray())
+			return lookupArrayPrimitive(obj, taint);
 		else
 			return lookupExternal(obj, taint);
 	}
 	
-	public static final TaintArrayPrimitive lookupArrayPrimitive(Object obj) {
+	public static final TaintArrayPrimitive lookupArrayPrimitive(Object obj, int taint) {
+		if (obj == null)
+			return new TaintArrayPrimitive(0, taint);
+		
 		TaintArrayPrimitive tobj = (TaintArrayPrimitive) Cache.get(obj);
-		if (tobj == null)
-			RuntimeUtils.die("Array of primitives is not initialized");
+		if (tobj == null) {
+			int length;
+			if (obj instanceof int[])
+				length = ((int[]) obj).length;
+			else if (obj instanceof boolean[])
+				length = ((boolean[]) obj).length;
+			else if (obj instanceof byte[])
+				length = ((byte[]) obj).length;
+			else if (obj instanceof char[])
+				length = ((char[]) obj).length;
+			else if (obj instanceof double[])
+				length = ((double[]) obj).length;
+			else if (obj instanceof float[])
+				length = ((float[]) obj).length;
+			else if (obj instanceof long[])
+				length = ((long[]) obj).length;
+			else if (obj instanceof short[])
+				length = ((short[]) obj).length;
+			else  {
+				RuntimeUtils.die("Object is not of a primitive array type");
+				/* will never get executed */ length = 0;
+			}
+
+			tobj = new TaintArrayPrimitive(length, taint, taint);
+		} else
+			tobj.set(taint);
+		
 		return tobj;
 	}
 	
-	public static final TaintArrayReference lookupArrayReference(Object obj) {
+	public static final TaintArrayReference lookupArrayReference(Object obj, int taint) {
+		if (obj == null)
+			return new TaintArrayReference(0, taint);
+		
 		TaintArrayReference tobj = (TaintArrayReference) Cache.get(obj);
 		if (tobj == null)
-			RuntimeUtils.die("Array of references is not initialized");
+			tobj = new TaintArrayReference((Object[]) obj, taint);
+		else
+			tobj.set(taint);
+		
 		return tobj;
 	}
 }
