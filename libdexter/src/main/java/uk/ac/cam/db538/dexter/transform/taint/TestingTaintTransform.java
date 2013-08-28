@@ -112,9 +112,6 @@ public class TestingTaintTransform extends TaintTransform {
         	
         }
         
-        if (method.getMethodDef().getParentClass().getType().getDescriptor().contains("Throw_NULL"))
-        	method.getMethodBody().getInstructionList().dump();
-        
         return super.doLast(method);
     }
 
