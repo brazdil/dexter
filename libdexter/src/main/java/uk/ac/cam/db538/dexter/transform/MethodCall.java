@@ -1,9 +1,12 @@
 package uk.ac.cam.db538.dexter.transform;
 
+import java.util.Set;
+
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
@@ -75,4 +78,14 @@ public class MethodCall extends DexCodeElement {
                    new DexInstruction_Invoke(insnInvoke),
                    insnResult == null ? null : new DexInstruction_MoveResult(insnResult));
     }
+
+	@Override
+	public Set<? extends DexRegister> lvaDefinedRegisters() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Set<? extends DexRegister> lvaReferencedRegisters() {
+		throw new UnsupportedOperationException();
+	}
 }

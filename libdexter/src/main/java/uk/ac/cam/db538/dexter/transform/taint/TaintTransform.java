@@ -448,6 +448,12 @@ public class TaintTransform extends Transform {
         DexInstruction_MoveResult insnMoveResult = methodCall.getResult();
 
         DexSingleAuxiliaryRegister regCombinedTaint = codeGen.auxReg();
+        
+        DexCodeElement wrappedCall = wrapWithTryBlock(
+    		methodCall,
+    		codeGen.empty(),
+    		regCombinedTaint);
+        
         if (isCallToSuperclassConstructor(insnInvoke, code, methodDef)) {
 
             // Handle calls to external superclass constructor
@@ -457,7 +463,7 @@ public class TaintTransform extends Transform {
 
             return new DexMacro(
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
-                       methodCall,
+                       wrappedCall,
 
                        // At this point, the object reference is valid
                        // Need to generate new TaintInternal object with it
@@ -470,7 +476,7 @@ public class TaintTransform extends Transform {
             // Standard external call
             return new DexMacro(
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
-                       methodCall,
+                       wrappedCall,
                        codeGen.finishExternalCall(regCombinedTaint, insnInvoke, insnMoveResult));
 
         }
@@ -1117,7 +1123,7 @@ public class TaintTransform extends Transform {
     }
     
     private DexCodeElement wrapWithTryBlock(DexCodeElement originalInsn, DexCodeElement inside) {
-
+    	
     	DexSingleRegister auxCombinedTaint = codeGen.auxReg();
     	DexSingleRegister auxObjTaint = codeGen.auxReg();
 
