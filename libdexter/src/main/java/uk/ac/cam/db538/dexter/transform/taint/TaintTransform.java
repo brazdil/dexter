@@ -247,12 +247,14 @@ public class TaintTransform extends Transform {
         if (element instanceof DexInstruction_Monitor)
             return instrument_Monitor((DexInstruction_Monitor) element);
         
+        if (element instanceof DexInstruction_Throw)
+            return instrument_Throw((DexInstruction_Throw) element);
+        
         // instructions that do not require instrumentation
         if (element instanceof DexInstruction_Goto ||
                 element instanceof DexInstruction_IfTest ||
                 element instanceof DexInstruction_IfTestZero ||
                 element instanceof DexInstruction_Switch ||
-                element instanceof DexInstruction_Throw ||
                 element instanceof DexInstruction_ReturnVoid)
             return element;
 
@@ -846,6 +848,19 @@ public class TaintTransform extends Transform {
     	return wrapWithTryBlock(insn);
     }
     
+    private DexCodeElement instrument_Throw(DexInstruction_Throw insn) {
+    	DexSingleRegister regException = insn.getRegFrom();
+    	DexLabel lNull = codeGen.label();
+    	return new DexMacro(
+    			codeGen.ifZero(regException, lNull),
+    			codeGen.thrw(regException), // duplicate the original
+    			lNull,
+    			wrapWithTryBlock(insn),
+    			// meaningless instruction (should be removed as dead code)
+    			// only needed to pass CFG analysis
+    			codeGen.jump(lNull)); 
+    }
+
     private void generateGetTaint(DexClass clazz) {
         DexTypeCache cache = hierarchy.getTypeCache();
         DexMethod implementationOf = dexAux.getMethod_InternalStructure_GetTaint();

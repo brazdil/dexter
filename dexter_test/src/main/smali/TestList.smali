@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 64
+    const v0, 65
     new-array v0, v0, [LTestExerciser;
     const v1, 0
 
@@ -459,6 +459,13 @@
 
     new-instance v3, LTest_InstancePut_NULL;
     invoke-direct {v3}, LTest_InstancePut_NULL;-><init>()V
+    new-instance v2, LExceptionTestExerciser;
+    invoke-direct {v2, v3}, LExceptionTestExerciser;-><init>(LExceptionTest;)V
+    aput-object v2, v0, v1
+    add-int/lit8 v1, v1, 1
+
+    new-instance v3, LTest_Throw_NULL;
+    invoke-direct {v3}, LTest_Throw_NULL;-><init>()V
     new-instance v2, LExceptionTestExerciser;
     invoke-direct {v2, v3}, LExceptionTestExerciser;-><init>(LExceptionTest;)V
     aput-object v2, v0, v1
