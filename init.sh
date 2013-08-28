@@ -36,6 +36,7 @@ cp "$DALVIK_BUILDFILE" "$DALVIK_DIR"/dx/build.gradle || exit
 # download smali jar to dexter_test
 DEXTER_TEST_LIBDIR='dexter_test/libs/'
 echo "downloading smali.jar to \"$DEXTER_TEST_LIBDIR\"..."
+rm -rf "$DEXTER_TEST_LIBDIR"
 mkdir -p "$DEXTER_TEST_LIBDIR"
 wget -q 'https://smali.googlecode.com/files/smali-1.4.2.jar' -P "$DEXTER_TEST_LIBDIR"
 
