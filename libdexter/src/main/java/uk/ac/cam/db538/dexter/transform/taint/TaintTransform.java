@@ -2,7 +2,9 @@ package uk.ac.cam.db538.dexter.transform.taint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -173,9 +175,9 @@ public class TaintTransform extends Transform {
         if (element instanceof MethodCall) {
             CallDestinationType type = invokeClassification.get(element);
             if (type == CallDestinationType.Internal)
-                return instrument_MethodCall_Internal((MethodCall) element, code, method.getMethodDef());
+                return instrument_MethodCall_Internal((MethodCall) element, code, method);
             else if (type == CallDestinationType.External)
-                return instrument_MethodCall_External((MethodCall) element, code, method.getMethodDef());
+                return instrument_MethodCall_External((MethodCall) element, code, method);
             else
                 throw new Error("Calls should never be classified as undecidable by this point");
         }
@@ -366,7 +368,7 @@ public class TaintTransform extends Transform {
         		return new DexMacro(
         			insn,
         			codeGen.setEmptyTaint(auxEmptyTaint),
-        			codeGen.nullTaint(regToRef, auxEmptyTaint, objType));
+        			codeGen.taintNull(regToRef, auxEmptyTaint, objType));
         	}
     	}
     	
@@ -388,7 +390,7 @@ public class TaintTransform extends Transform {
                    codeGen.newEmptyExternalTaint(insn.getRegTo()));
     }
 
-    private DexCodeElement instrument_MethodCall_Internal(MethodCall methodCall, DexCode code, MethodDefinition methodDef) {
+    private DexCodeElement instrument_MethodCall_Internal(MethodCall methodCall, DexCode code, DexMethod method) {
         DexInstruction_Invoke insnInvoke = methodCall.getInvoke();
         DexInstruction_MoveResult insnMoveResult = methodCall.getResult();
 
@@ -430,9 +432,11 @@ public class TaintTransform extends Transform {
             assert(!methodCall.hasResult());
             DexSingleRegister regThis = (DexSingleRegister) argRegisters.get(0);
 
-            if (isCallToSuperclassConstructor(insnInvoke, code, methodDef))
+            if (isCallToSuperclassConstructor(insnInvoke, code, method.getMethodDef()))
                 // Handle calls to internal superclass constructor
-                macroHandleResult = codeGen.taintCreate_Internal(regThis);
+                macroHandleResult = new DexMacro(
+                		generateInitTaint(method.getParentClass(), regThis),
+                		codeGen.taintCreate_Internal(regThis));
             else
                 // Handle call to a standard internal constructor
                 macroHandleResult = codeGen.taintLookup_NoExtraTaint(regThis.getTaintRegister(), regThis, hierarchy.classifyType(insnInvoke.getClassType()));
@@ -445,7 +449,7 @@ public class TaintTransform extends Transform {
         return new DexMacro(macroSetParamTaints, methodCall, macroHandleResult);
     }
 
-    private DexCodeElement instrument_MethodCall_External(MethodCall methodCall, DexCode code, MethodDefinition methodDef) {
+    private DexCodeElement instrument_MethodCall_External(MethodCall methodCall, DexCode code, DexMethod method) {
         DexInstruction_Invoke insnInvoke = methodCall.getInvoke();
         DexInstruction_MoveResult insnMoveResult = methodCall.getResult();
 
@@ -456,7 +460,7 @@ public class TaintTransform extends Transform {
     		codeGen.empty(),
     		regCombinedTaint);
         
-        if (isCallToSuperclassConstructor(insnInvoke, code, methodDef)) {
+        if (isCallToSuperclassConstructor(insnInvoke, code, method.getMethodDef())) {
 
             // Handle calls to external superclass constructor
 
@@ -470,6 +474,7 @@ public class TaintTransform extends Transform {
                        // At this point, the object reference is valid
                        // Need to generate new TaintInternal object with it
 
+                       generateInitTaint(method.getParentClass(), regThis),
                        codeGen.taintCreate_External(regThis, regCombinedTaint),
                        codeGen.taintCreate_Internal(regThis));
 
@@ -616,7 +621,7 @@ public class TaintTransform extends Transform {
                    // NULL objects can be cast from anything to anything. Need to recreate the Taint object
                    
                    codeGen.getTaint(regTaint, regObjectTaint), // don't need to clear visited set (with NULL it can't loop)
-                   codeGen.nullTaint(regObject, regTaint, insn.getValue()), // method will pick the correct Taint class
+                   codeGen.taintNull(regObject, regTaint, insn.getValue()), // method will pick the correct Taint class
                    
                    lAfter);
     }
@@ -861,15 +866,43 @@ public class TaintTransform extends Transform {
     			codeGen.jump(lNull)); 
     }
 
+    private DexCodeElement generateInitTaint(DexClass clazz, DexSingleRegister regThis) {
+        DexSingleRegister regTaintObject = codeGen.auxReg();
+        DexSingleRegister regNullObject = codeGen.auxReg();
+        DexSingleRegister regEmptyTaint = codeGen.auxReg();
+
+        List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
+
+        insns.add(codeGen.setEmptyTaint(regEmptyTaint));
+        insns.add(codeGen.setZero(regNullObject));
+        
+        for (DexInstanceField ifield : clazz.getInstanceFields()) {
+            if (isTaintField(ifield))
+                continue;
+
+            DexInstanceField tfield = getTaintField(ifield);
+
+            TypeClassification tfield_type = hierarchy.classifyType(ifield.getFieldDef().getFieldId().getType());
+            if (tfield_type == TypeClassification.PRIMITIVE)
+            	insns.add(codeGen.iput(regEmptyTaint, regThis, tfield.getFieldDef()));
+            else {
+            	insns.add(codeGen.taintNull(regTaintObject, regNullObject, regEmptyTaint, tfield_type));
+            	insns.add(codeGen.iput(regTaintObject, regThis, tfield.getFieldDef()));
+            }
+        }
+
+        return new DexMacro(insns);
+    }
+    
     private void generateGetTaint(DexClass clazz) {
         DexTypeCache cache = hierarchy.getTypeCache();
         DexMethod implementationOf = dexAux.getMethod_InternalStructure_GetTaint();
 
         // generate bytecode
 
-        DexSingleRegister regTotalTaint = new DexSingleAuxiliaryRegister(0);
-        DexSingleRegister regFieldTaint = new DexSingleAuxiliaryRegister(1);
-        DexSingleRegister regObject = new DexSingleAuxiliaryRegister(2);
+        DexSingleRegister regTotalTaint = codeGen.auxReg();
+        DexSingleRegister regFieldTaint = codeGen.auxReg();
+        DexSingleRegister regObject = codeGen.auxReg();
 
         List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
 
@@ -879,7 +912,7 @@ public class TaintTransform extends Transform {
             insns.add(codeGen.setEmptyTaint(regTotalTaint));
 
         for (DexInstanceField ifield : clazz.getInstanceFields()) {
-            if (!hasTaintField(ifield))
+            if (isTaintField(ifield))
                 continue;
 
             DexInstanceField tfield = getTaintField(ifield);
@@ -921,9 +954,9 @@ public class TaintTransform extends Transform {
 
         // generate bytecode
 
-        DexSingleRegister regFieldTaint = new DexSingleAuxiliaryRegister(0);
-        DexSingleRegister regAddedTaint = new DexSingleAuxiliaryRegister(1);
-        DexSingleRegister regObject = new DexSingleAuxiliaryRegister(2);
+        DexSingleRegister regFieldTaint = codeGen.auxReg();
+        DexSingleRegister regAddedTaint = codeGen.auxReg();
+        DexSingleRegister regObject = codeGen.auxReg();
 
         List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
 
@@ -931,7 +964,7 @@ public class TaintTransform extends Transform {
             insns.add(codeGen.call_super_int(clazz, implementationOf, null, Arrays.asList(regObject, regAddedTaint)));
 
         for (DexInstanceField ifield : clazz.getInstanceFields()) {
-            if (!hasTaintField(ifield))
+            if (isTaintField(ifield))
                 continue;
 
             DexInstanceField tfield = getTaintField(ifield);
@@ -1011,8 +1044,8 @@ public class TaintTransform extends Transform {
         return solverStart.areUnified(solverRefPoint);
     }
 
-    private boolean hasTaintField(DexInstanceField field) {
-        return taintInstanceFields.containsKey(field);
+    private boolean isTaintField(DexInstanceField field) {
+        return taintInstanceFields.containsValue(field);
     }
 
     private DexInstanceField getTaintField(DexInstanceField field) {
@@ -1041,7 +1074,7 @@ public class TaintTransform extends Transform {
         // Generate the new taint field
 
         DexFieldId fieldId = DexFieldId.parseFieldId(newName, codeGen.taintType(field.getFieldDef().getFieldId().getType()), typeCache);
-        int fieldAccessFlags = DexUtils.assembleAccessFlags(field.getFieldDef().getAccessFlags());
+        int fieldAccessFlags = DexUtils.assembleAccessFlags(removeFinalFlag(field.getFieldDef().getAccessFlags()));
         InstanceFieldDefinition fieldDef = new InstanceFieldDefinition(classDef, fieldId, fieldAccessFlags);
         classDef.addDeclaredInstanceField(fieldDef);
 
@@ -1097,7 +1130,7 @@ public class TaintTransform extends Transform {
         // Generate the new taint field
 
         DexFieldId taintFieldId = DexFieldId.parseFieldId(newName, codeGen.taintType(fieldDef.getFieldId().getType()), typeCache);
-        int fieldAccessFlags = DexUtils.assembleAccessFlags(fieldDef.getAccessFlags());
+        int fieldAccessFlags = DexUtils.assembleAccessFlags(removeFinalFlag(fieldDef.getAccessFlags()));
         StaticFieldDefinition taintFieldDef = new StaticFieldDefinition(classDef, taintFieldId, fieldAccessFlags);
         classDef.addDeclaredStaticField(taintFieldDef);
 
@@ -1111,6 +1144,12 @@ public class TaintTransform extends Transform {
         // Return
 
         return taintField;
+    }
+    
+    private Collection<AccessFlags> removeFinalFlag(Collection<AccessFlags> flags) {
+    	Set<AccessFlags> newFlags = new HashSet<AccessFlags>(flags);
+    	flags.remove(AccessFlags.FINAL);
+    	return newFlags;
     }
     
     private DexCodeElement wrapWithTryBlock(DexCodeElement inside, DexCodeElement taintCombination, DexSingleRegister regCombinedTaint) {

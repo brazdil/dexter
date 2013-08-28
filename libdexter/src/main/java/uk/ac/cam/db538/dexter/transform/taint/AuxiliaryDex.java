@@ -219,7 +219,7 @@ public class AuxiliaryDex extends Dex {
             if (method.getMethodDef().getMethodId().getName().equals(name) &&
                     !method.getMethodDef().isStatic())
                 return method;
-        throw new Error("Failed to locate an auxiliary method" + name);
+        throw new Error("Failed to locate an auxiliary method " + name);
     }
 
     private static DexStaticField findStaticFieldByName(DexClass clsDef, String name) {

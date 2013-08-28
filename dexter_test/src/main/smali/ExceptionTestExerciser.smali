@@ -90,6 +90,8 @@
     const-string v6, "Testing..."
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
+    if-eqz v1, :no_taint_test
+
     # are they tainted?
     const-string v6, " - first outcome not tainted"
     invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
@@ -116,6 +118,21 @@
 
     invoke-virtual {v4}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
     move-result-object v4
+    if-ne v1, v4, :return_false
+
+    goto :return_true
+
+    :no_taint_test
+
+    # both must match the expected outcome
+    const-string v6, " - first outcome correct"
+    invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
+    if-ne v1, v3, :return_false
+
+    const-string v6, " - second outcome correct"
+    invoke-static {v5, v6}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
     if-ne v1, v4, :return_false
 
     :return_true

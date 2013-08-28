@@ -102,7 +102,7 @@ public class TestingTaintTransform extends TaintTransform {
                     newInstructions.add(codeGen.setTaint(regTaint, paramRegTaint));
                     newInstructions.add(codeGen.jump(lAfter));
                     newInstructions.add(lNull);
-                    newInstructions.add(codeGen.nullTaint(paramRegTaint, paramReg, regTaint, TypeClassification.REF_EXTERNAL));                    
+                    newInstructions.add(codeGen.taintNull(paramRegTaint, paramReg, regTaint, TypeClassification.REF_EXTERNAL));                    
                     newInstructions.add(lAfter);
                 } else
                     newInstructions.add(insn);

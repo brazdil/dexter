@@ -570,7 +570,7 @@ public final class CodeGenerator {
                        taintLookup(regTo.getTaintRegister(), regTo, regCombinedTaint, hierarchy.classifyType(returnType)),
                        jump(lAfter),
                        lNull,
-                       nullTaint(regTo, regCombinedTaint, returnType),
+                       taintNull(regTo, regCombinedTaint, returnType),
                        lAfter);
         }
     }
@@ -723,7 +723,7 @@ public final class CodeGenerator {
                    new DexInstruction_MoveResult(regTo, true, hierarchy));
     }
 
-    public DexCodeElement nullTaint(DexSingleRegister regTo, DexSingleRegister regNullObject, DexSingleRegister regNullTaint, TypeClassification type) {
+    public DexCodeElement taintNull(DexSingleRegister regTo, DexSingleRegister regNullObject, DexSingleRegister regNullTaint, TypeClassification type) {
         switch (type) {
         case REF_UNDECIDABLE:
         case REF_EXTERNAL:
@@ -749,12 +749,12 @@ public final class CodeGenerator {
         }
     }
 
-    public DexCodeElement nullTaint(DexSingleRegister regNullObject, DexSingleRegister regNullTaint, TypeClassification type) {
-        return nullTaint(regNullObject.getTaintRegister(), regNullObject, regNullTaint, type);
+    public DexCodeElement taintNull(DexSingleRegister regNullObject, DexSingleRegister regNullTaint, TypeClassification type) {
+        return taintNull(regNullObject.getTaintRegister(), regNullObject, regNullTaint, type);
     }
 
-    public DexCodeElement nullTaint(DexSingleRegister regNullObject, DexSingleRegister regNullTaint, DexReferenceType type) {
-        return nullTaint(regNullObject, regNullTaint, hierarchy.classifyType(type));
+    public DexCodeElement taintNull(DexSingleRegister regNullObject, DexSingleRegister regNullTaint, DexReferenceType type) {
+        return taintNull(regNullObject, regNullTaint, hierarchy.classifyType(type));
     }
     
     public DexCodeElement taintLookup(DexSingleRegister regTo, DexSingleRegister regObject, DexSingleRegister regAddedTaint, TypeClassification type) {
