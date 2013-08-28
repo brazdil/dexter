@@ -734,14 +734,14 @@ public final class CodeGenerator {
         {
         	DexSingleRegister auxZero = auxReg(); 
         	return new DexMacro(
-    			setZero(auxZero),
+    			setEmptyTaint(auxZero),
     			taintCreate_ArrayPrimitive(regTo, regNullObject, auxZero, regNullTaint));
         }
         case ARRAY_REFERENCE:
         {
         	DexSingleRegister auxZero = auxReg(); 
         	return new DexMacro(
-    			setZero(auxZero),
+    			setEmptyTaint(auxZero),
     			taintCreate_ArrayReference(regTo, regNullObject, auxZero, regNullTaint));
         }
         default:
