@@ -203,7 +203,7 @@ public class TaintTransform extends Transform {
             return instrument_Return((DexInstruction_Return) element);
 
         if (element instanceof DexInstruction_Move)
-            return instrument_Move((DexInstruction_Move) element);
+            return instrument_Move((DexInstruction_Move) element, code);
 
         if (element instanceof DexInstruction_BinaryOp)
             return instrument_BinaryOp((DexInstruction_BinaryOp) element);
@@ -555,11 +555,17 @@ public class TaintTransform extends Transform {
                     insn);
     }
 
-    private DexCodeElement instrument_Move(DexInstruction_Move insn) {
+    private DexCodeElement instrument_Move(DexInstruction_Move insn, DexCode code) {
         if (insn.getType() == RegisterType.REFERENCE) {
-            return new DexMacro(
+        	
+        	if (uninitializedThis(insn, insn.getRegFrom(), code))
+        		return insn;
+        	
+        	else
+        		return new DexMacro(
                        codeGen.move_tobj((DexSingleRegister) insn.getRegTo(), (DexSingleRegister) insn.getRegFrom()),
                        insn);
+        	
         } else
             return new DexMacro(
                        codeGen.combineTaint(insn.getRegTo(), insn.getRegFrom()),
