@@ -12,6 +12,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
@@ -112,11 +113,11 @@ public class InvokeClassifier {
                 continue;
             else if (insn instanceof DexInstruction_Invoke) {
 
-                DexCodeElement nextElement = code.getInstructionList().getNextInstruction(insn);
-                if (!(nextElement instanceof DexInstruction_MoveResult))
-                    nextElement = null;
+                DexInstruction nextInstruction = code.getInstructionList().getNextProperInstruction(insn);
+                if (!(nextInstruction instanceof DexInstruction_MoveResult))
+                    nextInstruction = null;
 
-                newInsns.add(new MethodCall((DexInstruction_Invoke) insn, (DexInstruction_MoveResult) nextElement));
+                newInsns.add(new MethodCall((DexInstruction_Invoke) insn, (DexInstruction_MoveResult) nextInstruction));
 
             } else
                 newInsns.add(insn);

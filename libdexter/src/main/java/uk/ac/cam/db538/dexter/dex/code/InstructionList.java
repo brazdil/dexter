@@ -13,6 +13,7 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.utils.Utils;
 
@@ -159,6 +160,16 @@ public class InstructionList implements Collection<DexCodeElement> {
 
     public DexCodeElement getNextInstruction(DexCodeElement elem) {
         return instructionList.get(getIndex(elem) + 1);
+    }
+
+    public DexInstruction getNextProperInstruction(DexCodeElement elem) {
+    	int index = getIndex(elem);
+    	
+    	while (true) {
+    		DexCodeElement nextElem = instructionList.get(++index);
+    		if (nextElem instanceof DexInstruction)
+    			return (DexInstruction) nextElem;
+    	}
     }
 
     public boolean isLast(DexCodeElement elem) {
