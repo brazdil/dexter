@@ -1,11 +1,12 @@
 package uk.ac.cam.db538.dexter.android;
 
-import android.app.Activity;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,10 +43,31 @@ public class InstrumentFragment extends PackageFragment {
     private String currentStatus = "Loading...";
     private int currentProgress = 0;
 
+    private BroadcastReceiver progressReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getBooleanExtra(InstrumentService.EXTRA_FINISHED, false)) {
+                getActivity().finish();
+                return;
+            }
+
+            String status = intent.getStringExtra(InstrumentService.EXTRA_STATUS);
+            if (status != null)
+                currentStatus = status;
+
+            int progress = intent.getIntExtra(InstrumentService.EXTRA_PROGRESS, 0);
+            if (progress != 0)
+                currentProgress = progress;
+
+            assignValues();
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         packageInfo = extractArgsPackage();
+
     }
 
     @Override
@@ -86,6 +108,10 @@ public class InstrumentFragment extends PackageFragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        IntentFilter progressIntentFilter = new IntentFilter(InstrumentService.PROGRESS_ACTION);
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(progressReceiver, progressIntentFilter);
+
         memoryTimer = new Timer();
         memoryTimer.schedule(new TimerTask() {
             @Override
@@ -109,7 +135,12 @@ public class InstrumentFragment extends PackageFragment {
 
         synchronized (this) {
             if (!running) {
-                new Thread(workerInstrumentation).start();
+                Intent intent = new Intent(getActivity(), InstrumentService.class);
+                intent.putExtra("PackageFile", packageInfo.getPackageFile().getAbsolutePath());
+                intent.putExtra("LocalFileTemp", new File(getActivity().getFilesDir(), "temp.apk").getAbsolutePath());
+                intent.putExtra("LocalFileFinal", getInstrumentedFile(packageInfo).getAbsolutePath());
+                getActivity().startService(intent);
+
                 running = true;
             }
         }
@@ -119,139 +150,8 @@ public class InstrumentFragment extends PackageFragment {
     public void onPause() {
         super.onPause();
         memoryTimer.cancel();
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(progressReceiver);
     }
-
-    private ProgressCallback callbackProgressUpdate = new ProgressCallback() {
-        @Override
-        public void update(final int finished, final int outOf) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    currentProgress = 100 * finished / outOf;
-                    assignValues();
-                }
-            });
-        }
-    };
-
-    private Runnable workerInstrumentation = new Runnable() {
-        @Override
-        public void run() {
-            setUiPriority_High();
-            try {
-                final String packageName = packageInfo.getPackageName();
-
-                final File localFileTemp = new File(getActivity().getFilesDir(), "temp.apk");
-                final File localFileFinal = new File(
-                        getActivity().getDir("ready", Activity.MODE_PRIVATE),
-                        packageName +  ".apk");
-                final DexterApplication thisApp = (DexterApplication) getActivity().getApplication();
-
-                setStatus("Loading files...");
-                setWaiting();
-
-                /*
-                 * We could load the DexFiles while framework is being loaded, but that might
-                 * use too much memory. This way, only one .dex file is being loaded at
-                 * any point of time.
-                 */
-
-                // thisApp.waitForHierarchy();
-
-                FileUtils.copyFile(packageInfo.getPackageFile(), localFileTemp);
-                DexFile fileApp = new DexFile(localFileTemp);
-                DexFile fileAux = new DexFileFromMemory(thisApp.getAssets().open("dexter_aux.dex"));
-
-                Pair<RuntimeHierarchy, ClassRenamer> buildData = thisApp.getRuntimeHierarchy(fileApp, fileAux);
-                RuntimeHierarchy hierarchy = buildData.getValA();
-                ClassRenamer renamerAux = buildData.getValB();
-
-                setStatus("Analyzing...");
-                Dex dexApp = new Dex(
-                        fileApp,
-                        hierarchy,
-                        new AuxiliaryDex(fileAux, hierarchy, renamerAux),
-                        callbackProgressUpdate);
-
-                buildData = null;
-                fileApp = null;
-                fileAux = null;
-                renamerAux = null;
-                System.gc();
-
-                setStatus("Modifying...");
-
-//                 dex.instrument(false);
-
-                setStatus("Assembling...");
-                byte[] fileApp_New = dexApp.writeToFile();
-
-                setStatus("Signing...");
-                setWaiting();
-                Apk.produceAPK(localFileTemp, localFileFinal, null, fileApp_New);
-
-//                setStatus("Uninstalling...");
-//                setWaiting();
-//
-//                Uri packageURI = Uri.parse("package:" + packageName);
-//                Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
-//                startActivity(uninstallIntent);
-
-                closeActivity();
-
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        private void setUiPriority_High() {
-            Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-                }
-            });
-        }
-
-        private void setStatus(final String status) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    currentStatus = status;
-                    assignValues();
-                }
-            });
-        }
-
-        private void setWaiting() {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    currentProgress = -1;
-                    assignValues();
-                }
-            });
-        }
-
-        private void hideProgressCircle() {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    progressCircle.setVisibility(View.INVISIBLE);
-                }
-            });
-        }
-
-        private void closeActivity() {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    getActivity().finish();
-                }
-            });
-        }
-    };
 
     private Timer memoryTimer;
 }

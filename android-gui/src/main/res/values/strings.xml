@@ -16,5 +16,8 @@
     <string name="title_activity_unit_test">Dexter Tests</string>
     <string name="action_run_tests">Run tests</string>
     <string name="action_run_tests_plain">Run tests (plain)</string>
+    <string name="size_instrumented">Instrumented:</string>
+    <string name="replace">Replace</string>
+    <string name="uninstall">Uninstall Old</string>
 
 </resources>

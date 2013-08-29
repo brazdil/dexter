@@ -75,4 +75,9 @@ public abstract class PackageFragment extends Fragment {
     }
 
     public static final String PACKAGE_NAME = "package_name";
+
+    public File getInstrumentedFile(Package packageInfo) {
+        return new File(getActivity().getDir("ready", Activity.MODE_PRIVATE) + "/" +
+                        packageInfo.getPackageName() +  ".apk");
+    }
 }
