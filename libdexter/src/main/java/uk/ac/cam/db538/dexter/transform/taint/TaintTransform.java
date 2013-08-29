@@ -435,7 +435,7 @@ public class TaintTransform extends Transform {
             if (isCallToSuperclassConstructor(insnInvoke, code, method.getMethodDef()))
                 // Handle calls to internal superclass constructor
                 macroHandleResult = new DexMacro(
-                		generateInitTaint(method.getParentClass(), regThis),
+                		insertInstanceFieldInit(method.getParentClass(), regThis),
                 		codeGen.taintCreate_Internal(regThis));
             else
                 // Handle call to a standard internal constructor
@@ -474,7 +474,7 @@ public class TaintTransform extends Transform {
                        // At this point, the object reference is valid
                        // Need to generate new TaintInternal object with it
 
-                       generateInitTaint(method.getParentClass(), regThis),
+                       insertInstanceFieldInit(method.getParentClass(), regThis),
                        codeGen.taintCreate_External(regThis, regCombinedTaint),
                        codeGen.taintCreate_Internal(regThis));
 
@@ -866,7 +866,7 @@ public class TaintTransform extends Transform {
     			codeGen.jump(lNull)); 
     }
 
-    private DexCodeElement generateInitTaint(DexClass clazz, DexSingleRegister regThis) {
+    private DexCodeElement insertInstanceFieldInit(DexClass clazz, DexSingleRegister regThis) {
         DexSingleRegister regTaintObject = codeGen.auxReg();
         DexSingleRegister regNullObject = codeGen.auxReg();
         DexSingleRegister regEmptyTaint = codeGen.auxReg();
