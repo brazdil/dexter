@@ -149,9 +149,6 @@ public class TaintTransform extends Transform {
         codeAnalysis = new DexCodeAnalyzer(code);
         codeAnalysis.analyze();
         
-        if (method.getParentClass().getClassDef().getType().getDescriptor().contains("LateConstruct"))
-        	System.out.println();
-        
     	uninitilizedThis = analyzeConstructor(code, method);
 
         code = InvokeClassifier.collapseCalls(code);
