@@ -28,6 +28,7 @@ import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 import uk.ac.cam.db538.dexter.utils.Utils;
 
@@ -101,6 +102,13 @@ public class DexClass {
             return Collections.emptyList();
         else
             return DexAnnotation.parseAll(annoDir.getClassAnnotations(), parent.getTypeCache());
+    }
+    
+    public DexMethod getMethod(MethodDefinition methodDef) {
+    	for (DexMethod method : methods)
+    		if (method.getMethodDef().equals(methodDef))
+    			return method;
+    	return null;
     }
 
     public DexInstanceField getInstanceField(InstanceFieldDefinition fieldDef) {
@@ -236,6 +244,25 @@ public class DexClass {
 
     public void replaceMethods(List<? extends DexMethod> newMethods) {
         this.methods = Utils.finalList(newMethods);
+    }
+
+    public void addMethod(DexMethod newMethod) {
+    	assert !methods.contains(newMethod);
+    	
+    	List<DexMethod> newMethods = new ArrayList<DexMethod>(methods);
+    	newMethods.add(newMethod);
+    	
+        replaceMethods(newMethods);
+    }
+
+    public void replaceMethod(DexMethod oldMethod, DexMethod newMethod) {
+    	assert methods.contains(oldMethod);
+    	assert !methods.contains(newMethod);
+    	
+    	List<DexMethod> newMethods = new ArrayList<DexMethod>(methods);
+    	newMethods.set(newMethods.indexOf(oldMethod), newMethod);
+    	
+        replaceMethods(newMethods);
     }
 
     public void replaceStaticFields(List<? extends DexStaticField> newStaticFields) {

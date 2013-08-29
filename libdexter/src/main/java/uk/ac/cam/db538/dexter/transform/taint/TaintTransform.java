@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import lombok.val;
@@ -290,7 +291,6 @@ public class TaintTransform extends Transform {
 
     @Override
     public void doLast(DexClass clazz) {
-
         // add InternalClassAnnotation
         clazz.replaceAnnotations(Utils.concat(
                                      clazz.getAnnotations(),
@@ -302,7 +302,11 @@ public class TaintTransform extends Transform {
             generateGetTaint(clazz);
             generateSetTaint(clazz);
         }
-
+        
+        // insert static taint field initialization into <clinit>
+        createEmptyClinit(clazz);
+        insertStaticFieldInit(clazz);
+    		
         super.doLast(clazz);
     }
 
@@ -312,6 +316,43 @@ public class TaintTransform extends Transform {
 
         // insert classes from dexAux to the resulting DEX
         dex.addClasses(dexAux.getClasses());
+        
+        // add static field initializer into StaticTaintFields class
+        DexClass staticFieldsClass = dexAux.getType_StaticTaintFields();
+        createEmptyClinit(staticFieldsClass);
+        insertStaticFieldInit(staticFieldsClass);
+    }
+    
+    private void createEmptyClinit(DexClass clazz) {
+    	if (getClinit(clazz) != null)
+    		return;
+
+    	// generate bytecode
+    	
+    	DexCode methodBody = new DexCode(
+			new InstructionList(codeGen.retrn()), 
+			null,
+			getClinitId().getPrototype().getReturnType(),
+			true,
+			hierarchy);
+    	
+    	// add to the hierarchy
+    	
+    	BaseClassDefinition classDef = clazz.getClassDef();
+    	MethodDefinition methodDef = new MethodDefinition(
+			classDef,
+			getClinitId(),
+			DexUtils.assembleAccessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.CONSTRUCTOR));
+    	classDef.addDeclaredMethod(methodDef);
+		
+    	// add to the class
+    	
+    	clazz.addMethod(new DexMethod(
+			clazz,
+			methodDef,
+			methodBody));
+    	
+    	assert getClinit(clazz) != null;
     }
 
     private boolean canBeCalledFromExternalOrigin(MethodDefinition methodDef) {
@@ -882,11 +923,11 @@ public class TaintTransform extends Transform {
 
             DexInstanceField tfield = getTaintField(ifield);
 
-            TypeClassification tfield_type = hierarchy.classifyType(ifield.getFieldDef().getFieldId().getType());
-            if (tfield_type == TypeClassification.PRIMITIVE)
+            TypeClassification ifield_type = hierarchy.classifyType(ifield.getFieldDef().getFieldId().getType());
+            if (ifield_type == TypeClassification.PRIMITIVE)
             	insns.add(codeGen.iput(regEmptyTaint, regThis, tfield.getFieldDef()));
             else {
-            	insns.add(codeGen.taintNull(regTaintObject, regNullObject, regEmptyTaint, tfield_type));
+            	insns.add(codeGen.taintNull(regTaintObject, regNullObject, regEmptyTaint, ifield_type));
             	insns.add(codeGen.iput(regTaintObject, regThis, tfield.getFieldDef()));
             }
         }
@@ -894,6 +935,46 @@ public class TaintTransform extends Transform {
         return new DexMacro(insns);
     }
     
+    private void insertStaticFieldInit(DexClass clazz) {
+    	DexMethod clinitMethod = clazz.getMethod(getClinit(clazz));
+    	
+        DexSingleRegister regTaintObject = codeGen.auxReg();
+        DexSingleRegister regNullObject = codeGen.auxReg();
+        DexSingleRegister regEmptyTaint = codeGen.auxReg();
+
+    	List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
+
+    	insns.add(codeGen.setEmptyTaint(regEmptyTaint));
+        insns.add(codeGen.setZero(regNullObject));
+        
+        for (DexStaticField tfield : clazz.getStaticFields()) {
+            if (!isTaintField(tfield))
+                continue;
+            
+            StaticFieldDefinition sfield = null;
+            for (Entry<StaticFieldDefinition, DexStaticField> entry : taintStaticFields.entrySet()) {
+            	if (entry.getValue().equals(tfield)) {
+        			sfield = entry.getKey();
+        			break;
+            	}
+            }
+
+            TypeClassification sfield_type = hierarchy.classifyType(sfield.getFieldId().getType());
+            if (sfield_type == TypeClassification.PRIMITIVE)
+            	insns.add(codeGen.sput(regEmptyTaint, tfield.getFieldDef()));
+            else {
+            	insns.add(codeGen.taintNull(regTaintObject, regNullObject, regEmptyTaint, sfield_type));
+            	insns.add(codeGen.sput(regTaintObject, tfield.getFieldDef()));
+            }
+        }
+
+    	insns.addAll(clinitMethod.getMethodBody().getInstructionList());
+    	
+    	DexCode newBody = new DexCode(clinitMethod.getMethodBody(), new InstructionList(insns));
+    	DexMethod newMethod = new DexMethod(clinitMethod, newBody);
+    	clazz.replaceMethod(clinitMethod, newMethod);
+    }
+
     private void generateGetTaint(DexClass clazz) {
         DexTypeCache cache = hierarchy.getTypeCache();
         DexMethod implementationOf = dexAux.getMethod_InternalStructure_GetTaint();
@@ -1048,6 +1129,10 @@ public class TaintTransform extends Transform {
         return taintInstanceFields.containsValue(field);
     }
 
+    private boolean isTaintField(DexStaticField field) {
+        return taintStaticFields.containsValue(field);
+    }
+
     private DexInstanceField getTaintField(DexInstanceField field) {
 
         // Check if it has been already created
@@ -1130,7 +1215,7 @@ public class TaintTransform extends Transform {
         // Generate the new taint field
 
         DexFieldId taintFieldId = DexFieldId.parseFieldId(newName, codeGen.taintType(fieldDef.getFieldId().getType()), typeCache);
-        int fieldAccessFlags = DexUtils.assembleAccessFlags(removeFinalFlag(fieldDef.getAccessFlags()));
+        int fieldAccessFlags = DexUtils.assembleAccessFlags(addPublicFlag(removeFinalFlag(fieldDef.getAccessFlags())));
         StaticFieldDefinition taintFieldDef = new StaticFieldDefinition(classDef, taintFieldId, fieldAccessFlags);
         classDef.addDeclaredStaticField(taintFieldDef);
 
@@ -1152,6 +1237,14 @@ public class TaintTransform extends Transform {
     	return newFlags;
     }
     
+    private Collection<AccessFlags> addPublicFlag(Collection<AccessFlags> flags) {
+    	Set<AccessFlags> newFlags = new HashSet<AccessFlags>(flags);
+    	flags.add(AccessFlags.PUBLIC);
+    	flags.remove(AccessFlags.PROTECTED);
+    	flags.remove(AccessFlags.PRIVATE);
+    	return newFlags;
+    }
+
     private DexCodeElement wrapWithTryBlock(DexCodeElement inside, DexCodeElement taintCombination, DexSingleRegister regCombinedTaint) {
     	DexTryStart block = codeGen.tryBlock(codeGen.catchAll());
     	DexLabel lAfter = codeGen.label();
@@ -1235,4 +1328,16 @@ public class TaintTransform extends Transform {
     	return type.category == Category.Null;
     }
 
+    private DexMethodId getClinitId() {
+    	DexTypeCache cache = hierarchy.getTypeCache();
+
+    	return DexMethodId.parseMethodId(
+				"<clinit>",
+				DexPrototype.parse(cache.getCachedType_Void(), null, cache),
+				cache);    	
+    }
+    
+    private MethodDefinition getClinit(DexClass clazz) {
+        return clazz.getClassDef().getMethod(getClinitId());
+    }
 }
