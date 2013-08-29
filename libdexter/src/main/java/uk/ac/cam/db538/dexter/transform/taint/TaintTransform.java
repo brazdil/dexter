@@ -1127,7 +1127,8 @@ public class TaintTransform extends Transform {
     }
     
     private boolean isThisValue(DexInstruction_Invoke insnInvoke, DexCode code) {
-    	return isThisValue(insnInvoke.getArgumentRegisters().get(0), insnInvoke, code);
+    	return  !insnInvoke.getArgumentRegisters().isEmpty() &&
+    			isThisValue(insnInvoke.getArgumentRegisters().get(0), insnInvoke, code);
     }
     
     private boolean isThisValue(DexRegister firstInsnParam, DexCodeElement refPoint, DexCode code) {
