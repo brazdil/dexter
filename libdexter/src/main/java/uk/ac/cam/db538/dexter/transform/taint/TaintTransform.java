@@ -149,6 +149,9 @@ public class TaintTransform extends Transform {
         codeAnalysis = new DexCodeAnalyzer(code);
         codeAnalysis.analyze();
         
+        if (method.getParentClass().getClassDef().getType().getDescriptor().contains("LateConstruct"))
+        	System.out.println();
+        
     	uninitilizedThis = analyzeConstructor(code, method);
 
         code = InvokeClassifier.collapseCalls(code);
@@ -553,11 +556,11 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_Move(DexInstruction_Move insn) {
-        if (insn.getType() == RegisterType.REFERENCE)
+        if (insn.getType() == RegisterType.REFERENCE) {
             return new DexMacro(
                        codeGen.move_tobj((DexSingleRegister) insn.getRegTo(), (DexSingleRegister) insn.getRegFrom()),
                        insn);
-        else
+        } else
             return new DexMacro(
                        codeGen.combineTaint(insn.getRegTo(), insn.getRegFrom()),
                        insn);
@@ -1133,14 +1136,12 @@ public class TaintTransform extends Transform {
         // First check that the register is the same as this param of the method
     	assert !code.getParameters().isEmpty();
         DexRegister firstMethodParam = code.getParameters().get(0).getRegister();
-        if (firstMethodParam != firstInsnParam)
-            return false;
 
         // Then check that they are unified, i.e. reg inherits the value
         TypeSolver solverStart = codeAnalysis.getStartOfMethod().getDefinedRegisterSolver(firstMethodParam);
         TypeSolver solverRefPoint = codeAnalysis.reverseLookup(refPoint).getUsedRegisterSolver(firstInsnParam);
 
-        return solverStart.areUnified(solverRefPoint);
+        return solverStart.areEquivalent(solverRefPoint);
     }
 
     private boolean isTaintField(DexInstanceField field) {
@@ -1295,14 +1296,7 @@ public class TaintTransform extends Transform {
     	List<DexCodeElement> taintCombination = new ArrayList<DexCodeElement>();
     	taintCombination.add(codeGen.setEmptyTaint(auxCombinedTaint));
     	for (DexRegister regRef : originalInsn.lvaReferencedRegisters()) {
-    		
-    		/*
-    		 * Skip over the register if originalInsn is:
-    		 *  - inside a constructor
-    		 *  - before the call to the superclass constructor
-    		 *  - the register is the THIS argument
-    		 */
-    		if (uninitilizedThis != null && uninitilizedThis.contains(originalInsn) && isThisValue(regRef, originalInsn, code))
+    		if (uninitializedThis(originalInsn, regRef, code))
     			continue;
     		
     		RopType type = codeAnalysis.reverseLookup(originalInsn).getUsedRegisterSolver(regRef).getType();
@@ -1405,5 +1399,15 @@ public class TaintTransform extends Transform {
     	}
    	
     	return uninitialized;
+    }
+    
+    private boolean uninitializedThis(DexCodeElement insn, DexRegister reg, DexCode code) {
+		/*
+		 * Skip over the register if originalInsn is:
+		 *  - inside a constructor
+		 *  - before the call to the superclass constructor
+		 *  - the register is the THIS argument
+		 */
+		return uninitilizedThis != null && uninitilizedThis.contains(insn) && isThisValue(reg, insn, code);
     }
 }

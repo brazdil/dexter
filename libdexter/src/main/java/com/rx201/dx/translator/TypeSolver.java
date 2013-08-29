@@ -3,6 +3,7 @@ package com.rx201.dx.translator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
@@ -39,14 +40,32 @@ public class TypeSolver {
         info.definedSites.add(site);
     }
 
-    public boolean areUnified(TypeSolver other) {
-        return other.info == this.info;
+    private boolean areEquivalent(TypeSolver other, Set<TypeSolver> visited) {
+    	visited.add(other);
+    	
+        if (other.info == this.info)
+        	return true;
+        
+        for (Entry<TypeSolver, TypeSolver.CascadeType> dependence : other.info.depends.entrySet()) {
+        	if (dependence.getValue() != CascadeType.Equivalent)
+        		continue;
+        	else if (visited.contains(dependence.getKey()))
+        		continue;
+        	else if (areEquivalent(dependence.getKey()))
+        		return true;
+        }
+        
+        return false;
+    }
+    
+    public boolean areEquivalent(TypeSolver other) {
+        return areEquivalent(other, new HashSet<TypeSolver>());
     }
 
     public void unify(TypeSolver other) {
         assert this.info.constraints.isEmpty();
         assert other.info.constraints.isEmpty();
-        if (areUnified(other))
+        if (other.info == this.info)
             return;
         assert this.info.depends.isEmpty();
         assert other.info.depends.isEmpty();
