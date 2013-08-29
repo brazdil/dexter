@@ -157,41 +157,91 @@
         </TableRow>
 
         <TableRow
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:gravity="center_vertical">
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="center_vertical">
 
             <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/size_"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/size_"/>
 
             <HorizontalScrollView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    >
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                >
 
                 <EditText
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/textApkSize"
-                        android:layout_column="1"
-                        android:editable="false"
-                        android:inputType="none"
-                        android:textIsSelectable="true"
-                        android:singleLine="true"/>
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textApkSize"
+                    android:layout_column="1"
+                    android:editable="false"
+                    android:inputType="none"
+                    android:textIsSelectable="true"
+                    android:singleLine="true"/>
+            </HorizontalScrollView>
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/size_instrumented"/>
+
+            <HorizontalScrollView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                >
+
+                <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textInstrumentApkSize"
+                    android:layout_column="1"
+                    android:editable="false"
+                    android:inputType="none"
+                    android:textIsSelectable="true"
+                    android:singleLine="true"/>
             </HorizontalScrollView>
 
         </TableRow>
 
     </TableLayout>
 
-    <Button
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="16dp">
+
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/instrument"
             android:id="@+id/buttonInstrument"
             android:layout_gravity="right"/>
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/uninstall"
+            android:id="@+id/buttonUninstall"
+            android:layout_gravity="right"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/replace"
+            android:id="@+id/buttonReplace"
+            android:layout_gravity="right"/>
+    </LinearLayout>
 </LinearLayout>

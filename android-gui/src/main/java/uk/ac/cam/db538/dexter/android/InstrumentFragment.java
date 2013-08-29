@@ -1,11 +1,7 @@
 package uk.ac.cam.db538.dexter.android;
 
-import android.app.Activity;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +42,7 @@ public class InstrumentFragment extends PackageFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         packageInfo = extractArgsPackage();
+
     }
 
     @Override
@@ -86,6 +83,7 @@ public class InstrumentFragment extends PackageFragment {
     @Override
     public void onResume() {
         super.onResume();
+
         memoryTimer = new Timer();
         memoryTimer.schedule(new TimerTask() {
             @Override
@@ -142,9 +140,7 @@ public class InstrumentFragment extends PackageFragment {
                 final String packageName = packageInfo.getPackageName();
 
                 final File localFileTemp = new File(getActivity().getFilesDir(), "temp.apk");
-                final File localFileFinal = new File(
-                        getActivity().getDir("ready", Activity.MODE_PRIVATE),
-                        packageName +  ".apk");
+                final File localFileFinal = getInstrumentedFile(packageInfo);
                 final DexterApplication thisApp = (DexterApplication) getActivity().getApplication();
 
                 setStatus("Loading files...");
@@ -189,7 +185,7 @@ public class InstrumentFragment extends PackageFragment {
                 setStatus("Signing...");
                 setWaiting();
                 Apk.produceAPK(localFileTemp, localFileFinal, null, fileApp_New);
-
+                localFileFinal.setReadable(true, false);
 //                setStatus("Uninstalling...");
 //                setWaiting();
 //
