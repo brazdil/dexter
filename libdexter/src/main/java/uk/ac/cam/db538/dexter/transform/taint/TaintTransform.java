@@ -20,7 +20,6 @@ import org.jf.dexlib.Util.AccessFlags;
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBlock;
-import uk.ac.cam.db538.dexter.analysis.cfg.CfgStartBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.ControlFlowGraph;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
@@ -96,11 +95,9 @@ import uk.ac.cam.db538.dexter.transform.InvokeClassifier;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.TryBlockSplitter;
-import uk.ac.cam.db538.dexter.utils.Pair;
 import uk.ac.cam.db538.dexter.utils.Utils;
 import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
-import com.android.dx.rop.code.BasicBlock;
 import com.rx201.dx.translator.DexCodeAnalyzer;
 import com.rx201.dx.translator.RopType;
 import com.rx201.dx.translator.RopType.Category;
@@ -139,7 +136,6 @@ public class TaintTransform extends Transform {
         taintStaticFields = new HashMap<StaticFieldDefinition, DexStaticField>();
     }
 
-    private DexCode code;
     private DexCodeAnalyzer codeAnalysis;
     private Map<MethodCall, CallDestinationType> invokeClassification;
     private Set<DexCodeElement> noninstrumentableElements;
@@ -150,11 +146,10 @@ public class TaintTransform extends Transform {
 
         codeGen.resetAsmIds(); // purely for esthetic reasons (each method will start with a0)
 
-        this.code = code;
         codeAnalysis = new DexCodeAnalyzer(code);
         codeAnalysis.analyze();
         
-    	uninitilizedThis = analyzeConstructor(method);
+    	uninitilizedThis = analyzeConstructor(code, method);
 
         code = InvokeClassifier.collapseCalls(code);
         val classification = InvokeClassifier.classifyMethodCalls(code, codeAnalysis, codeGen);
@@ -229,25 +224,25 @@ public class TaintTransform extends Transform {
             return instrument_NewArray((DexInstruction_NewArray) element);
 
         if (element instanceof DexInstruction_CheckCast)
-            return instrument_CheckCast((DexInstruction_CheckCast) element);
+            return instrument_CheckCast((DexInstruction_CheckCast) element, code);
 
         if (element instanceof DexInstruction_InstanceOf)
             return instrument_InstanceOf((DexInstruction_InstanceOf) element);
 
         if (element instanceof DexInstruction_ArrayLength)
-            return instrument_ArrayLength((DexInstruction_ArrayLength) element);
+            return instrument_ArrayLength((DexInstruction_ArrayLength) element, code);
 
         if (element instanceof DexInstruction_ArrayPut)
-            return instrument_ArrayPut((DexInstruction_ArrayPut) element);
+            return instrument_ArrayPut((DexInstruction_ArrayPut) element, code);
 
         if (element instanceof DexInstruction_ArrayGet)
-            return instrument_ArrayGet((DexInstruction_ArrayGet) element);
+            return instrument_ArrayGet((DexInstruction_ArrayGet) element, code);
 
         if (element instanceof DexInstruction_InstancePut)
-            return instrument_InstancePut((DexInstruction_InstancePut) element);
+            return instrument_InstancePut((DexInstruction_InstancePut) element, code);
 
         if (element instanceof DexInstruction_InstanceGet)
-            return instrument_InstanceGet((DexInstruction_InstanceGet) element);
+            return instrument_InstanceGet((DexInstruction_InstanceGet) element, code);
 
         if (element instanceof DexInstruction_StaticPut)
             return instrument_StaticPut((DexInstruction_StaticPut) element);
@@ -259,13 +254,13 @@ public class TaintTransform extends Transform {
             return instrument_MoveException((DexInstruction_MoveException) element);
 
         if (element instanceof DexInstruction_FillArrayData)
-            return instrument_FillArrayData((DexInstruction_FillArrayData) element);
+            return instrument_FillArrayData((DexInstruction_FillArrayData) element, code);
 
         if (element instanceof DexInstruction_Monitor)
-            return instrument_Monitor((DexInstruction_Monitor) element);
+            return instrument_Monitor((DexInstruction_Monitor) element, code);
         
         if (element instanceof DexInstruction_Throw)
-            return instrument_Throw((DexInstruction_Throw) element);
+            return instrument_Throw((DexInstruction_Throw) element, code);
         
         // instructions that do not require instrumentation
         if (element instanceof DexInstruction_Goto ||
@@ -487,7 +482,7 @@ public class TaintTransform extends Transform {
             assert(!methodCall.hasResult());
             DexSingleRegister regThis = (DexSingleRegister) argRegisters.get(0);
 
-            if (isCallToSuperclassConstructor(insnInvoke, method))
+            if (isCallToSuperclassConstructor(insnInvoke, code, method))
                 // Handle calls to internal superclass constructor
                 macroHandleResult = new DexMacro(
                 		insertInstanceFieldInit(method.getParentClass(), regThis),
@@ -515,7 +510,7 @@ public class TaintTransform extends Transform {
     		codeGen.empty(),
     		regCombinedTaint);
         
-        if (isCallToSuperclassConstructor(insnInvoke, method)) {
+        if (isCallToSuperclassConstructor(insnInvoke, code, method)) {
 
             // Handle calls to external superclass constructor
 
@@ -654,14 +649,14 @@ public class TaintTransform extends Transform {
                        codeGen.taintCreate_ArrayReference(regTo, auxSize, auxSizeTaint));
     }
 
-    private DexCodeElement instrument_CheckCast(DexInstruction_CheckCast insn) {
+    private DexCodeElement instrument_CheckCast(DexInstruction_CheckCast insn, DexCode code) {
     	DexSingleRegister regObject = insn.getRegObject();
     	DexSingleRegister regObjectTaint = regObject.getTaintRegister();
     	DexSingleRegister regTaint = codeGen.auxReg();
     	DexLabel lNull = codeGen.label(), lAfter = codeGen.label();
     	
         return new DexMacro(
-        		   wrapWithTryBlock(insn),
+        		   wrapWithTryBlock(insn, code),
         		   codeGen.ifZero(regObject, lNull),
         		   
         		   // Non-NULL objects must have the correct taint assigned already, but maybe not cast
@@ -687,13 +682,13 @@ public class TaintTransform extends Transform {
                    insn);
     }
 
-    private DexCodeElement instrument_ArrayLength(DexInstruction_ArrayLength insn) {
+    private DexCodeElement instrument_ArrayLength(DexInstruction_ArrayLength insn, DexCode code) {
     	return new DexMacro(
-				   wrapWithTryBlock(insn),
+				   wrapWithTryBlock(insn, code),
                    codeGen.getTaint_Array_Length(insn.getRegTo().getTaintRegister(), insn.getRegArray().getTaintRegister()));
     }
 
-    private DexCodeElement instrument_ArrayPut(DexInstruction_ArrayPut insn) {
+    private DexCodeElement instrument_ArrayPut(DexInstruction_ArrayPut insn, DexCode code) {
     	/*
     	 * TODO: needs to include the taint of the index as well?
     	 */
@@ -702,21 +697,21 @@ public class TaintTransform extends Transform {
         DexTaintRegister regArrayTaint = insn.getRegArray().getTaintRegister();
 
         if (isNull(insn, insn.getRegArray()))
-        	return wrapWithTryBlock(insn); // leave uninstrumented
+        	return wrapWithTryBlock(insn, code); // leave uninstrumented
         
         else {
 	        if (insn.getOpcode() == Opcode_GetPut.Object)
 	            return new DexMacro(
-	            		   wrapWithTryBlock(insn),
+	            		   wrapWithTryBlock(insn, code),
 	                       codeGen.setTaint_ArrayReference(regFromTaint, regArrayTaint, insn.getRegIndex()));
 	        else
 	        	return new DexMacro(
-   	        			   wrapWithTryBlock(insn),
+   	        			   wrapWithTryBlock(insn, code),
 	                       codeGen.setTaint_ArrayPrimitive(regFromTaint, regArrayTaint, insn.getRegIndex()));
         }
     }
 
-    private DexCodeElement instrument_ArrayGet(DexInstruction_ArrayGet insn) {
+    private DexCodeElement instrument_ArrayGet(DexInstruction_ArrayGet insn, DexCode code) {
     	/*
     	 * TODO: needs to include the taint of the index as well?
     	 */
@@ -726,7 +721,7 @@ public class TaintTransform extends Transform {
 
         if (isNull(insn, insn.getRegArray()))
         	return new DexMacro(
-    			wrapWithTryBlock(insn), 
+    			wrapWithTryBlock(insn, code), 
     			codeGen.setZero(regToTaint)); // leave uninstrumented (always throws)
         
         else {
@@ -742,18 +737,18 @@ public class TaintTransform extends Transform {
 	        if (insn.getOpcode() == Opcode_GetPut.Object)
 	            return new DexMacro(
 	                       codeGen.move_prim(regIndexBackup, regIndex),
-	                       wrapWithTryBlock(insn),
+	                       wrapWithTryBlock(insn, code),
 	                       codeGen.getTaint_ArrayReference(regToTaint, regArrayTaint, regIndexBackup),
 	                       codeGen.cast(regToTaint, (DexReferenceType) codeGen.taintType(analysis_DefReg(insn, regTo))));
 	        else
 	            return new DexMacro(
 	                       codeGen.move_prim(regIndexBackup, regIndex),
-	                       wrapWithTryBlock(insn),
+	                       wrapWithTryBlock(insn, code),
 	                       codeGen.getTaint_ArrayPrimitive(regToTaint, regArrayTaint, regIndexBackup));
         }
     }
     
-    private DexCodeElement instrument_FillArrayData(DexInstruction_FillArrayData insn) {
+    private DexCodeElement instrument_FillArrayData(DexInstruction_FillArrayData insn, DexCode code) {
     	/*
     	 * Argument is an array of primitive type. Data are inserted into the 
     	 * array all at once, so if the array is too short, it will throw an
@@ -781,12 +776,13 @@ public class TaintTransform extends Transform {
 						 */
 						codeGen.invoke(hashcodeDef, insn.getRegArray()),
 						insn,
-						codeGen.invoke(hashcodeDef, insn.getRegArray()))),
+						codeGen.invoke(hashcodeDef, insn.getRegArray())),
+					code),
     			codeGen.setEmptyTaint(regEmptyTaint),
     			codeGen.setTaint_ArrayPrimitive(regEmptyTaint, insn.getRegArray(), 0, insn.getElementData().size()));
     }
 
-    private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput) {
+    private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput, DexCode code) {
         InstanceFieldDefinition fieldDef = insnIput.getFieldDef();
         ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
 
@@ -800,7 +796,7 @@ public class TaintTransform extends Transform {
         DexTaintRegister regFromTaint = regFrom.getTaintRegister();
         DexSingleRegister regObject = insnIput.getRegObject();
 
-        DexCodeElement instrumentedInsn = wrapWithTryBlock(insnIput);
+        DexCodeElement instrumentedInsn = wrapWithTryBlock(insnIput, code);
 
         if (classDef.isInternal()) {
 
@@ -828,7 +824,7 @@ public class TaintTransform extends Transform {
         }
     }
 
-    private DexCodeElement instrument_InstanceGet(DexInstruction_InstanceGet insnIget) {
+    private DexCodeElement instrument_InstanceGet(DexInstruction_InstanceGet insnIget, DexCode code) {
         InstanceFieldDefinition fieldDef = insnIget.getFieldDef();
         ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
 
@@ -845,7 +841,7 @@ public class TaintTransform extends Transform {
         
         DexCodeElement instrumentedInsn = new DexMacro(
         	codeGen.move_obj(regObjectBackup, regObject),
-    		wrapWithTryBlock(insnIget));
+    		wrapWithTryBlock(insnIget, code));
         
         if (classDef.isInternal()) {
 
@@ -904,18 +900,18 @@ public class TaintTransform extends Transform {
                    codeGen.taintLookup_NoExtraTaint(insn.getRegTo().getTaintRegister(), insn.getRegTo(), hierarchy.classifyType(analysis_DefReg(insn, insn.getRegTo()))));
     }
 
-    private DexCodeElement instrument_Monitor(DexInstruction_Monitor insn) {
-    	return wrapWithTryBlock(insn);
+    private DexCodeElement instrument_Monitor(DexInstruction_Monitor insn, DexCode code) {
+    	return wrapWithTryBlock(insn, code);
     }
     
-    private DexCodeElement instrument_Throw(DexInstruction_Throw insn) {
+    private DexCodeElement instrument_Throw(DexInstruction_Throw insn, DexCode code) {
     	DexSingleRegister regException = insn.getRegFrom();
     	DexLabel lNull = codeGen.label();
     	return new DexMacro(
     			codeGen.ifZero(regException, lNull),
     			codeGen.thrw(regException), // duplicate the original
     			lNull,
-    			wrapWithTryBlock(insn),
+    			wrapWithTryBlock(insn, code),
     			// meaningless instruction (should be removed as dead code)
     			// only needed to pass CFG analysis
     			codeGen.jump(lNull)); 
@@ -1116,11 +1112,10 @@ public class TaintTransform extends Transform {
 
     // UTILS
 
-    private boolean isCallToSuperclassConstructor(DexInstruction_Invoke insnInvoke, DexMethod method) {
-    	DexCode code = method.getMethodBody();
-    	
+    private boolean isCallToSuperclassConstructor(DexInstruction_Invoke insnInvoke, DexCode code, DexMethod method) {
         return
-            code.isConstructor() &&
+        	method.getMethodDef().isConstructor() &&
+        	!method.getMethodDef().isStatic() &&
             insnInvoke.getMethodId().isConstructor() &&
             insnInvoke.getClassType().equals(method.getParentClass().getClassDef().getSuperclass().getType()) &&
             isThisValue(insnInvoke, code);
@@ -1136,6 +1131,7 @@ public class TaintTransform extends Transform {
     		return false;
     	
         // First check that the register is the same as this param of the method
+    	assert !code.getParameters().isEmpty();
         DexRegister firstMethodParam = code.getParameters().get(0).getRegister();
         if (firstMethodParam != firstInsnParam)
             return false;
@@ -1287,11 +1283,11 @@ public class TaintTransform extends Transform {
     			lAfter);
     }
     
-    private DexCodeElement wrapWithTryBlock(DexCodeElement insn) {
-    	return wrapWithTryBlock(insn, insn);
+    private DexCodeElement wrapWithTryBlock(DexCodeElement insn, DexCode code) {
+    	return wrapWithTryBlock(insn, insn, code);
     }
     
-    private DexCodeElement wrapWithTryBlock(DexCodeElement originalInsn, DexCodeElement inside) {
+    private DexCodeElement wrapWithTryBlock(DexCodeElement originalInsn, DexCodeElement inside, DexCode code) {
     	
     	DexSingleRegister auxCombinedTaint = codeGen.auxReg();
     	DexSingleRegister auxObjTaint = codeGen.auxReg();
@@ -1306,7 +1302,7 @@ public class TaintTransform extends Transform {
     		 *  - before the call to the superclass constructor
     		 *  - the register is the THIS argument
     		 */
-    		if (code.isConstructor() && uninitilizedThis.contains(originalInsn) && isThisValue(regRef, originalInsn, code))
+    		if (uninitilizedThis != null && uninitilizedThis.contains(originalInsn) && isThisValue(regRef, originalInsn, code))
     			continue;
     		
     		RopType type = codeAnalysis.reverseLookup(originalInsn).getUsedRegisterSolver(regRef).getType();
@@ -1373,10 +1369,8 @@ public class TaintTransform extends Transform {
         return clazz.getClassDef().getMethod(getClinitId());
     }
     
-    private Set<DexCodeElement> analyzeConstructor(DexMethod method) {
-    	DexCode code = method.getMethodBody();
-    	
-    	if (!code.isConstructor())
+    private Set<DexCodeElement> analyzeConstructor(DexCode code, DexMethod method) {
+    	if (!method.getMethodDef().isConstructor() || method.getMethodDef().isStatic())
     		return null;
     	
     	ControlFlowGraph CFG = new ControlFlowGraph(code);
@@ -1397,7 +1391,7 @@ public class TaintTransform extends Transform {
    				
    				for (DexCodeElement elem : bblock.getInstructions()) {
    					if ((elem instanceof DexInstruction_Invoke) &&
-   					    isCallToSuperclassConstructor((DexInstruction_Invoke) elem, method))
+   					    isCallToSuperclassConstructor((DexInstruction_Invoke) elem, method.getMethodBody(), method))
    						thisInitialized = true;
    					else if (!thisInitialized)
    						uninitialized.add(elem);
