@@ -44,6 +44,9 @@
             android:name="uk.ac.cam.db538.dexter.android.UnitTestActivity"
             android:label="@string/title_activity_unit_test" >
         </activity>
+        <service
+            android:name="uk.ac.cam.db538.dexter.android.InstrumentService"
+            android:exported="false"/>
     </application>
 
 </manifest>
