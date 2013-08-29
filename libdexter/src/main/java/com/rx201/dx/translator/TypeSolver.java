@@ -51,7 +51,7 @@ public class TypeSolver {
         		continue;
         	else if (visited.contains(dependence.getKey()))
         		continue;
-        	else if (areEquivalent(dependence.getKey()))
+        	else if (areEquivalent(dependence.getKey(), visited))
         		return true;
         }
         
