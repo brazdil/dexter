@@ -428,16 +428,19 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_ConstString(DexInstruction_ConstString insn) {
+    	DexSingleRegister regEmptyTaint = codeGen.auxReg();
         return new DexMacro(
                    insn,
-                   codeGen.newEmptyExternalTaint(insn.getRegTo()));
+                   codeGen.setEmptyTaint(regEmptyTaint),
+                   codeGen.taintCreate_External(insn.getRegTo(), regEmptyTaint));
     }
 
     private DexCodeElement instrument_ConstClass(DexInstruction_ConstClass insn) {
-        // TODO: consider treating Class objects as immutable?
+    	DexSingleRegister regEmptyTaint = codeGen.auxReg();
         return new DexMacro(
                    insn,
-                   codeGen.newEmptyExternalTaint(insn.getRegTo()));
+                   codeGen.setEmptyTaint(regEmptyTaint),
+                   codeGen.taintCreate_External(insn.getRegTo(), regEmptyTaint));
     }
 
     private DexCodeElement instrument_MethodCall_Internal(MethodCall methodCall, DexCode code, DexMethod method) {

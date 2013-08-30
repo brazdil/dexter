@@ -952,13 +952,6 @@ public final class CodeGenerator {
         return new DexInstruction_Const(regTo, TaintConstants.TAINT_EMPTY, hierarchy);
     }
 
-    public DexCodeElement newEmptyExternalTaint(DexSingleRegister regObject) {
-        DexSingleRegister taint = regObject.getTaintRegister();
-        return new DexMacro(
-                   new DexInstruction_NewInstance(taint, dexAux.getType_TaintExternal().getClassDef(), hierarchy),
-                   new DexInstruction_Invoke(dexAux.getMethod_TaintExternal_Constructor(), Arrays.asList(taint), hierarchy));
-    }
-
     public DexCodeElement constant(DexSingleRegister reg, int value) {
         return new DexInstruction_Const(reg, value, hierarchy);
     }
