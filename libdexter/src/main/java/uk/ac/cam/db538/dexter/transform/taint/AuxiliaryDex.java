@@ -62,7 +62,6 @@ public class AuxiliaryDex extends Dex {
     @Getter private final DexArrayType arraytype_Taint;
 
     @Getter private final DexClass type_TaintExternal;
-    @Getter private final DexMethod method_TaintExternal_Constructor;
 
     @Getter private final DexClass type_TaintInternal;
     @Getter private final DexMethod method_TaintInternal_ClearVisited;
@@ -75,8 +74,11 @@ public class AuxiliaryDex extends Dex {
     @Getter private final DexClass type_TaintArrayReference;
     @Getter private final DexInstanceField field_TaintArrayReference_TArray;
 
-    @Getter private final DexMethod method_Assigner_NewExternal;
+    @Getter private final DexMethod method_Assigner_DefineExternal;
     @Getter private final DexMethod method_Assigner_DefineInternal;
+    @Getter private final DexMethod method_Assigner_NewExternal;
+    @Getter private final DexMethod method_Assigner_NewExternal_Null;
+    @Getter private final DexMethod method_Assigner_NewExternal_Undefined;
     @Getter private final DexMethod method_Assigner_NewInternal_Null;
     @Getter private final DexMethod method_Assigner_NewInternal_Undefined;
     @Getter private final DexMethod method_Assigner_NewArrayPrimitive;
@@ -117,7 +119,6 @@ public class AuxiliaryDex extends Dex {
         this.method_Taint_SetExternal = findInstanceMethodByName(type_Taint, "setExternal");
 
         this.type_TaintExternal = getDexClass(TaintExternal.class, hierarchy, renamer);
-        this.method_TaintExternal_Constructor = findInstanceMethodByName(type_TaintExternal, "<init>");
 
         this.type_TaintInternal = getDexClass(TaintInternal.class, hierarchy, renamer);
         this.method_TaintInternal_ClearVisited = findStaticMethodByName(type_TaintInternal, "clearVisited");
@@ -133,10 +134,13 @@ public class AuxiliaryDex extends Dex {
 
         // Assigner
         val clsAssigner = getDexClass(Assigner.class, hierarchy, renamer);
+        this.method_Assigner_DefineExternal = findStaticMethodByName(clsAssigner, "defineExternal");
+        this.method_Assigner_DefineInternal = findStaticMethodByName(clsAssigner, "defineInternal");
         this.method_Assigner_NewExternal = findStaticMethodByName(clsAssigner, "newExternal");
+        this.method_Assigner_NewExternal_Null = findStaticMethodByName(clsAssigner, "newExternal_NULL");
+        this.method_Assigner_NewExternal_Undefined = findStaticMethodByName(clsAssigner, "newExternal_Undefined");
         this.method_Assigner_NewInternal_Null = findStaticMethodByName(clsAssigner, "newInternal_NULL");
         this.method_Assigner_NewInternal_Undefined = findStaticMethodByName(clsAssigner, "newInternal_Undefined");
-        this.method_Assigner_DefineInternal = findStaticMethodByName(clsAssigner, "defineInternal");
         this.method_Assigner_NewArrayPrimitive = findStaticMethodByName(clsAssigner, "newArrayPrimitive");
         this.method_Assigner_NewArrayReference = findStaticMethodByName(clsAssigner, "newArrayReference");
         this.method_Assigner_LookupExternal = findStaticMethodByName(clsAssigner, "lookupExternal");

@@ -356,7 +356,7 @@ public class TaintTransform extends Transform {
     }
 
     private boolean canBeCalledFromExternalOrigin(MethodDefinition methodDef) {
-        return methodDef.isVirtual();
+        return methodDef.isVirtual() || methodDef.isConstructor();
     }
 
     private DexCode insertTaintInit(DexCode code, DexMethod method) {
@@ -442,13 +442,12 @@ public class TaintTransform extends Transform {
         List<DexRegister> argRegisters = insnInvoke.getArgumentRegisters();
 
         boolean isStatic = insnInvoke.isStaticCall();
-        boolean isConstructor = methodCall.getInvoke().getMethodId().isConstructor();
         
         // Need to store taints in the ThreadLocal ARGS array ?
 
         DexCodeElement macroSetParamTaints;
-        if ((!isStatic && !isConstructor) || prototype.hasArguments())
-            macroSetParamTaints = codeGen.setParamTaints(argRegisters, prototype, insnInvoke.getClassType(), isStatic, isConstructor);
+        if (!argRegisters.isEmpty())
+            macroSetParamTaints = codeGen.setParamTaints(argRegisters, prototype, insnInvoke.getClassType(), isStatic);
         else
             macroSetParamTaints = codeGen.empty();
         
@@ -483,7 +482,7 @@ public class TaintTransform extends Transform {
                 		codeGen.taintDefineInternal(regThis));
             else
                 // Handle call to a standard internal constructor
-                macroHandleResult = codeGen.taintLookup_NoExtraTaint(regThis.getTaintRegister(), regThis, hierarchy.classifyType(insnInvoke.getClassType()));
+                macroHandleResult = codeGen.empty(); // codeGen.taintLookup_NoExtraTaint(regThis.getTaintRegister(), regThis, hierarchy.classifyType(insnInvoke.getClassType()));
 
         } else
         	
@@ -613,9 +612,17 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_NewInstance(DexInstruction_NewInstance insn) {
-        // nothing happening here...
-        // taint initialization handled as the constructor returns
-        return insn;
+    	if (insn.getTypeDef().isInternal())
+    	    return new DexMacro(
+        		insn,
+        		codeGen.taintCreate_Internal_Undefined(insn.getRegTo().getTaintRegister()));
+    	else {
+    		DexSingleRegister auxType = codeGen.auxReg();
+    	    return new DexMacro(
+        		insn,
+        		codeGen.constant(auxType, insn.getTypeDef()),
+        		codeGen.taintCreate_External_Undefined(insn.getRegTo().getTaintRegister(), auxType));
+    	}
     }
 
     private DexCodeElement instrument_NewArray(DexInstruction_NewArray insn) {

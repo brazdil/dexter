@@ -43,3 +43,27 @@
     return-void
     
 .end method
+
+.method public test()V
+    .registers 3
+
+    # this does something similar as above, but with external classes
+    # and the NEW_INSTANCE instruction
+
+    # external case
+
+    new-instance v0, Ljava/lang/Object;
+    move-object v1, v0
+    invoke-direct {v1}, Ljava/lang/Object;-><init>()V
+    invoke-virtual {v0}, Ljava/lang/Object;->hashCode()I
+
+    # internal case
+    
+    new-instance v0, LMyClass_ObjectField;
+    move-object v1, v0
+    invoke-direct {v1}, LMyClass_ObjectField;-><init>()V
+    invoke-virtual {v0}, Ljava/lang/Object;->hashCode()I
+
+    return-void
+
+.end method

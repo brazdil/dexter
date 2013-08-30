@@ -221,7 +221,6 @@ public final class CodeGenerator {
         DexSingleAuxiliaryRegister auxIndex = auxReg();
 
         List<Parameter> args = code.getParameters();
-        boolean constructorThisArgument = code.isConstructor();
         List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
         
         if (internalOrigin) {
@@ -230,6 +229,8 @@ public final class CodeGenerator {
         }
         
         insns.add(setEmptyTaint(auxAddedTaint));
+        
+        boolean firstArgOfConstructor = code.isConstructor();
 
         int i = 0;
         for (Parameter arg : args) {
@@ -239,12 +240,12 @@ public final class CodeGenerator {
             
     		insns.add(constant(auxIndex, i++));
     		
-            if (constructorThisArgument) {
-                constructorThisArgument = false;
-                
-                insns.add(invoke_result_obj(argRegTaint, dexAux.getMethod_Assigner_NewInternal_Undefined()));
-                		
-            } else if (argType instanceof DexPrimitiveType) {
+    		if (firstArgOfConstructor && !internalOrigin) {
+    			firstArgOfConstructor = false;
+    			
+    			insns.add(taintCreate_Internal_Undefined(arg.getRegister().getTaintRegister()));
+    		
+    		} else if (argType instanceof DexPrimitiveType) {
 
             	if (internalOrigin)
             		insns.add(new DexInstruction_ArrayGet(argRegTaint, auxPrimitiveParamArray, auxIndex, Opcode_GetPut.IntFloat, hierarchy));
@@ -269,7 +270,7 @@ public final class CodeGenerator {
         return new DexMacro(insns);
     }
 
-    public DexMacro setParamTaints(List<DexRegister> argRegs, DexPrototype prototype, DexReferenceType calledClass, boolean isStatic, boolean isConstructor) {
+    public DexMacro setParamTaints(List<DexRegister> argRegs, DexPrototype prototype, DexReferenceType calledClass, boolean isStatic) {
         DexSingleAuxiliaryRegister auxPrimitiveParamArray = auxReg();
         DexSingleAuxiliaryRegister auxReferenceParamArray = auxReg();
         DexSingleAuxiliaryRegister auxIndex = auxReg();
@@ -280,7 +281,7 @@ public final class CodeGenerator {
         insns.add(getPrimitiveParamArray(auxPrimitiveParamArray));
         insns.add(getReferenceParamArray(auxReferenceParamArray));
         
-        for (int i = (isConstructor ? 1 : 0); i < argCount; i++) {
+        for (int i = 0; i < argCount; i++) {
         	insns.add(constant(auxIndex, i));
         	
         	DexRegister regArg = argRegs.get(i);
@@ -552,7 +553,7 @@ public final class CodeGenerator {
 
         if (isConstructor) {
             DexSingleRegister regObject = (DexSingleOriginalRegister) regArgs.get(0);
-            return taintCreate_External(regObject, regCombinedTaint);
+            return taintDefineExternal(regObject, regCombinedTaint);
         }
 
         if (!hasResult)
@@ -678,16 +679,32 @@ public final class CodeGenerator {
                    invoke_result_obj(regTo, method_Method_getAnnotation, regMethodObject, regAnnoClass));
     }
     
+    public DexCodeElement taintDefineExternal(DexSingleRegister regObject, DexSingleRegister regInitialTaint) {
+        return invoke(dexAux.getMethod_Assigner_DefineExternal(), regObject, regObject.getTaintRegister(), regInitialTaint);
+    }
+
+    public DexCodeElement taintDefineInternal(DexSingleRegister regObject) {
+        return invoke(dexAux.getMethod_Assigner_DefineInternal(), regObject, regObject.getTaintRegister());
+    }
+
+    public DexCodeElement taintCreate_External_Undefined(DexSingleRegister regTo, DexSingleRegister regType) {
+    	return invoke_result_obj(regTo, dexAux.getMethod_Assigner_NewExternal_Undefined(), regType);    	
+    }
+    
     public DexCodeElement taintCreate_External(DexSingleRegister regObject, DexSingleRegister regTaint) {
-        return taintCreate_External(regObject.getTaintRegister(), regObject, regTaint);
+    	return taintCreate_External(regObject.getTaintRegister(), regObject, regTaint);
     }
 
     public DexCodeElement taintCreate_External(DexSingleRegister regTo, DexSingleRegister regObject, DexSingleRegister regTaint) {
         return invoke_result_obj(regTo, dexAux.getMethod_Assigner_NewExternal(), regObject, regTaint);
     }
-
-    public DexCodeElement taintDefineInternal(DexSingleRegister regObject) {
-        return invoke(dexAux.getMethod_Assigner_DefineInternal(), regObject, regObject.getTaintRegister());
+    
+    public DexCodeElement taintCreate_External_Null(DexSingleRegister regTo, DexSingleRegister regTaint) {
+        return invoke_result_obj(regTo, dexAux.getMethod_Assigner_NewExternal_Null(), regTaint);
+    }
+    
+    public DexCodeElement taintCreate_Internal_Undefined(DexSingleRegister regTo) {
+    	return invoke_result_obj(regTo, dexAux.getMethod_Assigner_NewInternal_Undefined());    	
     }
 
     public DexCodeElement taintCreate_Internal_Null(DexSingleRegister regTo, DexSingleRegister regTaint) {
@@ -720,7 +737,7 @@ public final class CodeGenerator {
         switch (type) {
         case REF_UNDECIDABLE:
         case REF_EXTERNAL:
-        	return taintCreate_External(regTo, regNullObject, regNullTaint);
+        	return taintCreate_External_Null(regTo, regNullTaint);
         case REF_INTERNAL:
         	return taintCreate_Internal_Null(regTo, regNullTaint);
         case ARRAY_PRIMITIVE:
@@ -947,6 +964,10 @@ public final class CodeGenerator {
 
     public DexCodeElement constant(DexSingleRegister reg, int value) {
         return new DexInstruction_Const(reg, value, hierarchy);
+    }
+
+    public DexCodeElement constant(DexSingleRegister reg, BaseClassDefinition typeDef) {
+        return new DexInstruction_ConstClass(reg, typeDef, hierarchy);
     }
 
     public DexCodeElement ifZero(DexSingleRegister reg, DexLabel target) {

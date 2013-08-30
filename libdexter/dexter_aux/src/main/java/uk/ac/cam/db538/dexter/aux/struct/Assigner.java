@@ -16,29 +16,20 @@ public final class Assigner {
 			return tobj;
 		}
 	}
+	
+	public static final TaintExternal newExternal_NULL(int initialTaint) {
+		return new TaintImmutable(initialTaint);
+	}
 
-//	public static final TaintInternal newInternal(Object obj) {
-//		if (obj == null)
-//			RuntimeUtils.die("Cannot create internal taint for NULL");
-//
-//		Taint t_super = Cache.get(obj);
-//		if (t_super == null) {
-//			System.err.println("Internal object is not initialized");
-//			System.exit(1);
-//		}
-//		
-//		if (!(obj instanceof InternalDataStructure)) {
-//			System.err.println("Given object is not internal");
-//			System.exit(1);
-//		}
-//		
-//		TaintInternal tobj = new TaintInternal((InternalDataStructure) obj, t_super);
-//		Cache.set(obj, tobj);
-//		return tobj;
-//	}
-//
+	public static final TaintExternal newExternal_Undefined(Class<?> objClass) {
+		if (TaintConstants.isImmutableType(objClass))
+			return new TaintImmutable();
+		else 
+			return new TaintExternal();
+	}
+
 	public static final TaintInternal newInternal_NULL(int taint) {
-		Taint t_super = newExternal(null, taint);
+		Taint t_super = newExternal_NULL(taint);
 		return new TaintInternal(null, t_super);
 	}
 	
@@ -46,20 +37,21 @@ public final class Assigner {
 		return new TaintInternal(null, null);
 	}
 	
+	public static final void defineExternal(Object obj, TaintExternal tobj, int taint) {
+		tobj.define(taint);
+		Cache.insert(obj, tobj);
+	}
+	
 	public static final void defineInternal(Object obj, TaintInternal tobj) {
 		if (obj == null)
 			RuntimeUtils.die("Cannot create internal taint for NULL");
 
 		Taint t_super = Cache.get(obj);
-		if (t_super == null) {
-			System.err.println("Internal object is not initialized");
-			System.exit(1);
-		}
+		if (t_super == null)
+			RuntimeUtils.die("Internal object is not initialized");
 		
-		if (!(obj instanceof InternalDataStructure)) {
-			System.err.println("Given object is not internal");
-			System.exit(1);
-		}
+		if (!(obj instanceof InternalDataStructure))
+			RuntimeUtils.die("Given object is not internal");
 		
 		tobj.define((InternalDataStructure) obj, t_super);
 		Cache.set(obj, tobj);

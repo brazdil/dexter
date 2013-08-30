@@ -2,6 +2,10 @@ package uk.ac.cam.db538.dexter.aux.struct;
 
 public class TaintImmutable extends TaintExternal {
 
+	public TaintImmutable() {
+		super();
+	}
+	
 	public TaintImmutable(int taint) {
 		super(taint);
 	}

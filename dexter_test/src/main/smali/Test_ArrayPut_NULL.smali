@@ -30,11 +30,11 @@
 .method public execute(Ljava/lang/Object;)V
     .registers 3
 
-    check-cast p1, [Ljava/lang/Object;
-
-    const/4 v0, 0x0
-    const/4 v1, 0x0
-    aput-object v0, p1, v1
+#    check-cast p1, [Ljava/lang/Object;
+#
+#    const/4 v0, 0x0
+#    const/4 v1, 0x0
+#    aput-object v0, p1, v1
 
     return-void
     

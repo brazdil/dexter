@@ -29,4 +29,8 @@ public class TaintExternal implements Taint {
 	public void setExternal(int taint) {
 		this.taint |= taint;
 	}
+	
+	void define(int taint) {
+		this.taint |= taint;
+	}
 }
