@@ -1,9 +1,14 @@
 package uk.ac.cam.db538.dexter.android;
 
 import android.app.IntentService;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 
@@ -32,9 +37,42 @@ public class InstrumentService extends IntentService {
     public static final String EXTRA_STATUS = "status";
     public static final String EXTRA_PROGRESS = "progress";
     public static final String EXTRA_FINISHED = "finished";
+    private NotificationManager mNotifyManager;
+    private NotificationCompat.Builder mBuilder;
+    private Intent progressIntent;
+    private Package packageInfo;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        progressIntent = new Intent(PROGRESS_ACTION);
+        mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mBuilder = new NotificationCompat.Builder(this);
+    }
+
+    private void initialiseNotification() {
+        Intent notificationIntent = new Intent(this, InstrumentActivity.class);
+        PackageFragment.createPackageArgs(notificationIntent, packageInfo);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+                notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mBuilder.setContentTitle("Instrumenting " + packageInfo.getApplicationName())
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentIntent(contentIntent)
+                .setAutoCancel(false)
+                .setOngoing(true);
+
+        updateNotification(mBuilder);
+    }
 
     public InstrumentService() {
         super("InstrumentService");
+    }
+
+    private void updateNotification(NotificationCompat.Builder builder) {
+        mNotifyManager.notify(0, builder.build());
     }
 
     @Override
@@ -42,12 +80,17 @@ public class InstrumentService extends IntentService {
 
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         try {
+            packageInfo = new Package(getPackageManager(),
+                    (PackageInfo) intent.getParcelableExtra("PackageInfo"));
 
-            final File packageFile = new File(intent.getStringExtra("PackageFile"));
+            final File packageFile = packageInfo.getPackageFile();
             final File localFileTemp = new File(intent.getStringExtra("LocalFileTemp"));
             final File localFileFinal = new File(intent.getStringExtra("LocalFileFinal"));
 
             final DexterApplication thisApp = (DexterApplication) getApplication();
+
+            initialiseNotification();
+            progressIntent.putExtra(EXTRA_FINISHED, false);
 
             broadcastStatus("Loading files...");
             setWaiting();
@@ -108,21 +151,36 @@ public class InstrumentService extends IntentService {
     }
 
     private void broadcastProgress(int progress) {
-        Intent localIntent = new Intent(PROGRESS_ACTION)
-                .putExtra(EXTRA_PROGRESS, progress);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
+        progressIntent.putExtra(EXTRA_PROGRESS, progress);
+        sendBroadcast(progressIntent);
+
+        if (progress == -1)
+            updateNotification(mBuilder.setProgress(0, 0, true));
+        else
+            updateNotification(mBuilder.setProgress(100, progress, false));
     }
 
     private void broadcastStatus(String status) {
-        Intent localIntent = new Intent(PROGRESS_ACTION)
-                .putExtra(EXTRA_STATUS, status);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
+        progressIntent.putExtra(EXTRA_STATUS, status);
+        sendBroadcast(progressIntent);
+
+        updateNotification(mBuilder.setContentText(status));
     }
 
     private void broadcastFinished() {
-        Intent localIntent = new Intent(PROGRESS_ACTION)
-                .putExtra(EXTRA_FINISHED, true);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
+        progressIntent.putExtra(EXTRA_FINISHED, true);
+        sendBroadcast(progressIntent);
+
+        Intent detailIntent = new Intent(this, PackageDetailActivity.class);
+        PackageFragment.createPackageArgs(detailIntent, packageInfo);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+                detailIntent,
+                PendingIntent.FLAG_CANCEL_CURRENT);
+        updateNotification(mBuilder.setProgress(0, 0, false)
+                    .setContentText("Done.")
+                    .setContentIntent(contentIntent)
+                    .setAutoCancel(true)
+                    .setOngoing(false));
     }
 
     private void setWaiting() {

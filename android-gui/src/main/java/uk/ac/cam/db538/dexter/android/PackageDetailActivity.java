@@ -45,6 +45,17 @@ public class PackageDetailActivity extends FragmentActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        PackageDetailFragment fragment = new PackageDetailFragment();
+        fragment.setArgumentsFromIntent(getIntent());
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.package_detail_container, fragment)
+                .commit();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:

@@ -110,7 +110,7 @@ public class InstrumentFragment extends PackageFragment {
         super.onResume();
 
         IntentFilter progressIntentFilter = new IntentFilter(InstrumentService.PROGRESS_ACTION);
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(progressReceiver, progressIntentFilter);
+        getActivity().registerReceiver(progressReceiver, progressIntentFilter);
 
         memoryTimer = new Timer();
         memoryTimer.schedule(new TimerTask() {
@@ -136,7 +136,7 @@ public class InstrumentFragment extends PackageFragment {
         synchronized (this) {
             if (!running) {
                 Intent intent = new Intent(getActivity(), InstrumentService.class);
-                intent.putExtra("PackageFile", packageInfo.getPackageFile().getAbsolutePath());
+                intent.putExtra("PackageInfo", packageInfo.getPackageInfo());
                 intent.putExtra("LocalFileTemp", new File(getActivity().getFilesDir(), "temp.apk").getAbsolutePath());
                 intent.putExtra("LocalFileFinal", getInstrumentedFile(packageInfo).getAbsolutePath());
                 getActivity().startService(intent);
@@ -150,7 +150,7 @@ public class InstrumentFragment extends PackageFragment {
     public void onPause() {
         super.onPause();
         memoryTimer.cancel();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(progressReceiver);
+        getActivity().unregisterReceiver(progressReceiver);
     }
 
     private Timer memoryTimer;

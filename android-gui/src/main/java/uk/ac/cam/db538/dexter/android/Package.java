@@ -43,4 +43,8 @@ public class Package {
         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
         return df.format(new Date(pkg.lastUpdateTime));
     }
+
+    public PackageInfo getPackageInfo() {
+        return pkg;
+    }
 }
