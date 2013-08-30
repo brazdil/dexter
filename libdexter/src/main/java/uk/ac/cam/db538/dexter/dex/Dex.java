@@ -1,9 +1,10 @@
 package uk.ac.cam.db538.dexter.dex;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Comparator;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.val;
@@ -18,14 +19,13 @@ import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class Dex {
 
     @Getter final RuntimeHierarchy hierarchy;
     @Getter final AuxiliaryDex auxiliaryDex;
-
-    private final Set<DexClass> _classes;
-    @Getter private final Set<DexClass> classes;
+    @Getter private List<DexClass> classes;
 
     private final ProgressCallback progressCallback;
 
@@ -39,9 +39,7 @@ public class Dex {
         this.hierarchy = hierarchy;
         this.auxiliaryDex = dexAux;
         this.progressCallback = progressCallback;
-
-        this._classes = new HashSet<DexClass>();
-        this.classes = Collections.unmodifiableSet(this._classes);
+        this.classes = Collections.emptyList();
     }
 
     /*
@@ -54,10 +52,25 @@ public class Dex {
         int clsCount = dexClsInfos.size();
         int i = 0;
         progressUpdate(0, clsCount);
+        List<DexClass> classes = new ArrayList<DexClass>(clsCount);
         for (val dexClsInfo : dexClsInfos) {
-            this._classes.add(new DexClass(this, dexClsInfo));
+            classes.add(new DexClass(this, dexClsInfo));
             progressUpdate(++i, clsCount);
         }
+        
+        sortClassesByName(classes);
+        this.classes = Utils.finalList(classes);
+    }
+    
+    private static void sortClassesByName(List<DexClass> classes) {
+        Collections.sort(classes, new Comparator<DexClass>() {
+			@Override
+			public int compare(DexClass o1, DexClass o2) {
+				String d1 = o1.getClassDef().getType().getDescriptor();
+				String d2 = o2.getClassDef().getType().getDescriptor();
+				return d1.compareTo(d2);
+			}
+		});
     }
 
     public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux) {
@@ -101,60 +114,15 @@ public class Dex {
         return null;
     }
 
-//  private List<DexClass> generateExtraClasses() {
-//    val parsingCache = getTypeCache();
-//
-//    externalStaticFieldTaint_Class = new DexClass(
-//      this,
-//      generateClassType(),
-//      DexClassType.parse("Ljava/lang/Object;", parsingCache),
-//      EnumSet.of(AccessFlags.PUBLIC),
-//      null,
-//      null,
-//      null,
-//      null);
-//
-//    val clinitCode = new DexCode();
-//    clinitCode.add(new DexInstruction_ReturnVoid(clinitCode));
-//
-//    externalStaticFieldTaint_Clinit = new DexDirectMethod(
-//      externalStaticFieldTaint_Class,
-//      "<clinit>",
-//      EnumSet.of(AccessFlags.STATIC, AccessFlags.CONSTRUCTOR),
-//      new DexPrototype(DexVoid.parse("V", parsingCache), null),
-//      clinitCode,
-//      null, null);
-//    externalStaticFieldTaint_Class.addMethod(externalStaticFieldTaint_Clinit);
-//
-//    return Arrays.asList(new DexClass[] { externalStaticFieldTaint_Class });
-//  }
-
-    public void instrument(boolean debug) {
-//    val cache = new DexInstrumentationCache(this, debug);
-//
-//    val extraClassesLinked = parseExtraClasses();
-//    val extraClassesGenerated = generateExtraClasses();
-//
-//    for (val cls : classes)
-//      cls.instrument(cache);
-//
-//    classes.addAll(extraClassesLinked);
-//    classes.addAll(extraClassesGenerated);
-//
-//    return cache.getWarnings();
-    }
-
     public byte[] writeToFile() {
         val outFile = new DexFile();
         val out = new ByteArrayAnnotatedOutput();
 
-        val thisClasses = getClasses();
-
         int i = 0;
-        int count = thisClasses.size();
+        int count = classes.size();
         progressUpdate(0, count);
         val asmCache = new DexAssemblingCache(outFile, hierarchy);
-        for (val cls : thisClasses) {
+        for (val cls : classes) {
             cls.writeToFile(outFile, asmCache);
             progressUpdate(++i, count);
         }
@@ -185,6 +153,10 @@ public class Dex {
     }
 
     public void addClasses(Collection<DexClass> cls) {
-        _classes.addAll(cls);
+    	List<DexClass> newClasses = new ArrayList<DexClass>(this.classes.size() + cls.size());
+        newClasses.addAll(this.classes);
+        newClasses.addAll(cls);
+        sortClassesByName(newClasses);
+        this.classes = Utils.finalList(newClasses);
     }
 }
