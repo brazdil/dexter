@@ -40,26 +40,31 @@ public class TypeSolver {
         info.definedSites.add(site);
     }
 
-    private boolean areEquivalent(TypeSolver other, Set<TypeSolver> visited) {
-    	visited.add(other);
-    	
-        if (other.info == this.info)
-        	return true;
-        
-        for (Entry<TypeSolver, TypeSolver.CascadeType> dependence : other.info.depends.entrySet()) {
+    private void fillEquivalenceClass(Set<TypeSolver> visited) {
+    	visited.add(this);
+    	        
+        for (Entry<TypeSolver, TypeSolver.CascadeType> dependence : this.info.depends.entrySet()) {
         	if (dependence.getValue() != CascadeType.Equivalent)
         		continue;
         	else if (visited.contains(dependence.getKey()))
         		continue;
-        	else if (areEquivalent(dependence.getKey(), visited))
-        		return true;
+        	else 
+        		dependence.getKey().fillEquivalenceClass(visited);
         }
-        
-        return false;
+    }
+    
+    private Set<TypeSolver> getEquivalenceClass() {
+    	Set<TypeSolver> result = new HashSet<TypeSolver>(); 
+    	this.fillEquivalenceClass(result);
+    	return result;
     }
     
     public boolean areEquivalent(TypeSolver other) {
-        return areEquivalent(other, new HashSet<TypeSolver>());
+    	for (TypeSolver equivalent : other.getEquivalenceClass())
+    		if (equivalent.info == this.info)
+    			return true;
+    	
+        return false;
     }
 
     public void unify(TypeSolver other) {

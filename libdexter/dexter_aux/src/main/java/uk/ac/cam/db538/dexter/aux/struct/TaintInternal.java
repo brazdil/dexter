@@ -6,10 +6,19 @@ import uk.ac.cam.db538.dexter.aux.TaintConstants;
 
 public class TaintInternal implements Taint {
 
-	private final InternalDataStructure obj;
-	private final TaintExternal t_super; 
+	private InternalDataStructure obj;
+	private TaintExternal t_super; 
 	
 	public TaintInternal(InternalDataStructure obj, Taint t_super) {
+		define(obj, t_super);
+	}
+	
+	void define(InternalDataStructure obj, Taint t_super) {
+		assert this.obj == null;
+		assert this.t_super == null;
+		assert obj != null;
+		assert t_super != null;
+		
 		this.obj = obj;
 		
 		if (t_super instanceof TaintInternal)
@@ -25,14 +34,19 @@ public class TaintInternal implements Taint {
 		else
 			visited.add(this);
 
-		if (this.obj == null)
-			return this.t_super.get();
-		else
-			return this.obj.getTaint() | this.t_super.get();
+		int result = TaintConstants.TAINT_EMPTY;
+		if (this.obj != null)
+			result |= this.obj.getTaint();
+		if (this.t_super != null)
+			result |= this.t_super.get();
+		return result;
 	}
 	
 	public int getExternal() {
-		return this.t_super.get();
+		if (this.t_super != null)
+			return this.t_super.get();
+		else
+			return TaintConstants.TAINT_EMPTY;
 	}
 
 	public void set(int taint) {
@@ -42,12 +56,14 @@ public class TaintInternal implements Taint {
 			
 			if (this.obj != null)
 				this.obj.setTaint(taint);
-			this.t_super.set(taint);
+			if (this.t_super != null)
+				this.t_super.set(taint);
 		}
 	}
 	
 	public void setExternal(int taint) {
-		this.t_super.set(taint);
+		if (this.t_super != null)
+			this.t_super.set(taint);
 	}
 
 	// THREAD-LOCAL SET OF VISITED NODES

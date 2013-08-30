@@ -221,7 +221,7 @@ public final class CodeGenerator {
         DexSingleAuxiliaryRegister auxIndex = auxReg();
 
         List<Parameter> args = code.getParameters();
-        boolean skipThisForConstructor = code.isConstructor();
+        boolean constructorThisArgument = code.isConstructor();
         List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
         
         if (internalOrigin) {
@@ -231,21 +231,20 @@ public final class CodeGenerator {
         
         insns.add(setEmptyTaint(auxAddedTaint));
 
-        int i = -1;
+        int i = 0;
         for (Parameter arg : args) {
-        	i++;
         	
-            if (skipThisForConstructor) {
-                skipThisForConstructor = false;
-                continue;
-            }
-            
-    		insns.add(constant(auxIndex, i));
-    		
             DexSingleRegister argRegTaint = arg.getRegister().getTaintRegister();
             DexRegisterType argType = arg.getType();
             
-            if (argType instanceof DexPrimitiveType) {
+    		insns.add(constant(auxIndex, i++));
+    		
+            if (constructorThisArgument) {
+                constructorThisArgument = false;
+                
+                insns.add(invoke_result_obj(argRegTaint, dexAux.getMethod_Assigner_NewInternal_Undefined()));
+                		
+            } else if (argType instanceof DexPrimitiveType) {
 
             	if (internalOrigin)
             		insns.add(new DexInstruction_ArrayGet(argRegTaint, auxPrimitiveParamArray, auxIndex, Opcode_GetPut.IntFloat, hierarchy));
@@ -687,14 +686,8 @@ public final class CodeGenerator {
         return invoke_result_obj(regTo, dexAux.getMethod_Assigner_NewExternal(), regObject, regTaint);
     }
 
-    public DexCodeElement taintCreate_Internal(DexSingleRegister regObject) {
-    	return taintCreate_Internal(regObject.getTaintRegister(), regObject);
-    }
-    
-    public DexCodeElement taintCreate_Internal(DexSingleRegister regTo, DexSingleRegister regObject) {
-        return new DexMacro(
-                   new DexInstruction_Invoke(dexAux.getMethod_Assigner_NewInternal(), Arrays.asList(regObject), hierarchy),
-                   new DexInstruction_MoveResult(regTo, true, hierarchy));
+    public DexCodeElement taintDefineInternal(DexSingleRegister regObject) {
+        return invoke(dexAux.getMethod_Assigner_DefineInternal(), regObject, regObject.getTaintRegister());
     }
 
     public DexCodeElement taintCreate_Internal_Null(DexSingleRegister regTo, DexSingleRegister regTaint) {

@@ -17,7 +17,36 @@ public final class Assigner {
 		}
 	}
 
-	public static final TaintInternal newInternal(Object obj) {
+//	public static final TaintInternal newInternal(Object obj) {
+//		if (obj == null)
+//			RuntimeUtils.die("Cannot create internal taint for NULL");
+//
+//		Taint t_super = Cache.get(obj);
+//		if (t_super == null) {
+//			System.err.println("Internal object is not initialized");
+//			System.exit(1);
+//		}
+//		
+//		if (!(obj instanceof InternalDataStructure)) {
+//			System.err.println("Given object is not internal");
+//			System.exit(1);
+//		}
+//		
+//		TaintInternal tobj = new TaintInternal((InternalDataStructure) obj, t_super);
+//		Cache.set(obj, tobj);
+//		return tobj;
+//	}
+//
+	public static final TaintInternal newInternal_NULL(int taint) {
+		Taint t_super = newExternal(null, taint);
+		return new TaintInternal(null, t_super);
+	}
+	
+	public static final TaintInternal newInternal_Undefined() {
+		return new TaintInternal(null, null);
+	}
+	
+	public static final void defineInternal(Object obj, TaintInternal tobj) {
 		if (obj == null)
 			RuntimeUtils.die("Cannot create internal taint for NULL");
 
@@ -32,14 +61,8 @@ public final class Assigner {
 			System.exit(1);
 		}
 		
-		TaintInternal tobj = new TaintInternal((InternalDataStructure) obj, t_super);
+		tobj.define((InternalDataStructure) obj, t_super);
 		Cache.set(obj, tobj);
-		return tobj;
-	}
-
-	public static final TaintInternal newInternal_NULL(int taint) {
-		Taint t_super = newExternal(null, taint);
-		return new TaintInternal(null, t_super);
 	}
 	
 	public static final TaintArrayPrimitive newArrayPrimitive(Object obj, int length, int lengthTaint) {

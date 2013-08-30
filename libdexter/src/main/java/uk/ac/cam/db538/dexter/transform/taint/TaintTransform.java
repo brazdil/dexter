@@ -5,11 +5,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
 
 import lombok.val;
@@ -18,9 +16,6 @@ import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.ProgressCallback;
-import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
-import uk.ac.cam.db538.dexter.analysis.cfg.CfgBlock;
-import uk.ac.cam.db538.dexter.analysis.cfg.ControlFlowGraph;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -120,8 +115,6 @@ public class TaintTransform extends Transform {
     private Map<DexInstanceField, DexInstanceField> taintInstanceFields;
     private Map<StaticFieldDefinition, DexStaticField> taintStaticFields;
     
-    private Set<DexCodeElement> uninitilizedThis;
-
     @Override
     public void doFirst(Dex dex) {
         super.doFirst(dex);
@@ -149,8 +142,6 @@ public class TaintTransform extends Transform {
         codeAnalysis = new DexCodeAnalyzer(code);
         codeAnalysis.analyze();
         
-    	uninitilizedThis = analyzeConstructor(code, method);
-
         code = InvokeClassifier.collapseCalls(code);
         val classification = InvokeClassifier.classifyMethodCalls(code, codeAnalysis, codeGen);
         
@@ -370,7 +361,7 @@ public class TaintTransform extends Transform {
 
     private DexCode insertTaintInit(DexCode code, DexMethod method) {
         // If there are no parameters, no point in initializing them
-        if (code.getParameters().size() <= (code.isConstructor() ? 1 : 0))
+        if (code.getParameters().isEmpty())
             return code;
 
         DexSingleRegister regAnnotation = codeGen.auxReg();
@@ -489,7 +480,7 @@ public class TaintTransform extends Transform {
                 // Handle calls to internal superclass constructor
                 macroHandleResult = new DexMacro(
                 		insertInstanceFieldInit(method.getParentClass(), regThis),
-                		codeGen.taintCreate_Internal(regThis));
+                		codeGen.taintDefineInternal(regThis));
             else
                 // Handle call to a standard internal constructor
                 macroHandleResult = codeGen.taintLookup_NoExtraTaint(regThis.getTaintRegister(), regThis, hierarchy.classifyType(insnInvoke.getClassType()));
@@ -518,7 +509,7 @@ public class TaintTransform extends Transform {
             // Handle calls to external superclass constructor
 
             assert(!methodCall.hasResult());
-            DexSingleRegister regThis = (DexSingleRegister) code.getParameters().get(0).getRegister();
+            DexSingleRegister regThis = (DexSingleRegister) insnInvoke.getArgumentRegisters().get(0);
 
             return new DexMacro(
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
@@ -528,8 +519,8 @@ public class TaintTransform extends Transform {
                        // Need to generate new TaintInternal object with it
 
                        insertInstanceFieldInit(method.getParentClass(), regThis),
-                       codeGen.taintCreate_External(regThis, regCombinedTaint),
-                       codeGen.taintCreate_Internal(regThis));
+                       codeGen.taintCreate_External(null, regThis, regCombinedTaint),
+                       codeGen.taintDefineInternal(regThis));
 
         } else {
 
@@ -556,17 +547,12 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_Move(DexInstruction_Move insn, DexCode code) {
-        if (insn.getType() == RegisterType.REFERENCE) {
-        	
-        	if (uninitializedThis(insn, insn.getRegFrom(), code))
-        		return insn;
-        	
-        	else
-        		return new DexMacro(
+        if (insn.getType() == RegisterType.REFERENCE)
+    		return new DexMacro(
                        codeGen.move_tobj((DexSingleRegister) insn.getRegTo(), (DexSingleRegister) insn.getRegFrom()),
                        insn);
         	
-        } else
+        else
             return new DexMacro(
                        codeGen.combineTaint(insn.getRegTo(), insn.getRegFrom()),
                        insn);
@@ -1302,9 +1288,6 @@ public class TaintTransform extends Transform {
     	List<DexCodeElement> taintCombination = new ArrayList<DexCodeElement>();
     	taintCombination.add(codeGen.setEmptyTaint(auxCombinedTaint));
     	for (DexRegister regRef : originalInsn.lvaReferencedRegisters()) {
-    		if (uninitializedThis(originalInsn, regRef, code))
-    			continue;
-    		
     		RopType type = codeAnalysis.reverseLookup(originalInsn).getUsedRegisterSolver(regRef).getType();
     		switch(type.category) {
     		case Boolean:
@@ -1367,53 +1350,5 @@ public class TaintTransform extends Transform {
     
     private MethodDefinition getClinit(DexClass clazz) {
         return clazz.getClassDef().getMethod(getClinitId());
-    }
-    
-    private Set<DexCodeElement> analyzeConstructor(DexCode code, DexMethod method) {
-    	if (!method.getMethodDef().isConstructor() || method.getMethodDef().isStatic())
-    		return null;
-    	
-    	ControlFlowGraph CFG = new ControlFlowGraph(code);
-    	Set<DexCodeElement> uninitialized = new HashSet<DexCodeElement>();
-    	Set<CfgBlock> visited = new HashSet<CfgBlock>();
-    	
-    	Queue<CfgBlock> queue = new LinkedList<CfgBlock>();
-    	queue.add(CFG.getStartBlock());
-    	
-    	while (!queue.isEmpty()) {
-    		CfgBlock block = queue.poll();
-   			visited.add(block);
-    		    		
-			boolean thisInitialized = false;
-			
-   			if (block instanceof CfgBasicBlock) {
-   				CfgBasicBlock bblock = (CfgBasicBlock) block;
-   				
-   				for (DexCodeElement elem : bblock.getInstructions()) {
-   					if ((elem instanceof DexInstruction_Invoke) &&
-   					    isCallToSuperclassConstructor((DexInstruction_Invoke) elem, method.getMethodBody(), method))
-   						thisInitialized = true;
-   					else if (!thisInitialized)
-   						uninitialized.add(elem);
-   				}
-   			}
-   			
-   			if (!thisInitialized)
-   				for (CfgBlock succ : block.getSuccessors())
-   					if (!visited.contains(succ))
-   						queue.add(succ);
-    	}
-   	
-    	return uninitialized;
-    }
-    
-    private boolean uninitializedThis(DexCodeElement insn, DexRegister reg, DexCode code) {
-		/*
-		 * Skip over the register if originalInsn is:
-		 *  - inside a constructor
-		 *  - before the call to the superclass constructor
-		 *  - the register is the THIS argument
-		 */
-		return uninitilizedThis != null && uninitilizedThis.contains(insn) && isThisValue(reg, insn, code);
     }
 }

@@ -23,3 +23,23 @@
     return-void
     
 .end method
+
+.method public constructor <init>(I)V
+    .registers 5
+
+    # this constructor moves the THIS reference to a different register
+    # and calls the superclass instructor on the copy;
+    # need to initialize both afterwards...
+
+    move-object v0, p0
+    invoke-direct {v0}, Ljava/lang/Object;-><init>()V
+
+    const/4 v2, 2
+    iput v2, v0, LMyClass_LateConstruct;->X:I
+
+    const/4 v1, 2
+    iput v1, p0, LMyClass_LateConstruct;->X:I
+
+    return-void
+    
+.end method
