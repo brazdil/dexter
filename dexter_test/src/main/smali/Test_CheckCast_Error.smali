@@ -22,7 +22,7 @@
 .method public getDescription()Ljava/lang/String;
     .registers 2
 
-    const-string v0, "x = (Integer) (\"bla bla\")"
+    const-string v0, "x = (Integer) (new ArrayList())"
     return-object v0
     
 .end method
@@ -47,7 +47,8 @@
 .method public arg()Ljava/lang/Object;
     .registers 1
 
-    const-string v0, "tasty test..."
+    new-instance v0, Ljava/util/ArrayList;
+    invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
     return-object v0
 
 .end method
