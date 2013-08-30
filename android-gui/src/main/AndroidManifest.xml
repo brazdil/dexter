@@ -27,6 +27,7 @@
         <activity
             android:name="uk.ac.cam.db538.dexter.android.PackageDetailActivity"
             android:label="@string/title_package_detail"
+            android:launchMode="singleTop"
             android:parentActivityName=".PackageListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -35,6 +36,7 @@
         <activity
             android:name="uk.ac.cam.db538.dexter.android.InstrumentActivity"
             android:label="@string/title_activity_instrument"
+            android:launchMode="singleTop"
             android:parentActivityName="PackageListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -46,6 +48,7 @@
         </activity>
         <service
             android:name="uk.ac.cam.db538.dexter.android.InstrumentService"
+            android:process=":instrument"
             android:exported="false"/>
     </application>
 
