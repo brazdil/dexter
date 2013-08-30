@@ -66,6 +66,7 @@ public class TaintConstants {
 	  Short.class,
 	  Void.class,
 	  BigDecimal.class,
-	  BigInteger.class
+	  BigInteger.class,
+	  java.security.Timestamp.class
   );
 }
