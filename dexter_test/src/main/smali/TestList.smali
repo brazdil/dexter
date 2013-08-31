@@ -5,14 +5,14 @@
 
 # static fields
 .field private static final tests:[LTestExerciser;
-
+.field private static context:Landroid/content/Context;
 
 # direct methods
 .method static constructor <clinit>()V
     .registers 4
 
     # create array
-    const v0, 72
+    const v0, 73
     new-array v0, v0, [LTestExerciser;
     const v1, 0
 
@@ -520,6 +520,13 @@
     aput-object v2, v0, v1
     add-int/lit8 v1, v1, 1
 
+    new-instance v3, LTest_Source_Contacts;
+    invoke-direct {v3}, LTest_Source_Contacts;-><init>()V
+    new-instance v2, LSourceTestExerciser;
+    invoke-direct {v2, v3}, LSourceTestExerciser;-><init>(LSourceTest;)V
+    aput-object v2, v0, v1
+    add-int/lit8 v1, v1, 1
+
     sput-object v0, LTestList;->tests:[LTestExerciser;
 
     return-void
@@ -616,6 +623,22 @@
     move-result-object v0
     return-object v0
 
+.end method
+
+.method public static getContext()Landroid/content/Context;
+    .registers 1
+
+    sget-object v0, LTestList;->context:Landroid/content/Context;
+    return-object v0
+
+.end method
+
+.method public static setContext(Landroid/content/Context;)V
+    .registers 2
+
+    sput-object p0, LTestList;->context:Landroid/content/Context;
+    return-void
+    
 .end method
 
 .method public static main([Ljava/lang/String;)V

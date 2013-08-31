@@ -5,7 +5,6 @@
 # interfaces
 .implements LTest;
 
-
 # virtual methods
-.method public abstract generate()I
+.method public abstract generate(Landroid/content/Context;)Ljava/lang/Object;
 .end method

@@ -77,6 +77,7 @@ public class UnitTestActivity extends Activity {
                     @Override
                     public void run() {
                         generateTestViews();
+                        setContext(UnitTestActivity.this);
                         runTestCases();
                     }
                 });
@@ -191,6 +192,15 @@ public class UnitTestActivity extends Activity {
         try {
             Method m = getTestClass().getDeclaredMethod("runTest", int.class);
             return (Boolean) m.invoke(null, Integer.valueOf(index));
+        } catch (Exception ex) {
+            throw new Error(ex);
+        }
+    }
+
+    private void setContext(Context context) {
+        try {
+            Method m = getTestClass().getDeclaredMethod("setContext", Context.class);
+            m.invoke(null, context);
         } catch (Exception ex) {
             throw new Error(ex);
         }

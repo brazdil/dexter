@@ -10,6 +10,19 @@ public class InvokeTaintStore {
 	public static ThreadLocalPrimitiveResult RES_PRIM = new ThreadLocalPrimitiveResult();
 	public static ThreadLocalReferenceResult RES_REF = new ThreadLocalReferenceResult();
 	
+	private static ThreadLocalInternalCallFlag INTERNAL_CALL = new ThreadLocalInternalCallFlag(); 
+	
+	public static void setInternalCall() {
+		INTERNAL_CALL.set(true);
+	}
+	
+	public static boolean isInternalCall() {
+		boolean flag = INTERNAL_CALL.get();
+		if (flag)
+			INTERNAL_CALL.set(false);
+		return flag;
+	}
+	
 	public static class ThreadLocalPrimitiveArguments extends ThreadLocal<int[]> {
 
 		@Override
@@ -63,6 +76,14 @@ public class InvokeTaintStore {
 			Taint result = super.get();
 			set(null);
 			return result;
+		}
+	}
+
+	private static class ThreadLocalInternalCallFlag extends ThreadLocal<Boolean> {
+
+		@Override
+		protected Boolean initialValue() {
+			return false;
 		}
 	}
 }

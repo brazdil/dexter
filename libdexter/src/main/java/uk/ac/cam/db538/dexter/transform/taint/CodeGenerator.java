@@ -381,6 +381,14 @@ public final class CodeGenerator {
                    setZero(regName),
                    labelEnd);
     }
+    
+    public DexCodeElement setInternalCallFlag() {
+    	return invoke(dexAux.getMethod_Call_SetInternalCall());
+    }
+
+    public DexCodeElement isInternalCall(DexSingleRegister regResult) {
+    	return invoke_result_prim(regResult, dexAux.getMethod_Call_IsInternalCall());
+    }
 
     public DexMacro getClassAnnotation(DexSingleRegister regTo, DexSingleRegister regClassName, DexClassType annoType) {
         DexSingleRegister auxInspectedClass = auxReg();

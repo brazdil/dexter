@@ -364,19 +364,13 @@ public class TaintTransform extends Transform {
         if (code.getParameters().isEmpty())
             return code;
 
-        DexSingleRegister regAnnotation = codeGen.auxReg();
-        DexSingleRegister regCallerName = codeGen.auxReg();
-
+        DexSingleRegister regInternalCallFlag = codeGen.auxReg();
         DexLabel labelExternal = codeGen.label();
         DexLabel labelEnd = codeGen.label();
 
-        DexMacro init;
-//        if (canBeCalledFromExternalOrigin(method.getMethodDef()))
-            init = new DexMacro(
-                codeGen.getMethodCaller(regCallerName),
-                codeGen.ifZero(regCallerName, labelExternal),
-                codeGen.getClassAnnotation(regAnnotation, regCallerName, dexAux.getAnno_InternalClass().getType()),
-                codeGen.ifZero(regAnnotation, labelExternal),
+        DexMacro init = new DexMacro(
+        		codeGen.isInternalCall(regInternalCallFlag),
+                codeGen.ifZero(regInternalCallFlag, labelExternal),
                 // INTERNAL ORIGIN
                 codeGen.initTaints(code, true),
                 codeGen.jump(labelEnd),
@@ -384,8 +378,6 @@ public class TaintTransform extends Transform {
                 // EXTERNAL ORIGIN
                 codeGen.initTaints(code, false),
                 labelEnd);
-//        else
-//            init = codeGen.initTaints(code, true);
 
         return new DexCode(code, new InstructionList(Utils.concat(init.getInstructions(), code.getInstructionList())));
     }
@@ -489,7 +481,7 @@ public class TaintTransform extends Transform {
             macroHandleResult = codeGen.empty();
 
         // generate instrumentation
-        return new DexMacro(macroSetParamTaints, methodCall, macroHandleResult);
+        return new DexMacro(macroSetParamTaints, codeGen.setInternalCallFlag(), methodCall, macroHandleResult);
     }
 
     private DexCodeElement instrument_MethodCall_External(MethodCall methodCall, DexCode code, DexMethod method) {
