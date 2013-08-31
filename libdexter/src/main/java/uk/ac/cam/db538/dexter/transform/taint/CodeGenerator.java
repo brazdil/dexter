@@ -84,6 +84,7 @@ public final class CodeGenerator {
     private final DexClassType typeThrowable;
     private final DexClassType typeStackTraceElement;
     private final DexClassType typeLog;
+    private final DexClassType typeUri;
     private final DexArrayType typeIntArray;
     private final DexArrayType typeStackTraceElementArray;
 
@@ -105,6 +106,7 @@ public final class CodeGenerator {
     private final MethodDefinition method_Class_getSuperclass;
     private final MethodDefinition method_Method_getAnnotation;
     private final MethodDefinition method_Log_d;
+    private final MethodDefinition method_Uri_toString;;
 
     private int regAuxId;
     private int labelId;
@@ -130,6 +132,7 @@ public final class CodeGenerator {
         this.typeIntArray = DexArrayType.parse("[I", cache);
         this.typeStackTraceElementArray = DexArrayType.parse("[Ljava/lang/StackTraceElement;", cache);
         this.typeLog = DexClassType.parse("Landroid/util/Log;", cache);
+        this.typeUri = DexClassType.parse("Landroid/net/Uri;", cache);
 
         this.defThrowable = hierarchy.getClassDefinition(typeThrowable);
 
@@ -161,6 +164,7 @@ public final class CodeGenerator {
         DexMethodId methodId_getMethod_String_ClassArray_to_Method = DexMethodId.parseMethodId("getMethod", prototype_String_ClassArray_to_Method, cache);
         DexMethodId methodId_getDeclaredMethod_String_ClassArray_to_Method = DexMethodId.parseMethodId("getDeclaredMethod", prototype_String_ClassArray_to_Method, cache);
         DexMethodId methodId_d_String_String_to_int = DexMethodId.parseMethodId("d", prototype_String_String_to_int, cache);
+        DexMethodId methodId_toString_void_to_String = DexMethodId.parseMethodId("toString", prototype_void_to_String, cache);
 
         this.method_Object_getClass = lookupMethod(typeObject, methodId_getClass_void_to_Class);
         this.method_ThreadLocal_Get = lookupMethod(typeThreadLocal, methodId_get_void_to_Object);
@@ -178,6 +182,7 @@ public final class CodeGenerator {
         this.method_Class_getSuperclass = lookupMethod(typeClass, methodId_getSuperclass_void_to_Class);
         this.method_Method_getAnnotation = lookupMethod(typeMethod, methodId_getAnnotation_Class_to_Annotation);
         this.method_Log_d = lookupMethod(typeLog, methodId_d_String_String_to_int);
+        this.method_Uri_toString = lookupMethod(typeUri, methodId_toString_void_to_String);
     }
 
     private MethodDefinition lookupMethod(DexReferenceType classType, DexMethodId methodId) {
@@ -347,62 +352,12 @@ public final class CodeGenerator {
         		   invoke(method_ThreadLocal_Set, auxReg, regFrom));
     }
 
-    public DexMacro getMethodCaller(DexSingleRegister regName) {
-        DexSingleAuxiliaryRegister auxException = auxReg();
-        DexSingleAuxiliaryRegister auxStackTrace = auxReg();
-        DexSingleAuxiliaryRegister auxOne = auxReg();
-        DexSingleAuxiliaryRegister auxStackTraceLength = auxReg();
-        DexSingleAuxiliaryRegister auxCallerTrace = auxReg();
-
-        DexLabel labelEmptyStack = label();
-        DexLabel labelEnd = label();
-
-        return new DexMacro(
-                   // auxException = new Exception()
-                   new DexInstruction_NewInstance(auxException, defThrowable, hierarchy),
-                   invoke(method_Throwable_constructor, auxException),
-                   // auxStackTrace = auxException.getStackTrace()
-                   invoke_result_obj(auxStackTrace, method_Throwable_getStackTrace, auxException),
-                   // if (auxStackTrace.length <= 1) => definitely external
-                   constant(auxOne, 1),
-                   new DexInstruction_ArrayLength(auxStackTraceLength, auxStackTrace, hierarchy),
-                   new DexInstruction_IfTest(auxStackTraceLength, auxOne, labelEmptyStack, Opcode_IfTest.le, hierarchy),
-                   // stack non-empty
-                   // auxCallerTrace = auxStackTrace[1]
-                   new DexInstruction_ArrayGet(auxCallerTrace, auxStackTrace, auxOne, Opcode_GetPut.Object, hierarchy),
-                   // regName = auxCallerTrace.getClassName()
-                   invoke_result_obj(regName, method_StackTraceElement_getClassName, auxCallerTrace),
-                   // goto L_END
-                   jump(labelEnd),
-                   // else
-                   labelEmptyStack,
-                   // stack empty
-                   // regTo = null
-                   setZero(regName),
-                   labelEnd);
-    }
-    
     public DexCodeElement setInternalCallFlag() {
     	return invoke(dexAux.getMethod_Call_SetInternalCall());
     }
 
     public DexCodeElement isInternalCall(DexSingleRegister regResult) {
     	return invoke_result_prim(regResult, dexAux.getMethod_Call_IsInternalCall());
-    }
-
-    public DexMacro getClassAnnotation(DexSingleRegister regTo, DexSingleRegister regClassName, DexClassType annoType) {
-        DexSingleRegister auxInspectedClass = auxReg();
-        DexSingleRegister auxAnnoClass = auxReg();
-
-        return new DexMacro(
-                   // auxInspectedClass = Class.forName(regClassName)
-                   new DexInstruction_Invoke(method_Class_forName, Arrays.asList(regClassName), hierarchy),
-                   new DexInstruction_MoveResult(auxInspectedClass, true, hierarchy),
-                   // auxAnnoClass class type
-                   new DexInstruction_ConstClass(auxAnnoClass, annoType, hierarchy),
-                   // regTo = auxInspectedClass.getAnnotation(auxAnnoClass)
-                   new DexInstruction_Invoke(method_Class_getAnnotation, Arrays.asList(auxInspectedClass, auxAnnoClass), hierarchy),
-                   new DexInstruction_MoveResult(regTo, true, hierarchy));
     }
 
     public DexCodeElement prepareExternalCall(final DexSingleAuxiliaryRegister regCombinedTaint, DexInstruction_Invoke insnInvoke) {
@@ -571,11 +526,11 @@ public final class CodeGenerator {
             return taintLookup(regTo.getTaintRegister(), regTo, regCombinedTaint, hierarchy.classifyType(returnType));
         }
     }
-
+    
     public DexCodeElement getClassObject(DexSingleRegister regTo, DexSingleRegister regObject) {
         return invoke_result_obj(regTo, method_Object_getClass, regObject);
     }
-
+    
     public DexCodeElement getMethodObject(DexSingleRegister regTo, DexSingleRegister regObject, MethodCall methodCall) {
         DexInstruction_Invoke insnInvoke = methodCall.getInvoke();
         DexMethodId mid = insnInvoke.getMethodId();
@@ -660,20 +615,27 @@ public final class CodeGenerator {
                    invokeGetMethod);
     }
 
+    
     public DexCodeElement getMethodAnnotation(DexSingleRegister regTo, MethodCall methodCall) {
-        assert(methodCall.getInvoke().getCallType() != Opcode_Invoke.Static);
-
-        DexSingleRegister regObject = (DexSingleRegister) methodCall.getInvoke().getArgumentRegisters().get(0);
-        DexSingleRegister regAnnoClass = auxReg();
-        DexSingleRegister regMethodObject = auxReg();
-
-        return new DexMacro(
-                   // lookup the Method object
-                   getMethodObject(regMethodObject, regObject, methodCall),
-                   // load the annotation class object
-                   new DexInstruction_ConstClass(regAnnoClass, dexAux.getAnno_InternalMethod(), hierarchy),
-                   // invoke the getAnnotation method
-                   invoke_result_obj(regTo, method_Method_getAnnotation, regMethodObject, regAnnoClass));
+    	assert(methodCall.getInvoke().getCallType() != Opcode_Invoke.Static);
+    	
+    	DexSingleRegister regObject = (DexSingleRegister) methodCall.getInvoke().getArgumentRegisters().get(0);
+    	DexSingleRegister regAnnoClass = auxReg();
+    	DexSingleRegister regMethodObject = auxReg();
+    	
+    	return new DexMacro(
+    			// lookup the Method object
+    			getMethodObject(regMethodObject, regObject, methodCall),
+    			// load the annotation class object
+    			constant(regAnnoClass, dexAux.getAnno_InternalMethod()),
+    			// invoke the getAnnotation method
+    			invoke_result_obj(regTo, method_Method_getAnnotation, regMethodObject, regAnnoClass));
+    }
+    
+    public DexCodeElement getUriTaint(DexSingleRegister regTo, DexSingleRegister regUri) {
+    	return new DexMacro(
+    			invoke_result_obj(regTo, method_Uri_toString, regUri),
+    			invoke_result_obj(regTo, dexAux.getMethod_TaintConstants_QueryTaint(), regTo));
     }
     
     public DexCodeElement taintDefineExternal(DexSingleRegister regObject, DexSingleRegister regInitialTaint) {
@@ -828,11 +790,11 @@ public final class CodeGenerator {
     }
 
     public DexCodeElement setTaint(DexSingleRegister regFrom, DexSingleRegister regTaint) {
-        return new DexInstruction_Invoke(dexAux.getMethod_Taint_Set(), Arrays.asList(taint(regTaint), regFrom), hierarchy);
+        return invoke(dexAux.getMethod_Taint_Set(), taint(regTaint), regFrom);
     }
 
     public DexCodeElement setTaintExternal(DexSingleRegister regFrom, DexSingleRegister regTaint) {
-        return new DexInstruction_Invoke(dexAux.getMethod_Taint_SetExternal(), Arrays.asList(taint(regTaint), regFrom), hierarchy);
+        return invoke(dexAux.getMethod_Taint_SetExternal(), taint(regTaint), regFrom);
     }
 
     public DexCodeElement propagateTaint(DexSingleRegister regTo, DexSingleRegister regFrom, DexReferenceType typeTo, DexReferenceType typeFrom) {

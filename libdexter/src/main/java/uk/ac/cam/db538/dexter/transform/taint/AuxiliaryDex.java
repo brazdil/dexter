@@ -7,6 +7,7 @@ import org.jf.dexlib.DexFile;
 
 import uk.ac.cam.db538.dexter.aux.InvokeTaintStore;
 import uk.ac.cam.db538.dexter.aux.StaticTaintFields;
+import uk.ac.cam.db538.dexter.aux.TaintConstants;
 import uk.ac.cam.db538.dexter.aux.anno.InternalClass;
 import uk.ac.cam.db538.dexter.aux.anno.InternalMethod;
 import uk.ac.cam.db538.dexter.aux.struct.Assigner;
@@ -40,6 +41,8 @@ import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
 public class AuxiliaryDex extends Dex {
 
+	@Getter private final DexMethod method_TaintConstants_QueryTaint;
+	
 	@Getter private final DexMethod method_Call_SetInternalCall;
 	@Getter private final DexMethod method_Call_IsInternalCall;
     @Getter private final DexStaticField field_CallPrimitiveParamTaint;
@@ -93,6 +96,10 @@ public class AuxiliaryDex extends Dex {
 
     public AuxiliaryDex(DexFile dexAux, RuntimeHierarchy hierarchy, ClassRenamer renamer) {
         super(dexAux, hierarchy, null, renamer);
+
+        // InvokeTaintStore class
+        val clsTaintConstants = getDexClass(TaintConstants.class, hierarchy, renamer);
+        this.method_TaintConstants_QueryTaint = findStaticMethodByName(clsTaintConstants, "queryTaint");
 
         // InvokeTaintStore class
         val clsInvokeTaintStore = getDexClass(InvokeTaintStore.class, hierarchy, renamer);

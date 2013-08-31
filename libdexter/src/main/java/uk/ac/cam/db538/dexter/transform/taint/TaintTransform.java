@@ -90,6 +90,7 @@ import uk.ac.cam.db538.dexter.transform.InvokeClassifier;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.TryBlockSplitter;
+import uk.ac.cam.db538.dexter.transform.taint.sourcesink.SourceSinkDefinition;
 import uk.ac.cam.db538.dexter.utils.Utils;
 import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
@@ -355,10 +356,6 @@ public class TaintTransform extends Transform {
     	assert getClinit(clazz) != null;
     }
 
-    private boolean canBeCalledFromExternalOrigin(MethodDefinition methodDef) {
-        return methodDef.isVirtual() || methodDef.isConstructor();
-    }
-
     private DexCode insertTaintInit(DexCode code, DexMethod method) {
         // If there are no parameters, no point in initializing them
         if (code.getParameters().isEmpty())
@@ -447,7 +444,7 @@ public class TaintTransform extends Transform {
 
         // Need to retrieve taint from the ThreadLocal RES field ?
 
-        if (methodCall.hasResult()) {
+        if (methodCall.movesResult()) {
         	
         	DexRegisterType resType = (DexRegisterType) prototype.getReturnType();
         	DexTaintRegister regResTaint = insnMoveResult.getRegTo().getTaintRegister();
@@ -464,7 +461,7 @@ public class TaintTransform extends Transform {
 
         else if (insnInvoke.getMethodId().isConstructor()) {
 
-            assert(!methodCall.hasResult());
+            assert(!methodCall.movesResult());
             DexSingleRegister regThis = (DexSingleRegister) argRegisters.get(0);
 
             if (isCallToSuperclassConstructor(insnInvoke, code, method))
@@ -495,14 +492,32 @@ public class TaintTransform extends Transform {
     		codeGen.empty(),
     		regCombinedTaint);
         
+        // Apply source/sink instrumentation
+        
+        if (methodCall.getInvoke().getMethodId().getName().equals("query"))
+        	methodCall.getInvoke();
+        
+        SourceSinkDefinition sourceSinkDef = SourceSinkDefinition.findApplicableDefinition(methodCall);
+        DexCodeElement sourcesinkBefore, sourcesinkAfter;
+        if (sourceSinkDef != null) {
+        	System.out.println("Applying " + sourceSinkDef.getClass().getSimpleName() + " instrumentation");
+        	
+        	sourcesinkBefore = sourceSinkDef.insertBefore(codeGen);
+        	sourcesinkAfter = sourceSinkDef.insertAfter(codeGen);
+        } else {
+        	sourcesinkBefore = codeGen.empty();
+        	sourcesinkAfter = codeGen.empty();
+        }
+        
         if (isCallToSuperclassConstructor(insnInvoke, code, method)) {
 
             // Handle calls to external superclass constructor
 
-            assert(!methodCall.hasResult());
+            assert(!methodCall.movesResult());
             DexSingleRegister regThis = (DexSingleRegister) insnInvoke.getArgumentRegisters().get(0);
 
             return new DexMacro(
+            		   sourcesinkBefore,
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
                        wrappedCall,
 
@@ -511,15 +526,18 @@ public class TaintTransform extends Transform {
 
                        insertInstanceFieldInit(method.getParentClass(), regThis),
                        codeGen.taintCreate_External(null, regThis, regCombinedTaint),
-                       codeGen.taintDefineInternal(regThis));
+                       codeGen.taintDefineInternal(regThis),
+                       sourcesinkAfter);
 
         } else {
 
             // Standard external call
             return new DexMacro(
+            		   sourcesinkBefore,
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
                        wrappedCall,
-                       codeGen.finishExternalCall(regCombinedTaint, insnInvoke, insnMoveResult));
+                       codeGen.finishExternalCall(regCombinedTaint, insnInvoke, insnMoveResult),
+                       sourcesinkAfter);
 
         }
     }

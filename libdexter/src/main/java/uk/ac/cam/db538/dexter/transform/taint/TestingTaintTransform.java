@@ -113,9 +113,6 @@ public class TestingTaintTransform extends TaintTransform {
         	
         }
         
-        if (method.getMethodBody() != null && method.getMethodDef().getMethodId().getName().equals("generate"))
-        	method.getMethodBody().getInstructionList().dump();
-        
         return super.doLast(method);
     }
 

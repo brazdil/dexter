@@ -35,10 +35,10 @@ public class TaintConstants {
   public static final int queryTaint(String query) {
     if (query.startsWith("content://com.android.contacts"))
       return TAINT_SOURCE_CONTACTS;
-    else if (query.startsWith("content://sms"))
-      return TAINT_SOURCE_SMS;
-    else if (query.startsWith("content://call_log"))
-      return TAINT_SOURCE_CALL_LOG;
+//    else if (query.startsWith("content://sms"))
+//      return TAINT_SOURCE_SMS;
+//    else if (query.startsWith("content://call_log"))
+//      return TAINT_SOURCE_CALL_LOG;
     return 0;
   }
 

@@ -54,7 +54,7 @@ public class MethodCall extends DexCodeElement {
         this.insnResult = result;
     }
 
-    public boolean hasResult() {
+    public boolean movesResult() {
         return insnResult != null;
     }
 
@@ -67,7 +67,7 @@ public class MethodCall extends DexCodeElement {
     }
 
     public DexCodeElement expand() {
-        if (hasResult())
+        if (movesResult())
             return new DexMacro(insnInvoke, insnResult);
         else
             return insnInvoke;
