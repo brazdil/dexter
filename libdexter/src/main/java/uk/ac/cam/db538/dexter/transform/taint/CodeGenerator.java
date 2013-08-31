@@ -442,12 +442,8 @@ public final class CodeGenerator {
                 forEachValidParameter(insnInvoke, new ParamCallback() {
                     @Override
                     public void apply(DexRegister regParam, DexRegisterType typeParam) {
-                        if (isMutable(typeParam)) {
-                        	DexLabel lAfter = label();
-                        	insns.add(ifZero((DexSingleRegister) regParam, lAfter));
+                        if (isMutable(typeParam))
                             insns.add(setTaint(regCombinedTaint, regParam.getTaintRegister()));
-                            insns.add(lAfter);
-                        }
                     }
                 });
 
@@ -564,14 +560,7 @@ public final class CodeGenerator {
         else {
             DexSingleRegister regTo = (DexSingleRegister) insnMoveResult.getRegTo();
             DexReferenceType returnType = (DexReferenceType) prototype.getReturnType();
-            DexLabel lNull = label(), lAfter = label();
-            return new DexMacro(
-            		   ifZero(regTo, lNull),
-                       taintLookup(regTo.getTaintRegister(), regTo, regCombinedTaint, hierarchy.classifyType(returnType)),
-                       jump(lAfter),
-                       lNull,
-                       taintNull(regTo, regCombinedTaint, returnType),
-                       lAfter);
+            return taintLookup(regTo.getTaintRegister(), regTo, regCombinedTaint, hierarchy.classifyType(returnType));
         }
     }
 
@@ -789,9 +778,7 @@ public final class CodeGenerator {
             throw new Error();
         }
 
-        return new DexMacro(
-                   new DexInstruction_Invoke(lookupMethod, Arrays.asList(regObject, regAddedTaint), hierarchy),
-                   new DexInstruction_MoveResult(regTo, true, hierarchy));
+        return invoke_result_obj(regTo, lookupMethod, regObject, regAddedTaint);
     }
 
     public DexCodeElement taintLookup_NoExtraTaint(DexSingleRegister regTo, DexSingleRegister regObject, TypeClassification type) {

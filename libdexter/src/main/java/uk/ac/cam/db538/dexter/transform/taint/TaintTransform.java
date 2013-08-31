@@ -371,7 +371,7 @@ public class TaintTransform extends Transform {
         DexLabel labelEnd = codeGen.label();
 
         DexMacro init;
-        if (canBeCalledFromExternalOrigin(method.getMethodDef()))
+//        if (canBeCalledFromExternalOrigin(method.getMethodDef()))
             init = new DexMacro(
                 codeGen.getMethodCaller(regCallerName),
                 codeGen.ifZero(regCallerName, labelExternal),
@@ -384,8 +384,8 @@ public class TaintTransform extends Transform {
                 // EXTERNAL ORIGIN
                 codeGen.initTaints(code, false),
                 labelEnd);
-        else
-            init = codeGen.initTaints(code, true);
+//        else
+//            init = codeGen.initTaints(code, true);
 
         return new DexCode(code, new InstructionList(Utils.concat(init.getInstructions(), code.getInstructionList())));
     }

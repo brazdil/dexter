@@ -30,8 +30,9 @@ public class TestingTaintTransform extends TaintTransform {
 
     @Override
     public boolean exclude(DexClass clazz) {
-        String name = clazz.getClassDef().getType().getDescriptor();
-        return name.equals("LTestList;");
+    	return false;
+//        String name = clazz.getClassDef().getType().getDescriptor();
+//        return name.equals("LTestList;");
     }
 
     @Override
@@ -111,6 +112,9 @@ public class TestingTaintTransform extends TaintTransform {
             method = new DexMethod(method, newCode);
         	
         }
+        
+        if (method.getMethodBody() != null && method.getMethodDef().getMethodId().getName().equals("generate"))
+        	method.getMethodBody().getInstructionList().dump();
         
         return super.doLast(method);
     }
