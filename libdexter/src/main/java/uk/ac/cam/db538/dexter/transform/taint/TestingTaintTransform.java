@@ -95,7 +95,7 @@ public class TestingTaintTransform extends TaintTransform {
             
             List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>();
             for (DexCodeElement insn : oldCode.getInstructionList())
-                if (insn instanceof DexInstruction_NewInstance) { 
+                if (insn instanceof DexInstruction_Const && ((DexInstruction_Const) insn).getValue() == 1234L) { 
                 	DexSingleRegister regTaint = codeGen.auxReg();
                 	newInstructions.add(codeGen.constant(regTaint, 1));
                 	newInstructions.add(codeGen.ifZero(paramReg, lNull));
