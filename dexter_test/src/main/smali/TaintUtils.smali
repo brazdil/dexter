@@ -20,7 +20,7 @@
 .method public static taint(Ljava/lang/Object;)Ljava/lang/Object;
     .registers 2
 
-    new-instance v0, Ljava/lang/Object; # to be replaced with Taint.set()
+    const v0, 1234 # to be replaced with Taint.set()
     
     return-object p0
 
