@@ -164,12 +164,13 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor {
         DexCodeElement catchElement = findElementPredecessor(DexCatch.class, DexCatchAll.class);
         assert catchElement != null && (catchElement instanceof DexCatch || catchElement instanceof DexCatchAll);
         DexClassType exception = null;
-        if (catchElement instanceof DexCatch)
+        if (catchElement instanceof DexCatch) {
             exception = ((DexCatch)catchElement).getExceptionType();
-        else
+            defineFreezedRegister(instruction.getRegTo(), RopType.getRopType(exception));
+        } else {
             exception = DexClassType.parse("Ljava/lang/Throwable;", typeCache);
-
-        defineRegister(instruction.getRegTo(), RopType.getRopType(exception));
+            defineRegister(instruction.getRegTo(), RopType.getRopType(exception));
+        }
     }
     @Override
     public void visit(DexInstruction_ReturnVoid instruction) {}
