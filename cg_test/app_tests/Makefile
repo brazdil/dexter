@@ -6,13 +6,13 @@ JAVAC_FLAGS := -source 1.5 -target 1.5
 
 ifeq ($(shell uname -o), Cygwin)
     CWD := $(shell cygpath -a -m .)
-    PROJECET_ROOT := $(shell cygpath -a -m $(TOP)/../)
+    PROJECT_ROOT := $(shell cygpath -a -m $(TOP)/../libdexter/)
 else
     CWD := $(shell realpath .)
-    PROJECET_ROOT := $(shell realpath  $(TOP)/../)
+    PROJECT_ROOT := $(shell realpath  $(TOP)/../libdexter/)
 endif
 
-DEXTER := $(JAVA) -ea -classpath '$(PROJECET_ROOT)/bin/:$(PROJECET_ROOT)/lib/*' uk.ac.cam.db538.dexter.MainTest $(PROJECET_ROOT)/framework-2.3
+DEXTER := $(JAVA) -ea -classpath '$(PROJECT_ROOT)/build/classes/:$(PROJECT_ROOT)/build/libs/*' uk.ac.cam.db538.dexter.MainTest $(PROJECT_ROOT)/framework
 
 APP_FILES := $(notdir $(wildcard $(CORPUS_DIR)/*.apk))
 OUT_FILES := $(APP_FILES:.apk=.out)
