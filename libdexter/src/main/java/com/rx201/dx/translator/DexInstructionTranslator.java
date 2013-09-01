@@ -182,8 +182,6 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
             return Type.intern("S");
         case Char:
             return Type.intern("C");
-        case Null:
-            System.out.println("Warning: Ambiguous null value.");
         case Integer:
             return Type.intern("I");
         case Float:
@@ -195,6 +193,8 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
         case DoubleLo:
         case DoubleHi:
             return Type.intern("D");
+        case Null:
+            return Type.intern("Ljava/lang/Object;");
         case WildcardRef: {
             StringBuilder sb = new StringBuilder();
             for(int i=0; i<t.arrayDepth; i++)
