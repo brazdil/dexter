@@ -4,6 +4,7 @@ import uk.ac.cam.db538.dexter.aux.TaintConstants;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
 import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
 
@@ -24,10 +25,7 @@ public class Source_Browser extends SourceSinkDefinition {
 	}
 
 	@Override
-	public DexCodeElement insertAfter(CodeGenerator codeGen) {
-		DexSingleRegister auxBrowserTaint = codeGen.auxReg();
-		return new DexMacro(
-				codeGen.constant(auxBrowserTaint, TaintConstants.SOURCE_BROWSER),
-				codeGen.setTaint(auxBrowserTaint, (DexSingleRegister) getResultRegister()));
+	public DexCodeElement insertJustAfter(DexSingleRegister regCombinedTaint, CodeGenerator codeGen) {
+		return codeGen.addTaint(regCombinedTaint, TaintConstants.SOURCE_BROWSER);
 	}
 }
