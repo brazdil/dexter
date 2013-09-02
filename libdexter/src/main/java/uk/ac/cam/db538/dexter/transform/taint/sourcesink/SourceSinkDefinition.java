@@ -35,6 +35,7 @@ public abstract class SourceSinkDefinition {
 	public DexCodeElement insertBefore(CodeGenerator codeGen) { return codeGen.empty(); }
 	public DexCodeElement insertJustBefore(DexSingleRegister regCombinedTaint, CodeGenerator codeGen) { return codeGen.empty(); }
 	public DexCodeElement insertAfter(CodeGenerator codeGen) { return codeGen.empty(); }
+	public DexCodeElement insertJustAfter(DexSingleRegister regCombinedTaint, CodeGenerator codeGen) { return codeGen.empty(); }
 	
 	private static final void addDef(List<SourceSinkDefinition> list, SourceSinkDefinition def) {
 		if (def.isApplicable())

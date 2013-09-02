@@ -17,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
@@ -37,6 +38,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
@@ -640,6 +642,13 @@ public final class CodeGenerator {
     			invoke_result_obj(regTo, dexAux.getMethod_TaintConstants_ServiceTaint(), regStringName));
     }
 
+    public DexCodeElement logLeakage(DexSingleRegister regTaint, String leakType) {
+    	DexSingleRegister auxLeakType = auxReg();
+    	return new DexMacro(
+    			constant(auxLeakType, leakType),
+    			invoke(dexAux.getMethod_TaintConstants_LogLeakage(), regTaint, auxLeakType));
+    }
+
     public DexCodeElement taintDefineExternal(DexSingleRegister regObject, DexSingleRegister regInitialTaint) {
         return invoke(dexAux.getMethod_Assigner_DefineExternal(), regObject, regObject.getTaintRegister(), regInitialTaint);
     }
@@ -844,6 +853,14 @@ public final class CodeGenerator {
             return new DexMacro(insns);
         }
     }
+    
+    public DexCodeElement addTaint(DexRegister output, int addedTaint) {
+    	return new DexInstruction_BinaryOpLiteral(taint(output), taint(output), addedTaint, Opcode_BinaryOpLiteral.Or, hierarchy);
+    }
+    
+    public DexCodeElement addTaint(DexRegister output, TaintConstants addedTaint) {
+    	return addTaint(output, addedTaint.value);
+    }
 
     public DexCodeElement getTaint_Array_Length(DexTaintRegister regTo, DexTaintRegister regArrayTaint) {
         return new DexInstruction_InstanceGet(regTo, regArrayTaint, dexAux.getField_TaintArray_TLength(), hierarchy);
@@ -957,6 +974,10 @@ public final class CodeGenerator {
 
     public DexCodeElement constant(DexSingleRegister reg, BaseClassDefinition typeDef) {
         return new DexInstruction_ConstClass(reg, typeDef, hierarchy);
+    }
+
+    public DexCodeElement constant(DexSingleRegister reg, String str) {
+        return new DexInstruction_ConstString(reg, str, hierarchy);
     }
 
     public DexCodeElement ifZero(DexSingleRegister reg, DexLabel target) {

@@ -326,7 +326,12 @@ public class TaintTransform extends Transform {
     }
     
     public LeakageAlert getLeakageAlert() {
-    	return null;
+    	return new LeakageAlert() {
+			@Override
+			public DexCodeElement generate(DexSingleRegister regTaint, String leakType, CodeGenerator codeGen) {
+				return codeGen.logLeakage(regTaint, leakType);
+			}
+		};
     }
     
     private void createEmptyClinit(DexClass clazz) {
@@ -503,17 +508,19 @@ public class TaintTransform extends Transform {
         	methodCall.getInvoke();
         
         SourceSinkDefinition sourceSinkDef = SourceSinkDefinition.findApplicableDefinition(methodCall, getLeakageAlert());
-        DexCodeElement sourcesinkBefore, sourcesinkAfter, sourcesinkJustBefore;
+        DexCodeElement sourcesinkBefore, sourcesinkAfter, sourcesinkJustBefore, sourcesinkJustAfter;
         if (sourceSinkDef != null) {
         	System.out.println("Applying " + sourceSinkDef.getClass().getSimpleName() + " instrumentation");
         	
         	sourcesinkBefore = sourceSinkDef.insertBefore(codeGen);
         	sourcesinkAfter = sourceSinkDef.insertAfter(codeGen);
         	sourcesinkJustBefore = sourceSinkDef.insertJustBefore(regCombinedTaint, codeGen);
+        	sourcesinkJustAfter = sourceSinkDef.insertJustAfter(regCombinedTaint, codeGen);
         } else {
         	sourcesinkBefore = codeGen.empty();
         	sourcesinkAfter = codeGen.empty();
         	sourcesinkJustBefore = codeGen.empty();
+        	sourcesinkJustAfter = codeGen.empty();
         }
         
         if (isCallToSuperclassConstructor(insnInvoke, code, method)) {
@@ -533,6 +540,7 @@ public class TaintTransform extends Transform {
                        // Need to generate new TaintInternal object with it
 
                        insertInstanceFieldInit(method.getParentClass(), regThis),
+                       sourcesinkJustAfter,
                        codeGen.taintCreate_External(null, regThis, regCombinedTaint),
                        codeGen.taintDefineInternal(regThis),
                        sourcesinkAfter);
@@ -545,6 +553,7 @@ public class TaintTransform extends Transform {
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
                        sourcesinkJustBefore,
                        wrappedCall,
+                       sourcesinkJustAfter,
                        codeGen.finishExternalCall(regCombinedTaint, insnInvoke, insnMoveResult),
                        sourcesinkAfter);
 

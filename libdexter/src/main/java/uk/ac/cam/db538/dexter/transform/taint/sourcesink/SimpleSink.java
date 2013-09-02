@@ -21,7 +21,7 @@ public abstract class SimpleSink extends SourceSinkDefinition {
 		return new DexMacro(
 				codeGen.isSourceTaint(auxIsSourceTaint, regCombinedTaint),
 				codeGen.ifZero(auxIsSourceTaint, lFalse),
-				leakageAlert.generate(regCombinedTaint, codeGen),
+				leakageAlert.generate(regCombinedTaint, this.getClass().getSimpleName(), codeGen),
 				lFalse);
 	}
 }

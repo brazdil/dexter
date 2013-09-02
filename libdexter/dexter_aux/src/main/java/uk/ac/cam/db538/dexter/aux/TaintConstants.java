@@ -109,11 +109,9 @@ public enum TaintConstants {
 		BigInteger.class,
 		java.security.Timestamp.class
 	);
-  
-	public static final void logLeakage(int taint, String leakType) {
+
+	private static final String taint2str(int taint) {
 		StringBuilder str = new StringBuilder();
-		str.append("Data leak: ");
-	  
 		boolean first = true;
 		for (TaintConstants constant : values()) {
 			if ((constant.value & taint) != 0) {
@@ -125,10 +123,17 @@ public enum TaintConstants {
 				str.append(constant.name());
 			}
 		}
-		
+		return str.toString();
+	}
+	
+	public static final void logLeakage(int taint, String sinkType) {
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 		System.err.println("==========   DEXTER DATA LEAK REPORT   ==========");
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-		
+		System.err.println("Sink type: " + sinkType);
+		System.err.println("Taint: " + taint2str(taint));
+		System.err.println("Stack trace:");
+		(new Throwable()).printStackTrace();		
+		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 	}
 }
