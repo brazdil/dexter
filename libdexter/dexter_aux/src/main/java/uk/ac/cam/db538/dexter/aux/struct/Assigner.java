@@ -8,13 +8,9 @@ public final class Assigner {
 	private Assigner() { }
 
 	public static final TaintExternal newExternal(Object obj, int initialTaint) {
-		if (TaintConstants.isImmutable(obj))
-			return new TaintImmutable(initialTaint);
-		else {
-			TaintExternal tobj = new TaintExternal(initialTaint);
-			Cache.insert(obj, tobj);
-			return tobj;
-		}
+		TaintExternal tobj = newExternal_Undefined(obj.getClass());
+		defineExternal(obj, tobj, initialTaint);
+		return tobj;
 	}
 	
 	public static final TaintExternal newExternal_NULL(int initialTaint) {
@@ -38,6 +34,7 @@ public final class Assigner {
 	}
 	
 	public static final void defineExternal(Object obj, TaintExternal tobj, int taint) {
+		taint = TaintConstants.sinkTaint(obj, taint);
 		tobj.define(taint);
 		Cache.insert(obj, tobj);
 	}
@@ -72,6 +69,8 @@ public final class Assigner {
 	}
 
 	public static final TaintExternal lookupExternal(Object obj, int taint) {
+		taint = TaintConstants.sinkTaint(obj, taint);
+		
 		if (TaintConstants.isImmutable(obj))
 			return new TaintImmutable(taint);
 		
@@ -89,6 +88,8 @@ public final class Assigner {
 		if (obj == null)
 			RuntimeUtils.die("Cannot lookup internal taint of NULL");
 		
+		taint = TaintConstants.sinkTaint(obj, taint);
+
 		TaintInternal tobj = (TaintInternal) Cache.get(obj);
 		if (tobj == null)
 			RuntimeUtils.die("Internal object is not initialized");

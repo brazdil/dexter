@@ -9,7 +9,7 @@ public class TaintInternal implements Taint {
 	private InternalDataStructure obj;
 	private TaintExternal t_super; 
 	
-	public TaintInternal(InternalDataStructure obj, Taint t_super) {
+	TaintInternal(InternalDataStructure obj, Taint t_super) {
 		define(obj, t_super);
 	}
 	

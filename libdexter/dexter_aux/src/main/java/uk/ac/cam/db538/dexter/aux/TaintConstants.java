@@ -1,7 +1,9 @@
 package uk.ac.cam.db538.dexter.aux;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,6 +52,14 @@ public class TaintConstants {
       return TAINT_SOURCE_DEVICE_ID;
     else
       return TAINT_EMPTY;
+  }
+  
+  public static final int sinkTaint(Object obj, int taint) {
+	  if (obj instanceof File)
+		  taint |= TAINT_SINK_FILE;
+	  else if (obj instanceof Socket)
+		  taint |= TAINT_SINK_SOCKET;
+	  return taint;
   }
   
   public static final boolean isImmutable(Object obj) {

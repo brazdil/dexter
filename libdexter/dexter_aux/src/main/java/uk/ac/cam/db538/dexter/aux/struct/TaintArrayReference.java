@@ -6,7 +6,7 @@ public final class TaintArrayReference extends TaintArray {
 
 	public final Taint[] t_array;
 	
-	public TaintArrayReference(int length, int t_length) {
+	TaintArrayReference(int length, int t_length) {
 		super(t_length);
 		this.t_array = new Taint[length];
 		
@@ -14,7 +14,7 @@ public final class TaintArrayReference extends TaintArray {
 			this.t_array[i] = new TaintImmutable(TaintConstants.TAINT_EMPTY);
 	}
 
-	public TaintArrayReference(Object[] array, int taint) {
+	TaintArrayReference(Object[] array, int taint) {
 		super(taint);
 		this.t_array = new Taint[array.length];
 

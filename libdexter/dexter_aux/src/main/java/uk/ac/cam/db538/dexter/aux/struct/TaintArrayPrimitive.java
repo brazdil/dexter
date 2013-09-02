@@ -6,11 +6,11 @@ public final class TaintArrayPrimitive extends TaintArray {
 
 	public final int[] t_array;
 
-	public TaintArrayPrimitive(int length, int t_length) {
+	TaintArrayPrimitive(int length, int t_length) {
 		this(length, t_length, TaintConstants.TAINT_EMPTY);
 	}
 
-	public TaintArrayPrimitive(int length, int t_length, int t_elem) {
+	TaintArrayPrimitive(int length, int t_length, int t_elem) {
 		super(t_length);
 		this.t_array = new int[length];
 

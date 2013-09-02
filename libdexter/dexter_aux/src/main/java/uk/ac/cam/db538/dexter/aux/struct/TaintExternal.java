@@ -6,11 +6,11 @@ public class TaintExternal implements Taint {
 
 	private int taint;
 	
-	public TaintExternal() {
+	TaintExternal() {
 		this.taint = TaintConstants.TAINT_EMPTY;
 	}
 	
-	public TaintExternal(int taint) {
+	TaintExternal(int taint) {
 		this.taint = taint;
 	}
 	
