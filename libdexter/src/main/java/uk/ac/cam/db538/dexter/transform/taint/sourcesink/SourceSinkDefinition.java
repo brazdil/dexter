@@ -9,6 +9,7 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
 import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
@@ -40,14 +41,15 @@ public abstract class SourceSinkDefinition {
 			list.add(def);
 	}
 	
-	public static final SourceSinkDefinition findApplicableDefinition(MethodCall methodCall, LeakageAlert sinkAlert) {
+	public static final SourceSinkDefinition findApplicableDefinition(MethodCall methodCall, LeakageAlert leakageAlert) {
 		List<SourceSinkDefinition> list = new ArrayList<SourceSinkDefinition>();
 		
 		// Add new source/sink definitions here
 		addDef(list, new Source_Query(methodCall));
 		addDef(list, new Source_SystemService(methodCall));
 		addDef(list, new Source_Browser(methodCall));
-		addDef(list, new Sink_Log(methodCall, sinkAlert));
+		addDef(list, new Sink_Log(methodCall, leakageAlert));
+		addDef(list, new Sink_HttpClient(methodCall, leakageAlert));
 		
 		if (list.isEmpty())
 			return null;
@@ -75,6 +77,15 @@ public abstract class SourceSinkDefinition {
 		return calledOnDef.isChildOf(descDef);
 	}
 	
+	protected boolean classImplements(String desc) {
+		DexReferenceType calledOn = methodCall.getInvoke().getClassType();
+		
+		BaseClassDefinition calledOnDef = hierarchy.getBaseClassDefinition(calledOn);
+		InterfaceDefinition descDef = hierarchy.getInterfaceDefinition(DexReferenceType.parse(desc, hierarchy.getTypeCache()));
+		
+		return calledOnDef.implementsInterface(descDef);
+	}
+
 	protected boolean methodIsCalled(String name) {
 		return methodCall.getInvoke()
 				.getMethodId()

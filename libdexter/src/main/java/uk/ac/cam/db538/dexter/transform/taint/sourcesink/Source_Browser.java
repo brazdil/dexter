@@ -27,7 +27,7 @@ public class Source_Browser extends SourceSinkDefinition {
 	public DexCodeElement insertAfter(CodeGenerator codeGen) {
 		DexSingleRegister auxBrowserTaint = codeGen.auxReg();
 		return new DexMacro(
-				codeGen.constant(auxBrowserTaint, TaintConstants.TAINT_SOURCE_BROWSER),
+				codeGen.constant(auxBrowserTaint, TaintConstants.SOURCE_BROWSER),
 				codeGen.setTaint(auxBrowserTaint, (DexSingleRegister) getResultRegister()));
 	}
 }

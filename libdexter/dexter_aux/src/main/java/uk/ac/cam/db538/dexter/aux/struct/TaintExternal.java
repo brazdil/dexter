@@ -7,7 +7,7 @@ public class TaintExternal implements Taint {
 	private int taint;
 	
 	TaintExternal() {
-		this.taint = TaintConstants.TAINT_EMPTY;
+		this.taint = TaintConstants.EMPTY.value;
 	}
 	
 	TaintExternal(int taint) {

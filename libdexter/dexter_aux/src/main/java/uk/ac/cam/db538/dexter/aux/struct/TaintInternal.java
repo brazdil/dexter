@@ -30,11 +30,11 @@ public class TaintInternal implements Taint {
 	public int get() {
 		HashSet<TaintInternal> visited = visitedSet.get();
 		if (visited.contains(this))
-			return TaintConstants.TAINT_EMPTY;
+			return TaintConstants.EMPTY.value;
 		else
 			visited.add(this);
 
-		int result = TaintConstants.TAINT_EMPTY;
+		int result = TaintConstants.EMPTY.value;
 		if (this.obj != null)
 			result |= this.obj.getTaint();
 		if (this.t_super != null)
@@ -46,7 +46,7 @@ public class TaintInternal implements Taint {
 		if (this.t_super != null)
 			return this.t_super.get();
 		else
-			return TaintConstants.TAINT_EMPTY;
+			return TaintConstants.EMPTY.value;
 	}
 
 	public void set(int taint) {

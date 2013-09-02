@@ -11,7 +11,7 @@ public final class TaintArrayReference extends TaintArray {
 		this.t_array = new Taint[length];
 		
 		for (int i = 0; i < length; i++)
-			this.t_array[i] = new TaintImmutable(TaintConstants.TAINT_EMPTY);
+			this.t_array[i] = new TaintImmutable(TaintConstants.EMPTY.value);
 	}
 
 	TaintArrayReference(Object[] array, int taint) {

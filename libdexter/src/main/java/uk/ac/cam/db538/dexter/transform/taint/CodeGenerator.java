@@ -944,11 +944,15 @@ public final class CodeGenerator {
     }
 
     public DexCodeElement setEmptyTaint(DexSingleRegister regTo) {
-        return new DexInstruction_Const(regTo, TaintConstants.TAINT_EMPTY, hierarchy);
+    	return constant(regTo, TaintConstants.EMPTY);
     }
 
     public DexCodeElement constant(DexSingleRegister reg, int value) {
         return new DexInstruction_Const(reg, value, hierarchy);
+    }
+
+    public DexCodeElement constant(DexSingleRegister reg, TaintConstants value) {
+        return constant(reg, value.value);
     }
 
     public DexCodeElement constant(DexSingleRegister reg, BaseClassDefinition typeDef) {

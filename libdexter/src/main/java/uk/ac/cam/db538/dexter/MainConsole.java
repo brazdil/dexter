@@ -12,6 +12,7 @@ import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.transform.taint.TaintTransform;
 import uk.ac.cam.db538.dexter.transform.taint.TestingTaintTransform;
 
 import com.rx201.dx.translator.DexCodeGeneration;
@@ -61,7 +62,11 @@ public class MainConsole {
         Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
 
         System.out.println("Instrumenting application");
-        Transform transform = new TestingTaintTransform();
+        Transform transform;
+        if (apkFile.getName().equals("test.apk"))
+        	transform = new TestingTaintTransform();
+        else
+        	transform = new TaintTransform();
         transform.apply(dexApp);
 
         System.out.println("Recompiling application");

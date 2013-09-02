@@ -1,13 +1,8 @@
 package uk.ac.cam.db538.dexter.transform.taint.sourcesink;
 
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
-import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
 
-public class Sink_Log extends SourceSinkDefinition {
+public class Sink_Log extends SimpleSink {
 
 	public Sink_Log(MethodCall methodCall, LeakageAlert leakageAlert) {
 		super(methodCall, leakageAlert);
@@ -38,17 +33,5 @@ public class Sink_Log extends SourceSinkDefinition {
 				)
 			) &&
 			returnTypeIs("I");
-	}
-
-	@Override
-	public DexCodeElement insertJustBefore(DexSingleRegister regCombinedTaint, CodeGenerator codeGen) {
-		DexSingleRegister auxIsSourceTaint = codeGen.auxReg();
-		DexLabel lFalse = codeGen.label();
-		
-		return new DexMacro(
-				codeGen.isSourceTaint(auxIsSourceTaint, regCombinedTaint),
-				codeGen.ifZero(auxIsSourceTaint, lFalse),
-				leakageAlert.generate(codeGen),
-				lFalse);
 	}
 }

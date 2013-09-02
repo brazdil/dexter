@@ -78,7 +78,7 @@ public final class Assigner {
 		if (tobj == null) {
 			tobj = new TaintExternal(taint);
 			Cache.insert(obj, tobj);
-		} else if (taint != TaintConstants.TAINT_EMPTY)
+		} else if (taint != TaintConstants.EMPTY.value)
 			tobj.set(taint);
 		
 		return tobj;
@@ -94,7 +94,7 @@ public final class Assigner {
 		if (tobj == null)
 			RuntimeUtils.die("Internal object is not initialized");
 		
-		if (taint != TaintConstants.TAINT_EMPTY) {
+		if (taint != TaintConstants.EMPTY.value) {
 			TaintInternal.clearVisited();
 			tobj.set(taint);
 		}

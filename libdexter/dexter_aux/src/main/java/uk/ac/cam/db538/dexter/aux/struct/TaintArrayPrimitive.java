@@ -7,7 +7,7 @@ public final class TaintArrayPrimitive extends TaintArray {
 	public final int[] t_array;
 
 	TaintArrayPrimitive(int length, int t_length) {
-		this(length, t_length, TaintConstants.TAINT_EMPTY);
+		this(length, t_length, TaintConstants.EMPTY.value);
 	}
 
 	TaintArrayPrimitive(int length, int t_length, int t_elem) {

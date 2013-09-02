@@ -44,7 +44,7 @@ public class TestingTaintTransform extends TaintTransform {
     	if (leakageAlert == null) {
     		leakageAlert = new LeakageAlert() {
 				@Override
-				public DexCodeElement generate(CodeGenerator codeGen) {
+				public DexCodeElement generate(DexSingleRegister regTaint, CodeGenerator codeGen) {
 					DexSingleRegister auxException = codeGen.auxReg();
 					return new DexMacro(
 							codeGen.newObj_SimpleInit(
