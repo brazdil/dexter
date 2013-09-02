@@ -40,7 +40,7 @@ public class DexterApplication extends Application {
 
         // disable debug
         DexCodeGeneration.DEBUG = false;
-        DexCodeGeneration.INFO = false;
+        DexCodeGeneration.INFO = true;
 
         // create file/dir constants
         frameworkCache = new File(this.getFilesDir(), "framework.cache");
