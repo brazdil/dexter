@@ -146,7 +146,7 @@ public class TypeSolver {
         if (info.type == RopType.One)
             return RopType.Integer;
         else if (info.type == RopType.Zero) { // Default to Integer type.
-            System.out.println("Warning: Ambiguous null value.");
+//            System.out.println("Warning: Ambiguous null value.");
             return RopType.Integer;
         } else
             return info.type;
