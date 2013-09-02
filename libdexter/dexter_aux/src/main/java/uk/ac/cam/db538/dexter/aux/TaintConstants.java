@@ -39,7 +39,8 @@ public class TaintConstants {
       return TAINT_SOURCE_SMS;
     else if (query.startsWith("content://call_log"))
       return TAINT_SOURCE_CALL_LOG;
-    return 0;
+    else
+      return TAINT_EMPTY;
   }
 
   public static final int serviceTaint(String name) {
@@ -47,7 +48,8 @@ public class TaintConstants {
       return TAINT_SOURCE_LOCATION;
     else if (name.equals("phone"))
       return TAINT_SOURCE_DEVICE_ID;
-    return 0;
+    else
+      return TAINT_EMPTY;
   }
   
   public static final boolean isImmutable(Object obj) {

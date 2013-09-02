@@ -5,9 +5,9 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
 import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
 
-public class Source_Query extends SourceSinkDefinition {
+public class Source_SystemService extends SourceSinkDefinition {
 
-	public Source_Query(MethodCall methodCall) {
+	public Source_SystemService(MethodCall methodCall) {
 		super(methodCall);
 	}
 	
@@ -15,23 +15,23 @@ public class Source_Query extends SourceSinkDefinition {
 	protected boolean isApplicable() {
 		return 
 			isVirtualCall() &&
-			classIsChildOf("Landroid/content/ContentResolver;") &&
-			methodIsCalled("query") &&
-			paramIsOfType(1, "Landroid/net/Uri;") &&
-			returnTypeIs("Landroid/database/Cursor;") &&
+			classIsChildOf("Landroid/content/Context;") &&
+			methodIsCalled("getSystemService") &&
+			paramIsOfType(1, "Ljava/lang/String;") &&
+			returnTypeIs("Ljava/lang/Object;") &&
 			movesResult();
 	}
 
-	private DexSingleRegister auxUriTaint;
+	private DexSingleRegister auxServiceTaint;
 	
 	@Override
 	public DexCodeElement insertBefore(CodeGenerator codeGen) {
-		auxUriTaint = codeGen.auxReg();
-		return codeGen.getQueryTaint(auxUriTaint, (DexSingleRegister) getParamRegister(1));		
+		auxServiceTaint = codeGen.auxReg();
+		return codeGen.getServiceTaint(auxServiceTaint, (DexSingleRegister) getParamRegister(1));		
 	}
 
 	@Override
 	public DexCodeElement insertAfter(CodeGenerator codeGen) {
-		return codeGen.setTaint(auxUriTaint, (DexSingleRegister) getResultRegister());
+		return codeGen.setTaint(auxServiceTaint, (DexSingleRegister) getResultRegister());
 	}
 }

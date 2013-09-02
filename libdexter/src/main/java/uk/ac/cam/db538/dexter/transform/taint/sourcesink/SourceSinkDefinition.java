@@ -37,6 +37,7 @@ public abstract class SourceSinkDefinition {
 		
 		// Add new source/sink definitions here
 		addDef(list, new Source_Query(methodCall));
+		addDef(list, new Source_SystemService(methodCall));
 		
 		if (list.isEmpty())
 			return null;
