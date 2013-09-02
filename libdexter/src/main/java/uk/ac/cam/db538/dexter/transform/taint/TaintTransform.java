@@ -90,6 +90,7 @@ import uk.ac.cam.db538.dexter.transform.InvokeClassifier;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.TryBlockSplitter;
+import uk.ac.cam.db538.dexter.transform.taint.sourcesink.LeakageAlert;
 import uk.ac.cam.db538.dexter.transform.taint.sourcesink.SourceSinkDefinition;
 import uk.ac.cam.db538.dexter.utils.Utils;
 import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
@@ -324,6 +325,10 @@ public class TaintTransform extends Transform {
         insertStaticFieldInit(staticFieldsClass);
     }
     
+    public LeakageAlert getLeakageAlert() {
+    	return null;
+    }
+    
     private void createEmptyClinit(DexClass clazz) {
     	if (getClinit(clazz) != null)
     		return;
@@ -497,16 +502,18 @@ public class TaintTransform extends Transform {
         if (methodCall.getInvoke().getMethodId().getName().equals("query"))
         	methodCall.getInvoke();
         
-        SourceSinkDefinition sourceSinkDef = SourceSinkDefinition.findApplicableDefinition(methodCall);
-        DexCodeElement sourcesinkBefore, sourcesinkAfter;
+        SourceSinkDefinition sourceSinkDef = SourceSinkDefinition.findApplicableDefinition(methodCall, getLeakageAlert());
+        DexCodeElement sourcesinkBefore, sourcesinkAfter, sourcesinkJustBefore;
         if (sourceSinkDef != null) {
         	System.out.println("Applying " + sourceSinkDef.getClass().getSimpleName() + " instrumentation");
         	
         	sourcesinkBefore = sourceSinkDef.insertBefore(codeGen);
         	sourcesinkAfter = sourceSinkDef.insertAfter(codeGen);
+        	sourcesinkJustBefore = sourceSinkDef.insertJustBefore(regCombinedTaint, codeGen);
         } else {
         	sourcesinkBefore = codeGen.empty();
         	sourcesinkAfter = codeGen.empty();
+        	sourcesinkJustBefore = codeGen.empty();
         }
         
         if (isCallToSuperclassConstructor(insnInvoke, code, method)) {
@@ -519,6 +526,7 @@ public class TaintTransform extends Transform {
             return new DexMacro(
             		   sourcesinkBefore,
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
+                       sourcesinkJustBefore,
                        wrappedCall,
 
                        // At this point, the object reference is valid
@@ -535,6 +543,7 @@ public class TaintTransform extends Transform {
             return new DexMacro(
             		   sourcesinkBefore,
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
+                       sourcesinkJustBefore,
                        wrappedCall,
                        codeGen.finishExternalCall(regCombinedTaint, insnInvoke, insnMoveResult),
                        sourcesinkAfter);

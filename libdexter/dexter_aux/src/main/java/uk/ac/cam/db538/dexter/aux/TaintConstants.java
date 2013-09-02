@@ -62,6 +62,14 @@ public class TaintConstants {
 	  return taint;
   }
   
+  public static final boolean isSourceTaint(int taint) {
+	  return (taint & TAINT_SOURCE) != 0;
+  }
+  
+  public static final boolean isSinkTaint(int taint) {
+	  return (taint & TAINT_SINK) != 0;
+  }
+  
   public static final boolean isImmutable(Object obj) {
 	return obj == null || isImmutableType(obj.getClass());
   }

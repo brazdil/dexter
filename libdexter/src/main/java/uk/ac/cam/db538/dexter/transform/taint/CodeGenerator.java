@@ -30,6 +30,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
@@ -781,6 +782,14 @@ public final class CodeGenerator {
     private boolean isMutable(DexRegisterType type) {
         return !(isPrimitive(type) || isImmutable(type));
     }
+    
+    public DexCodeElement isSourceTaint(DexSingleRegister regTo, DexSingleRegister regTaint) {
+    	return invoke_result_prim(regTo, dexAux.getMethod_TaintConstants_IsSourceTaint(), regTaint);
+    }
+
+    public DexCodeElement isSinkTaint(DexSingleRegister regTo, DexSingleRegister regTaint) {
+    	return invoke_result_prim(regTo, dexAux.getMethod_TaintConstants_IsSinkTaint(), regTaint);
+    }
 
     public DexCodeElement getTaint(DexSingleRegister regTo, DexSingleRegister regTaintObject) {
         return invoke_result_prim(regTo, dexAux.getMethod_Taint_Get(), taint(regTaintObject));
@@ -906,6 +915,24 @@ public final class CodeGenerator {
             insns.add(new DexInstruction_Move(reg, regConstant, false, hierarchy));
 
         return new DexMacro(insns);
+    }
+    
+    public DexCodeElement newObj_SimpleInit(DexSingleRegister regTo, BaseClassDefinition def) {
+    	DexTypeCache cache = hierarchy.getTypeCache();
+    	DexMethodId paramlessInit = DexMethodId.parseMethodId(
+			"<init>", 
+			DexPrototype.parse(
+				cache.getCachedType_Void(),
+				null,
+				cache),
+			cache);
+    	return new DexMacro(
+    			newInst(regTo, def),
+    			invoke(def.getMethod(paramlessInit), regTo));
+    }
+    
+    public DexCodeElement newInst(DexSingleRegister regTo, BaseClassDefinition def) {
+    	return new DexInstruction_NewInstance(regTo, def, hierarchy);
     }
 
     public DexCodeElement jump(DexLabel target) {

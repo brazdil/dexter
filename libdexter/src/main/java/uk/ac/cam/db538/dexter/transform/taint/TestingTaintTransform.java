@@ -11,13 +11,15 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
+import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy.TypeClassification;
+import uk.ac.cam.db538.dexter.transform.taint.sourcesink.LeakageAlert;
 
 public class TestingTaintTransform extends TaintTransform {
 
@@ -35,7 +37,28 @@ public class TestingTaintTransform extends TaintTransform {
 //        return name.equals("LTestList;");
     }
 
+    private LeakageAlert leakageAlert;
+    
     @Override
+	public LeakageAlert getLeakageAlert() {
+    	if (leakageAlert == null) {
+    		leakageAlert = new LeakageAlert() {
+				@Override
+				public DexCodeElement generate(CodeGenerator codeGen) {
+					DexSingleRegister auxException = codeGen.auxReg();
+					return new DexMacro(
+							codeGen.newObj_SimpleInit(
+									auxException, 
+									hierarchy.getBaseClassDefinition(
+										DexClassType.parse(LEAKAGEEXCEPTION_CLASS, hierarchy.getTypeCache()))),
+							codeGen.thrw(auxException));
+				}
+			};
+    	}
+    	return leakageAlert;
+	}
+
+	@Override
     public DexMethod doLast(DexMethod method) {
         if (isGivenUtilsMethod(method, NAME_ISTAINTED, PROTOTYPE_ISTAINTED_PRIMITIVE)) {
         	
@@ -116,6 +139,7 @@ public class TestingTaintTransform extends TaintTransform {
         return super.doLast(method);
     }
 
+	private static final String LEAKAGEEXCEPTION_CLASS = "LLeakageException;";
     private static final String TAINTUTILS_CLASS = "LTaintUtils;";
     private static final String NAME_ISTAINTED = "isTainted";
     private static final String PROTOTYPE_ISTAINTED_PRIMITIVE = "(I)Z";

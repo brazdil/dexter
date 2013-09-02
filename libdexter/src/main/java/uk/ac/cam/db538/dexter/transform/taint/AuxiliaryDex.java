@@ -43,6 +43,8 @@ public class AuxiliaryDex extends Dex {
 
 	@Getter private final DexMethod method_TaintConstants_QueryTaint;
 	@Getter private final DexMethod method_TaintConstants_ServiceTaint;
+	@Getter private final DexMethod method_TaintConstants_IsSourceTaint;
+	@Getter private final DexMethod method_TaintConstants_IsSinkTaint;
 	
 	@Getter private final DexMethod method_Call_SetInternalCall;
 	@Getter private final DexMethod method_Call_IsInternalCall;
@@ -102,6 +104,8 @@ public class AuxiliaryDex extends Dex {
         val clsTaintConstants = getDexClass(TaintConstants.class, hierarchy, renamer);
         this.method_TaintConstants_QueryTaint = findStaticMethodByName(clsTaintConstants, "queryTaint");
         this.method_TaintConstants_ServiceTaint = findStaticMethodByName(clsTaintConstants, "serviceTaint");
+        this.method_TaintConstants_IsSourceTaint = findStaticMethodByName(clsTaintConstants, "isSourceTaint");
+        this.method_TaintConstants_IsSinkTaint = findStaticMethodByName(clsTaintConstants, "isSinkTaint");
 
         // InvokeTaintStore class
         val clsInvokeTaintStore = getDexClass(InvokeTaintStore.class, hierarchy, renamer);

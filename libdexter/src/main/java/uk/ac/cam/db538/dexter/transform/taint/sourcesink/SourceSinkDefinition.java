@@ -6,6 +6,7 @@ import java.util.List;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -15,16 +16,23 @@ import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
 public abstract class SourceSinkDefinition {
 	
 	protected final MethodCall methodCall;
+	protected final LeakageAlert leakageAlert;
 	protected final RuntimeHierarchy hierarchy;
 	
-	protected SourceSinkDefinition(MethodCall methodCall) {
+	protected SourceSinkDefinition(MethodCall methodCall, LeakageAlert leakageAlert) {
 		this.methodCall = methodCall;
+		this.leakageAlert = leakageAlert;
 		this.hierarchy = methodCall.getInvoke().getHierarchy();
+	}
+	
+	protected SourceSinkDefinition(MethodCall methodCall) {
+		this(methodCall, null);
 	}
 	
 	protected abstract boolean isApplicable();
 	
 	public DexCodeElement insertBefore(CodeGenerator codeGen) { return codeGen.empty(); }
+	public DexCodeElement insertJustBefore(DexSingleRegister regCombinedTaint, CodeGenerator codeGen) { return codeGen.empty(); }
 	public DexCodeElement insertAfter(CodeGenerator codeGen) { return codeGen.empty(); }
 	
 	private static final void addDef(List<SourceSinkDefinition> list, SourceSinkDefinition def) {
@@ -32,13 +40,14 @@ public abstract class SourceSinkDefinition {
 			list.add(def);
 	}
 	
-	public static final SourceSinkDefinition findApplicableDefinition(MethodCall methodCall) {
+	public static final SourceSinkDefinition findApplicableDefinition(MethodCall methodCall, LeakageAlert sinkAlert) {
 		List<SourceSinkDefinition> list = new ArrayList<SourceSinkDefinition>();
 		
 		// Add new source/sink definitions here
 		addDef(list, new Source_Query(methodCall));
 		addDef(list, new Source_SystemService(methodCall));
 		addDef(list, new Source_Browser(methodCall));
+		addDef(list, new Sink_Log(methodCall, sinkAlert));
 		
 		if (list.isEmpty())
 			return null;
@@ -87,12 +96,16 @@ public abstract class SourceSinkDefinition {
 	}
 	
 	protected boolean paramIsOfType(int index, String desc) {
-		return methodCall.getInvoke()
+		try {
+			return methodCall.getInvoke()
 				.getMethodId()
 				.getPrototype()
 				.getParameterType(index, isStaticCall(), methodCall.getInvoke().getClassType())
 				.getDescriptor()
 				.equals(desc);
+		} catch (IndexOutOfBoundsException ex) {
+			return false;
+		}
 	}
 	
 	protected DexRegister getParamRegister(int index) {
