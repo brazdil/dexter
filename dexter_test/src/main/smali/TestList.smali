@@ -12,7 +12,7 @@
     .registers 4
 
     # create array
-    const v0, 77
+    const v0, 78
     new-array v0, v0, [LTestExerciser;
     const v1, 0
 
@@ -550,6 +550,13 @@
 
     new-instance v3, LTest_Source_Location;
     invoke-direct {v3}, LTest_Source_Location;-><init>()V
+    new-instance v2, LSourceTestExerciser;
+    invoke-direct {v2, v3}, LSourceTestExerciser;-><init>(LSourceTest;)V
+    aput-object v2, v0, v1
+    add-int/lit8 v1, v1, 1
+
+    new-instance v3, LTest_Source_Browser;
+    invoke-direct {v3}, LTest_Source_Browser;-><init>()V
     new-instance v2, LSourceTestExerciser;
     invoke-direct {v2, v3}, LSourceTestExerciser;-><init>(LSourceTest;)V
     aput-object v2, v0, v1
