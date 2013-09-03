@@ -94,12 +94,7 @@ public abstract class DexInstruction extends DexCodeElement {
     }
 
     private DexTryStart getSurroundingTryBlock(InstructionList code) {
-        val index = code.getIndex(this);
-        val tryStarts = code.getAllTryBlocks();
-        for (val tryStart : tryStarts)
-            if (code.isBetween(tryStart, tryStart.getEndMarker(), index))
-                return tryStart;
-        return null;
+    	return code.getSurroundingTryBlock(this);
     }
 
     private List<? extends DexCodeElement> getTryBlockCatchHandlers(DexTryStart tryBlock) {

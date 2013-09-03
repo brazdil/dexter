@@ -1,27 +1,24 @@
 package uk.ac.cam.db538.dexter.dex.code.macro;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import lombok.Getter;
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexMacro extends DexCodeElement {
 
-    @Getter private final InstructionList instructions;
-
-    public DexMacro(InstructionList instructions) {
-        this.instructions = instructions;
-    }
+    @Getter private final List<DexCodeElement> instructions;
 
     public DexMacro(DexCodeElement ... insns) {
-        this(new InstructionList(Arrays.asList(insns)));
+        this(Arrays.asList(insns));
     }
 
     public DexMacro(List<? extends DexCodeElement> insns) {
-        this(new InstructionList(insns));
+        this.instructions = Utils.finalList(expandMacros(insns));
     }
 
     @Override
@@ -40,5 +37,28 @@ public class DexMacro extends DexCodeElement {
         if (emptyMacro == null)
             emptyMacro = new DexMacro();
         return emptyMacro;
+    }
+
+    public static List<? extends DexCodeElement> expandMacros(List<? extends DexCodeElement> insns) {
+        if (!hasMacros(insns))
+            return insns;
+
+        val expandedInsns = new ArrayList<DexCodeElement>();
+        for (val insn : insns) {
+            if (insn instanceof DexMacro) {
+            	DexMacro macro = (DexMacro) insn;
+            	assert !hasMacros(macro.instructions);
+                expandedInsns.addAll(macro.instructions);
+            } else
+                expandedInsns.add(insn);
+        }
+        return expandedInsns;
+    }
+
+    private static boolean hasMacros(List<? extends DexCodeElement> insns) {
+        for (val insn : insns)
+            if (insn instanceof DexMacro)
+                return true;
+        return false;
     }
 }

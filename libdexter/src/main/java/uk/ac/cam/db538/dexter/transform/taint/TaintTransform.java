@@ -287,6 +287,9 @@ public class TaintTransform extends Transform {
             DexAnnotation anno = new DexAnnotation(dexAux.getAnno_InternalMethod().getType(), AnnotationVisibility.RUNTIME);
             method = new DexMethod(method, anno);
         }
+        
+        if (method.getMethodDef().getMethodId().getName().equals("<init>") && method.getParentClass().getClassDef().getType().getDescriptor().equals("Lcom/kik/cards/web/ar;"))
+        	method.getMethodBody().getInstructionList().dump();
 
         return method;
     }
@@ -308,7 +311,7 @@ public class TaintTransform extends Transform {
         // insert static taint field initialization into <clinit>
         createEmptyClinit(clazz);
         insertStaticFieldInit(clazz);
-    		
+        
         super.doLast(clazz);
     }
 

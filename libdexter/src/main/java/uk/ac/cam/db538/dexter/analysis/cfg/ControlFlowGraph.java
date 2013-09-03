@@ -9,7 +9,6 @@ import java.util.List;
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
 public class ControlFlowGraph {
@@ -49,7 +48,7 @@ public class ControlFlowGraph {
         List<DexCodeElement> currentBlock = new ArrayList<DexCodeElement>();
         for (val insn : insns) {
             if (insn.cfgStartsBasicBlock() && !currentBlock.isEmpty()) {
-                val block = new CfgBasicBlock(new InstructionList(currentBlock));
+                val block = new CfgBasicBlock(currentBlock);
                 basicBlocks.add(block);
                 insnBlockMap.put(block.getFirstInstruction(), block);
                 currentBlock = new ArrayList<DexCodeElement>();
@@ -58,14 +57,14 @@ public class ControlFlowGraph {
             currentBlock.add(insn);
 
             if ((insn.cfgEndsBasicBlock() || insn.cfgExitsMethod(insns) || insn.cfgGetSuccessors(insns).size() > 1) && !currentBlock.isEmpty()) {
-                val block = new CfgBasicBlock(new InstructionList(currentBlock));
+                val block = new CfgBasicBlock(currentBlock);
                 basicBlocks.add(block);
                 insnBlockMap.put(block.getFirstInstruction(), block);
                 currentBlock = new ArrayList<DexCodeElement>();
             }
         }
         if (!currentBlock.isEmpty()) {
-            val block = new CfgBasicBlock(new InstructionList(currentBlock));
+            val block = new CfgBasicBlock(currentBlock);
             basicBlocks.add(block);
             insnBlockMap.put(block.getFirstInstruction(), block);
         }

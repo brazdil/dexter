@@ -1,11 +1,12 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -20,47 +21,44 @@ import uk.ac.cam.db538.dexter.utils.Utils;
 public class InstructionList implements Collection<DexCodeElement> {
 
     private final List<DexCodeElement> instructionList;
+    private final Map<DexInstruction, DexTryStart> surroundingBlocks;
 
     public InstructionList(List<? extends DexCodeElement> insns) {
-        insns = expandMacros(insns);
+        insns = DexMacro.expandMacros(insns);
 
         // check instruction list for duplicates
         // (often need to find the index of an instruction,
         //  so having duplicates could result in finding
         //  the wrong occurence)
-        val visited = new HashSet<DexCodeElement>();
-        for (val insn : insns)
+        Set<DexCodeElement> visited = new HashSet<DexCodeElement>();
+        Map<DexInstruction, DexTryStart> surroundingBlocks = new HashMap<DexInstruction, DexTryStart>(insns.size());
+        DexTryStart latestTryStart = null;
+        
+        for (val insn : insns) {
             if (visited.contains(insn))
                 throw new IllegalArgumentException("Duplicates are not allowed in the instruction list");
-            else
+            else {
                 visited.add(insn);
+                
+                if (insn instanceof DexTryStart) {
+                	latestTryStart = (DexTryStart) insn;
+                } else if (insn instanceof DexTryEnd) {
+                	// assert(latestTryStart != null);
+                	// assert(latestTryStart.getEndMarker() == insn);
+                	latestTryStart = null;
+                } else if (insn instanceof DexInstruction) {
+                	if (latestTryStart != null)
+                		surroundingBlocks.put((DexInstruction) insn, latestTryStart);
+                }
+            }
+        }
 
         this.instructionList = Utils.finalList(insns);
+        this.surroundingBlocks = surroundingBlocks;
     }
     
     public InstructionList(DexCodeElement ... insns) {
     	this(Arrays.asList(insns));
-    }
-
-    private static List<? extends DexCodeElement> expandMacros(List<? extends DexCodeElement> insns) {
-        if (!hasMacros(insns))
-            return insns;
-
-        val expandedInsns = new ArrayList<DexCodeElement>();
-        for (val insn : insns) {
-            if (insn instanceof DexMacro)
-                expandedInsns.addAll(expandMacros(((DexMacro) insn).getInstructions().instructionList));
-            else
-                expandedInsns.add(insn);
-        }
-        return expandedInsns;
-    }
-
-    private static boolean hasMacros(List<? extends DexCodeElement> insns) {
-        for (val insn : insns)
-            if (insn instanceof DexMacro)
-                return true;
-        return false;
     }
 
     public DexCodeElement peekFirst() {
@@ -186,26 +184,18 @@ public class InstructionList implements Collection<DexCodeElement> {
     public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, DexCodeElement elemSought) {
         return isBetween(elemStart, elemEnd, getIndex(elemSought));
     }
-
-    public List<DexTryStart> getAllTryBlocks() {
-        val list = new ArrayList<DexTryStart>();
-        for (val insn : instructionList)
-            if (insn instanceof DexTryStart)
-                list.add((DexTryStart) insn);
-        return list;
+    
+    public DexTryStart getSurroundingTryBlock(DexInstruction elem) {
+    	return surroundingBlocks.get(elem);
     }
 
-    public Set<DexTryStart> getTryBlocks() {
-        val set = new HashSet<DexTryStart>();
-        for (val elem : instructionList)
-            if (elem instanceof DexTryEnd)
-                set.add((DexTryStart) elem);
-        return set;
-    }
-
-    public void dump() {
+    private static void dump(Collection<? extends DexCodeElement> insns) {
     	int i = 0;
-        for (val insn : instructionList)
+        for (val insn : insns)
             System.err.println(Integer.toString(i++) + ": " + insn.toString());
+    }
+    
+    public void dump() {
+    	dump(this.instructionList);
     }
 }
