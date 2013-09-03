@@ -895,11 +895,13 @@ public class TaintTransform extends Transform {
                            instrumentedInsn,
                            codeGen.getTaintExternal(regToTaint, regObjectTaint));
 
-            else
+            else {
+                DexSingleRegister auxToTaint = codeGen.auxReg();
                 return new DexMacro(
                 		   instrumentedInsn,
-                           codeGen.getTaintExternal(regToTaint, regObjectTaint),
-                           codeGen.taintLookup(regToTaint, regObjectBackup, regToTaint, hierarchy.classifyType(resultType)));
+                           codeGen.getTaintExternal(auxToTaint, regObjectTaint),
+                           codeGen.taintLookup(regToTaint, regObjectBackup, auxToTaint, hierarchy.classifyType(resultType)));
+            }
         }
     }
 
