@@ -599,6 +599,14 @@
 
     sput-object v0, LTestList;->tests:[LTestExerciser;
 
+    # just create an instance of some problematic classes
+
+    new-instance v3, LMyClass_LateConstruct;
+    invoke-direct {v3}, LMyClass_LateConstruct;-><init>()V
+
+    new-instance v3, LMyClass_UndecidableNULL;
+    invoke-direct {v3}, LMyClass_UndecidableNULL;-><init>()V
+
     return-void
 .end method
 

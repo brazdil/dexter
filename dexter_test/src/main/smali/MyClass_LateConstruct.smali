@@ -1,4 +1,4 @@
-.class public abstract LMyClass_LateConstruct;
+.class public LMyClass_LateConstruct;
 .super Ljava/lang/Object;
 
 .field private X:I

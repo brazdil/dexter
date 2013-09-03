@@ -288,9 +288,6 @@ public class TaintTransform extends Transform {
             method = new DexMethod(method, anno);
         }
         
-        if (method.getMethodDef().getMethodId().getName().equals("<init>") && method.getParentClass().getClassDef().getType().getDescriptor().equals("Lcom/kik/cards/web/ar;"))
-        	method.getMethodBody().getInstructionList().dump();
-
         return method;
     }
 
@@ -506,9 +503,6 @@ public class TaintTransform extends Transform {
     		regCombinedTaint);
         
         // Apply source/sink instrumentation
-        
-        if (methodCall.getInvoke().getMethodId().getName().equals("query"))
-        	methodCall.getInvoke();
         
         SourceSinkDefinition sourceSinkDef = SourceSinkDefinition.findApplicableDefinition(methodCall, getLeakageAlert());
         DexCodeElement sourcesinkBefore, sourcesinkAfter, sourcesinkJustBefore, sourcesinkJustAfter;
