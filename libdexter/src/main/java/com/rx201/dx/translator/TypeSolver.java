@@ -100,12 +100,16 @@ public class TypeSolver {
     }
 
     public boolean addConstraint(RopType constraint, boolean freeze, RuntimeHierarchy hierarchy) {
+        if (constraint.category == Category.Unknown)
+            return false;
+        
         if (info.freezed) {
             RopType newType = info.type.merge(constraint, hierarchy);
             if (newType.category == Category.Conflicted)
             	throw new AssertionError();
             return false;
         }
+
         if (info.constraints.contains(constraint))
             return false;
 
