@@ -199,9 +199,11 @@ public final class CodeGenerator {
         labelId = 0;
         catchId = 0;
         tryId = 0;
+        
+        cachedAuxRegs = new ArrayList<DexSingleAuxiliaryRegister>();
     }
     
-    private List<DexSingleAuxiliaryRegister> cachedAuxRegs = new ArrayList<DexSingleAuxiliaryRegister>();
+    private List<DexSingleAuxiliaryRegister> cachedAuxRegs;
     private int usedAuxRegs;
     
     public void reuseAuxRegs() {

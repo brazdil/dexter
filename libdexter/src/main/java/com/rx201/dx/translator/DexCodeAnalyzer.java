@@ -101,7 +101,6 @@ public class DexCodeAnalyzer {
         }
     }
 
-
     private void buildUseDefSets() {
         DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(code);
 
