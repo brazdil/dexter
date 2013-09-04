@@ -938,6 +938,7 @@ public final class CodeGenerator {
     public DexCodeElement taintCast(DexSingleRegister regObject, DexSingleRegister regObjectTaint,  DexReferenceType objType) {
     	DexLabel lNull = label(), lAfter = label();
     	DexSingleRegister auxTaint = auxReg();
+    	DexSingleRegister auxNullObject = auxReg();
     	
     	return new DexMacro(
     			
@@ -955,7 +956,8 @@ public final class CodeGenerator {
                 // NULL objects can be cast from anything to anything. Need to recreate the Taint object
                 
                 getTaint(auxTaint, regObjectTaint), // don't need to clear visited set (with NULL it can't loop)
-                taintNull(regObject, auxTaint, objType), // method will pick the correct Taint class
+                setZero(auxNullObject),
+                taintNull(regObjectTaint, auxNullObject, auxTaint, hierarchy.classifyType(objType)), // method will pick the correct Taint class
                 
                 lAfter);
     }
