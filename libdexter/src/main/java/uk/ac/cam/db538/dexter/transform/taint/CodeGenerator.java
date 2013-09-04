@@ -430,6 +430,8 @@ public final class CodeGenerator {
     }
 
     public DexCodeElement combineArgumentsTaint(DexSingleRegister regCombinedTaint, DexInstruction_FilledNewArray insnFilledArray) {
+    	DexSingleRegister auxObjectTaint = auxReg();
+    	
         for (DexRegister regArg : insnFilledArray.getArgumentRegisters())
             if (regArg.equals(regCombinedTaint) || regArg.getTaintRegister().equals(regCombinedTaint))
                 throw new Error("Conflicting registers used");
@@ -440,8 +442,14 @@ public final class CodeGenerator {
         insns.add(setEmptyTaint(regCombinedTaint));
 
         // Get and combine the taint of each parameter
-        for (DexSingleRegister regArg : insnFilledArray.getArgumentRegisters())
-            insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regArg.getTaintRegister()));
+        for (DexSingleRegister regArg : insnFilledArray.getArgumentRegisters()) {
+        	if (insnFilledArray.getArrayType().getElementType() instanceof DexPrimitiveType)
+        		insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regArg.getTaintRegister()));
+        	else {
+        		insns.add(getTaint(auxObjectTaint, regArg.getTaintRegister()));
+        		insns.add(combineTaint(regCombinedTaint, regCombinedTaint, auxObjectTaint));
+        	}
+        }
 
         return new DexMacro(insns);
     }

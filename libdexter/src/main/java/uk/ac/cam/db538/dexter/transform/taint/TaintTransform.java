@@ -814,7 +814,9 @@ public class TaintTransform extends Transform {
     			insn,
     			codeGen.constant(auxLength, insn.getFilledArray().getArgumentRegisters().size()),
     			codeGen.setEmptyTaint(auxLengthTaint),
-    			codeGen.taintCreate_ArrayPrimitive(regArray, auxLength, auxLengthTaint),
+    			(insn.getFilledArray().getArrayType().getElementType() instanceof DexPrimitiveType) ?
+    					codeGen.taintCreate_ArrayPrimitive(regArray, auxLength, auxLengthTaint) :
+						codeGen.taintCreate_ArrayReference(regArray, auxLength, auxLengthTaint),
     			codeGen.setTaint(auxCombinedTaint, regArray.getTaintRegister()));
     }
 
