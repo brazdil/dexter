@@ -11,7 +11,10 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexEmpty;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
@@ -108,17 +111,37 @@ public class InvokeClassifier {
     public static DexCode collapseCalls(DexCode code) {
         InstructionList oldInsns = code.getInstructionList();
         List<DexCodeElement> newInsns = new ArrayList<DexCodeElement>(oldInsns.size());
+        
+        Set<DexCodeElement> toSkip = new HashSet<DexCodeElement>();
 
         for (DexCodeElement insn : oldInsns) {
-            if (insn instanceof DexInstruction_MoveResult)
+        	if (toSkip.contains(insn)) {
+        		toSkip.remove(insn);
+        		continue;
+        	} else if (insn instanceof DexInstruction_MoveResult)
                 continue;
             else if (insn instanceof DexInstruction_Invoke) {
 
                 DexInstruction nextInstruction = code.getInstructionList().getNextProperInstruction(insn);
                 if (!(nextInstruction instanceof DexInstruction_MoveResult))
                     nextInstruction = null;
-
-                newInsns.add(new MethodCall((DexInstruction_Invoke) insn, (DexInstruction_MoveResult) nextInstruction));
+                
+                DexInstruction_Invoke insnInvoke = (DexInstruction_Invoke) insn;
+                DexInstruction_MoveResult insnResult = (DexInstruction_MoveResult) nextInstruction;
+                
+                DexTryStart endingBlock = getEndingTryBlock(insnInvoke, insnResult, code);
+                
+                if (endingBlock == null)
+                	newInsns.add(new MethodCall(insnInvoke, insnResult));
+                else {
+                	DexTryEnd clonedEnd = new DexTryEnd(endingBlock.getEndMarker().getId());
+                	DexTryStart clonedStart = new DexTryStart(endingBlock, clonedEnd);
+                	
+                	newInsns.add(endingBlock.getEndMarker());
+                	newInsns.add(new MethodCall(insnInvoke, insnResult, clonedStart));
+                	
+                	toSkip.add(endingBlock.getEndMarker());
+                }
 
             } else if (insn instanceof DexInstruction_FilledNewArray) {
 
@@ -131,6 +154,24 @@ public class InvokeClassifier {
         }
 
         return new DexCode(code, new InstructionList(newInsns));
+    }
+    
+    private static DexTryStart getEndingTryBlock(DexInstruction_Invoke invoke, DexInstruction_MoveResult moveResult, DexCode code) {
+    	if (moveResult == null)
+    		return null;
+    	
+    	DexTryStart tryStart = null;
+    	for (DexCodeElement between : code.getInstructionList().getInstructionsBetween(invoke, moveResult)) {
+    		if (between instanceof DexEmpty)
+    			continue;
+    		else if (between instanceof DexTryEnd) {
+    			tryStart = code.getInstructionList().getSurroundingTryBlock(invoke);
+    			assert tryStart.getEndMarker() == between;
+    		} else
+    			assert false;
+    	}
+    	
+    	return tryStart;
     }
 
     public static DexCode expandCalls(DexCode code) {

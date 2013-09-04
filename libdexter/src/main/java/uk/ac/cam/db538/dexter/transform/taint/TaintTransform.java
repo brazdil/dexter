@@ -510,9 +510,9 @@ public class TaintTransform extends Transform {
         DexSingleAuxiliaryRegister regCombinedTaint = codeGen.auxReg();
         
         DexCodeElement wrappedCall = wrapWithTryBlock(
-    		methodCall,
-    		codeGen.empty(),
-    		regCombinedTaint);
+	    		methodCall.expand_JustInternals(),
+	    		codeGen.empty(),
+	    		regCombinedTaint);
         
         // Apply source/sink instrumentation
         
@@ -532,6 +532,8 @@ public class TaintTransform extends Transform {
         	sourcesinkJustAfter = codeGen.empty();
         }
         
+        DexCodeElement completeCall_BeforeResult;
+        DexCodeElement completeCall_AfterResult;
         if (isCallToSuperclassConstructor(insnInvoke, code, method)) {
 
             // Handle calls to external superclass constructor
@@ -539,12 +541,13 @@ public class TaintTransform extends Transform {
             assert(!methodCall.movesResult());
             DexSingleRegister regThis = (DexSingleRegister) insnInvoke.getArgumentRegisters().get(0);
 
-            return new DexMacro(
+            completeCall_BeforeResult = new DexMacro(
             		   sourcesinkBefore,
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
-                       sourcesinkJustBefore,
-                       wrappedCall,
-
+                       sourcesinkJustBefore);
+            
+            completeCall_AfterResult = new DexMacro(
+            		
                        // At this point, the object reference is valid
                        // Need to generate new TaintInternal object with it
 
@@ -557,16 +560,24 @@ public class TaintTransform extends Transform {
         } else {
 
             // Standard external call
-            return new DexMacro(
+        	completeCall_BeforeResult = new DexMacro(
             		   sourcesinkBefore,
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
-                       sourcesinkJustBefore,
-                       wrappedCall,
+                       sourcesinkJustBefore);
+                       
+            completeCall_AfterResult = new DexMacro(
                        sourcesinkJustAfter,
                        codeGen.finishExternalCall(regCombinedTaint, insnInvoke, insnMoveResult),
                        sourcesinkAfter);
 
         }
+        
+        return new DexMacro(
+    		methodCall.expand_ReplaceInternals(
+				new DexMacro(
+					completeCall_BeforeResult,
+					wrappedCall)),
+    		completeCall_AfterResult);
     }
 
     private DexCodeElement instrument_Return(DexInstruction_Return insn) {

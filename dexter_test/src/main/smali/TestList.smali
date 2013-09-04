@@ -606,6 +606,9 @@
 
     new-instance v3, LMyClass_UndecidableNULL;
     invoke-direct {v3}, LMyClass_UndecidableNULL;-><init>()V
+    
+    new-instance v3, LMyClass_TryEndBeforeMoveResult;
+    invoke-direct {v3}, LMyClass_TryEndBeforeMoveResult;-><init>()V
 
     return-void
 .end method

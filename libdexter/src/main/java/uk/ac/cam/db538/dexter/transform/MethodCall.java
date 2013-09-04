@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.transform;
 import java.util.Set;
 
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
@@ -18,8 +19,13 @@ public class MethodCall extends DexCodeElement {
 
     private final DexInstruction_Invoke insnInvoke;
     private final DexInstruction_MoveResult insnResult;
+    private final DexTryStart ownTryBlock;
 
     public MethodCall(DexInstruction_Invoke invoke, DexInstruction_MoveResult result) {
+    	this(invoke, result, null);
+    }
+    
+    public MethodCall(DexInstruction_Invoke invoke, DexInstruction_MoveResult result, DexTryStart ownTryBlock) {
         this.insnInvoke = invoke;
         
         DexType returnType = insnInvoke.getMethodId().getPrototype().getReturnType();
@@ -49,9 +55,12 @@ public class MethodCall extends DexCodeElement {
         		assert (((DexPrimitiveType) returnType).getTypeWidth() == RegisterWidth.WIDE);
         		break;
         	}
-        }        	
-
+        }
+        
         this.insnResult = result;
+        this.ownTryBlock = ownTryBlock;
+        
+        assert !((this.insnResult == null) && (this.ownTryBlock != null)); // cannot have a try block without moving result
     }
 
     public boolean movesResult() {
@@ -65,18 +74,30 @@ public class MethodCall extends DexCodeElement {
     public DexInstruction_MoveResult getResult() {
         return insnResult;
     }
-
-    public DexCodeElement expand() {
+    
+    public DexCodeElement expand_ReplaceInternals(DexCodeElement internals) {
+    	if (ownTryBlock == null)
+    		return internals;
+    	else
+    		return new DexMacro(ownTryBlock, internals, ownTryBlock.getEndMarker());
+    }
+    
+    public DexCodeElement expand_JustInternals() {
         if (movesResult())
-            return new DexMacro(insnInvoke, insnResult);
+    		return new DexMacro(insnInvoke, insnResult);
         else
             return insnInvoke;
+    }
+
+    public DexCodeElement expand() {
+    	return expand_ReplaceInternals(expand_JustInternals());
     }
 
     public MethodCall clone() {
         return new MethodCall(
                    new DexInstruction_Invoke(insnInvoke),
-                   insnResult == null ? null : new DexInstruction_MoveResult(insnResult));
+                   insnResult == null ? null : new DexInstruction_MoveResult(insnResult),
+                   ownTryBlock);
     }
 
 	@Override

@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -185,6 +186,19 @@ public class InstructionList implements Collection<DexCodeElement> {
         return isBetween(elemStart, elemEnd, getIndex(elemSought));
     }
     
+	public List<DexCodeElement> getInstructionsBetween(DexInstruction insn1, DexInstruction insn2) {
+		int index1 = getIndex(insn1);
+		int index2 = getIndex(insn2);
+		
+		assert index1 < index2;
+		
+		List<DexCodeElement> between = new ArrayList<DexCodeElement>(index2 - index1);
+		for (int i = index1 + 1; i < index2; ++i)
+			between.add(get(i));
+		
+		return between;
+	}
+	
     public DexTryStart getSurroundingTryBlock(DexInstruction elem) {
     	return surroundingBlocks.get(elem);
     }
