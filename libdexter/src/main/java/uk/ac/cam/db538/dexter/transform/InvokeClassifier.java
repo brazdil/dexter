@@ -13,6 +13,7 @@ import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
@@ -119,6 +120,12 @@ public class InvokeClassifier {
 
                 newInsns.add(new MethodCall((DexInstruction_Invoke) insn, (DexInstruction_MoveResult) nextInstruction));
 
+            } else if (insn instanceof DexInstruction_FilledNewArray) {
+
+                DexInstruction nextInstruction = code.getInstructionList().getNextProperInstruction(insn);
+                assert (nextInstruction instanceof DexInstruction_MoveResult);
+                newInsns.add(new FilledArray((DexInstruction_FilledNewArray) insn, (DexInstruction_MoveResult) nextInstruction));
+
             } else
                 newInsns.add(insn);
         }
@@ -133,6 +140,8 @@ public class InvokeClassifier {
         for (DexCodeElement insn : oldInsns) {
             if (insn instanceof MethodCall)
                 newInsns.add(((MethodCall) insn).expand());
+            else if (insn instanceof FilledArray)
+                newInsns.add(((FilledArray) insn).expand());
             else
                 newInsns.add(insn);
         }

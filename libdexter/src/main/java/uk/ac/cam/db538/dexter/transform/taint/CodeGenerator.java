@@ -22,6 +22,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
@@ -422,6 +423,23 @@ public final class CodeGenerator {
             }
 
         }
+
+        return new DexMacro(insns);
+    }
+
+    public DexCodeElement combineArgumentsTaint(DexSingleRegister regCombinedTaint, DexInstruction_FilledNewArray insnFilledArray) {
+        for (DexRegister regArg : insnFilledArray.getArgumentRegisters())
+            if (regArg.equals(regCombinedTaint) || regArg.getTaintRegister().equals(regCombinedTaint))
+                throw new Error("Conflicting registers used");
+
+        final List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
+
+        // Initialize the combined taint variable
+        insns.add(setEmptyTaint(regCombinedTaint));
+
+        // Get and combine the taint of each parameter
+        for (DexSingleRegister regArg : insnFilledArray.getArgumentRegisters())
+            insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regArg.getTaintRegister()));
 
         return new DexMacro(insns);
     }

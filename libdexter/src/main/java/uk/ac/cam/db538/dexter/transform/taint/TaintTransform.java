@@ -40,6 +40,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
@@ -86,6 +87,7 @@ import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy.TypeClassification;
 import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
+import uk.ac.cam.db538.dexter.transform.FilledArray;
 import uk.ac.cam.db538.dexter.transform.InvokeClassifier;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
 import uk.ac.cam.db538.dexter.transform.Transform;
@@ -159,7 +161,7 @@ public class TaintTransform extends Transform {
         element = super.doFirst(element, code, method);
 
         // code elements (markers etc.) should be left alone
-        if (!(element instanceof DexInstruction) && !(element instanceof MethodCall))
+        if (!(element instanceof DexInstruction) && !(element instanceof MethodCall) && !(element instanceof FilledArray))
             return element;
 
         // instructions added in preparation stage should be skipped over
@@ -186,8 +188,9 @@ public class TaintTransform extends Transform {
         }
 
         if (element instanceof DexInstruction_Invoke ||
+        		element instanceof DexInstruction_FilledNewArray ||
                 element instanceof DexInstruction_MoveResult)
-            throw new Error("All method calls should be collapsed at this point");
+            throw new Error("All method calls and filled-arrays should be collapsed at this point");
 
         if (element instanceof DexInstruction_Return)
             return instrument_Return((DexInstruction_Return) element);
@@ -248,6 +251,9 @@ public class TaintTransform extends Transform {
 
         if (element instanceof DexInstruction_FillArrayData)
             return instrument_FillArrayData((DexInstruction_FillArrayData) element, code);
+
+        if (element instanceof FilledArray)
+            return instrument_FilledArray((FilledArray) element, code);
 
         if (element instanceof DexInstruction_Monitor)
             return instrument_Monitor((DexInstruction_Monitor) element, code);
@@ -795,6 +801,21 @@ public class TaintTransform extends Transform {
 					code),
     			codeGen.setEmptyTaint(regEmptyTaint),
     			codeGen.setTaint_ArrayPrimitive(regEmptyTaint, insn.getRegArray(), 0, insn.getElementData().size()));
+    }
+
+    private DexCodeElement instrument_FilledArray(FilledArray insn, DexCode code) {
+    	DexSingleRegister auxCombinedTaint = codeGen.auxReg();
+    	DexSingleRegister auxLength = codeGen.auxReg();
+    	DexSingleRegister auxLengthTaint = codeGen.auxReg();
+    	DexSingleRegister regArray = (DexSingleRegister) insn.getResult().getRegTo();
+    	
+    	return new DexMacro(
+    			codeGen.combineArgumentsTaint(auxCombinedTaint, insn.getFilledArray()),
+    			insn,
+    			codeGen.constant(auxLength, insn.getFilledArray().getArgumentRegisters().size()),
+    			codeGen.setEmptyTaint(auxLengthTaint),
+    			codeGen.taintCreate_ArrayPrimitive(regArray, auxLength, auxLengthTaint),
+    			codeGen.setTaint(auxCombinedTaint, regArray.getTaintRegister()));
     }
 
     private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput, DexCode code) {
