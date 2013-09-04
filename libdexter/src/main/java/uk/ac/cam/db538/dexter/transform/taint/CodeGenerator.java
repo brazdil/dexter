@@ -199,9 +199,19 @@ public final class CodeGenerator {
         catchId = 0;
         tryId = 0;
     }
+    
+    private List<DexSingleAuxiliaryRegister> cachedAuxRegs = new ArrayList<DexSingleAuxiliaryRegister>();
+    private int usedAuxRegs;
+    
+    public void reuseAuxRegs() {
+    	usedAuxRegs = 0;
+    }
 
     public DexSingleAuxiliaryRegister auxReg() {
-        return new DexSingleAuxiliaryRegister(regAuxId++);
+    	// add new aux reg if necessary
+    	while (usedAuxRegs >= cachedAuxRegs.size())
+    		cachedAuxRegs.add(new DexSingleAuxiliaryRegister(regAuxId++));
+        return cachedAuxRegs.get(usedAuxRegs++);
     }
 
     public DexLabel label() {
@@ -906,6 +916,31 @@ public final class CodeGenerator {
                    new DexInstruction_InstanceGet(regAux, regArrayTaint, dexAux.getField_TaintArrayReference_TArray(), hierarchy),
                    new DexInstruction_ArrayPut(regFromTaint, regAux, regIndex, Opcode_GetPut.Object, hierarchy));
     }
+    
+    public DexCodeElement taintCast(DexSingleRegister regObject, DexSingleRegister regObjectTaint,  DexReferenceType objType) {
+    	DexLabel lNull = label(), lAfter = label();
+    	DexSingleRegister auxTaint = auxReg();
+    	
+    	return new DexMacro(
+    			
+    		    ifZero(regObject, lNull),
+     		   
+     		    // Non-NULL objects must have the correct taint assigned already, but maybe not cast
+     		    // to the correct type, i.e. TaintInternal being passed as Taint;
+     		    // so just do the correct cast
+     		   
+                cast(regObjectTaint, (DexReferenceType) taintType(objType)),
+                
+                jump(lAfter),
+                lNull,
+                
+                // NULL objects can be cast from anything to anything. Need to recreate the Taint object
+                
+                getTaint(auxTaint, regObjectTaint), // don't need to clear visited set (with NULL it can't loop)
+                taintNull(regObject, auxTaint, objType), // method will pick the correct Taint class
+                
+                lAfter);
+    }
 
     private static DexSingleRegister taint(DexRegister reg) {
         if (reg instanceof DexTaintRegister)
@@ -1107,6 +1142,21 @@ public final class CodeGenerator {
             return dexAux.getType_TaintArrayPrimitive().getClassDef().getType();
         case ARRAY_REFERENCE:
             return dexAux.getType_TaintArrayReference().getClassDef().getType();
+        case REF_UNDECIDABLE:
+            return dexAux.getType_Taint().getClassDef().getType();
+        default:
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public DexRegisterType taintFieldType(DexRegisterType type) {
+        switch(hierarchy.classifyType(type)) {
+        case PRIMITIVE:
+            return hierarchy.getTypeCache().getCachedType_Integer();
+        case REF_EXTERNAL:
+        case REF_INTERNAL:
+        case ARRAY_PRIMITIVE:
+        case ARRAY_REFERENCE:
         case REF_UNDECIDABLE:
             return dexAux.getType_Taint().getClassDef().getType();
         default:

@@ -13,6 +13,11 @@
     sput v0, LMyClass_UndecidableNULL;->X:Ljava/io/File;
     sput v0, LMyClass_UndecidableNULL;->Y:LMyClass_Point;
 
+    sget v1, LMyClass_UndecidableNULL;->X:Ljava/io/File;
+    sget v2, LMyClass_UndecidableNULL;->Y:LMyClass_Point;
+
+    
+
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
     return-void
     
