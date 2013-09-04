@@ -181,7 +181,14 @@ public class AnalyzedDexInstruction {
             TypeSolver target = definedRegisterMap.get(constraint.getKey());
             RopType type = constraint.getValue().getValA();
             boolean freezed = constraint.getValue().getValB();
-            target.addConstraint(type, freezed, hierarchy);
+            try {
+            	target.addConstraint(type, freezed, hierarchy);
+            } catch (AssertionError ex) {
+                throw new AssertionError(
+                    "Error propagating usage of " + constraint.getKey().toString() +
+                    " in insn " + this.getInstructionIndex() + ": " + this.getInstruction().toString(),
+                    ex);
+            }
         }
     }
 

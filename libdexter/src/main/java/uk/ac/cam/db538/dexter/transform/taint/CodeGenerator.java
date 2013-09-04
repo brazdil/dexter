@@ -317,33 +317,39 @@ public final class CodeGenerator {
     }
 
     private DexMacro getPrimitiveParamArray(DexSingleRegister regTo) {
+    	DexSingleAuxiliaryRegister auxThreadLocal = auxReg();
+    	
         return new DexMacro(
-                   sget(regTo, dexAux.getField_CallPrimitiveParamTaint().getFieldDef()),
-                   invoke_result_obj(regTo, method_ThreadLocal_Get, regTo),
+                   sget(auxThreadLocal, dexAux.getField_CallPrimitiveParamTaint().getFieldDef()),
+                   invoke_result_obj(regTo, method_ThreadLocal_Get, auxThreadLocal),
                    cast(regTo, typeIntArray));
     }
 
     private DexMacro getReferenceParamArray(DexSingleRegister regTo) {
+    	DexSingleAuxiliaryRegister auxThreadLocal = auxReg();
+    	
         return new DexMacro(
-                   sget(regTo, dexAux.getField_CallReferenceParamTaint().getFieldDef()),
-                   invoke_result_obj(regTo, method_ThreadLocal_Get, regTo),
+                   sget(auxThreadLocal, dexAux.getField_CallReferenceParamTaint().getFieldDef()),
+                   invoke_result_obj(regTo, method_ThreadLocal_Get, auxThreadLocal),
                    cast(regTo, dexAux.getArraytype_Taint()));
     }
 
     public DexMacro getResultPrimitiveTaint(DexTaintRegister regTo) {
-        DexSingleAuxiliaryRegister auxReg = auxReg();
+        DexSingleAuxiliaryRegister auxReg1 = auxReg(), auxReg2 = auxReg();
 
         return new DexMacro(
-                   sget(auxReg, dexAux.getField_CallPrimitiveResultTaint().getFieldDef()),
-                   invoke_result_obj(auxReg, method_ThreadLocal_Get, auxReg),
-                   cast(auxReg, typeInteger),
-                   invoke_result_prim(regTo, method_Integer_intValue, auxReg));
+                   sget(auxReg1, dexAux.getField_CallPrimitiveResultTaint().getFieldDef()),
+                   invoke_result_obj(auxReg2, method_ThreadLocal_Get, auxReg1),
+                   cast(auxReg2, typeInteger),
+                   invoke_result_prim(regTo, method_Integer_intValue, auxReg2));
     }
 
     public DexMacro getResultReferenceTaint(DexTaintRegister regTo, DexReferenceType taintType) {
+    	DexSingleAuxiliaryRegister auxResult = auxReg();
+    	
         return new DexMacro(
-        		   sget(regTo, dexAux.getField_CallReferenceResultTaint().getFieldDef()),
-        		   invoke_result_obj(regTo, method_ThreadLocal_Get, regTo),
+        		   sget(auxResult, dexAux.getField_CallReferenceResultTaint().getFieldDef()),
+        		   invoke_result_obj(regTo, method_ThreadLocal_Get, auxResult),
         		   cast(regTo, taintType));
     }
 
@@ -905,15 +911,17 @@ public final class CodeGenerator {
     }
 
     public DexCodeElement getTaint_ArrayPrimitive(DexTaintRegister regTo, DexTaintRegister regArrayTaint, DexSingleRegister regIndex) {
+    	DexSingleRegister auxTArray = auxReg();    	
         return new DexMacro(
-                   new DexInstruction_InstanceGet(regTo, regArrayTaint, dexAux.getField_TaintArrayPrimitive_TArray(), hierarchy),
-                   new DexInstruction_ArrayGet(regTo, regTo, regIndex, Opcode_GetPut.IntFloat, hierarchy));
+                   new DexInstruction_InstanceGet(auxTArray, regArrayTaint, dexAux.getField_TaintArrayPrimitive_TArray(), hierarchy),
+                   new DexInstruction_ArrayGet(regTo, auxTArray, regIndex, Opcode_GetPut.IntFloat, hierarchy));
     }
 
     public DexCodeElement getTaint_ArrayReference(DexTaintRegister regTo, DexTaintRegister regArrayTaint, DexSingleRegister regIndex) {
+    	DexSingleRegister auxTArray = auxReg();    	
         return new DexMacro(
-                   new DexInstruction_InstanceGet(regTo, regArrayTaint, dexAux.getField_TaintArrayReference_TArray(), hierarchy),
-                   new DexInstruction_ArrayGet(regTo, regTo, regIndex, Opcode_GetPut.Object, hierarchy));
+                   new DexInstruction_InstanceGet(auxTArray, regArrayTaint, dexAux.getField_TaintArrayReference_TArray(), hierarchy),
+                   new DexInstruction_ArrayGet(regTo, auxTArray, regIndex, Opcode_GetPut.Object, hierarchy));
     }
 
     public DexCodeElement setTaint_ArrayPrimitive(DexTaintRegister regFromTaint, DexTaintRegister regArrayTaint, DexSingleRegister regIndex) {

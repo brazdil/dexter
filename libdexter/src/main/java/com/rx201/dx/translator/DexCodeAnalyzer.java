@@ -186,20 +186,10 @@ public class DexCodeAnalyzer {
         // First add all definition constraints,
         // then refine it with usage constraints
         startOfMethod.initDefinitionConstraints();
-        for (AnalyzedDexInstruction inst : instructions) {
-        	try {
-                inst.initDefinitionConstraints();
-        	} catch (AssertionError ex) {
-        		throw new AssertionError("Constraint analysis failed on insn init " + inst.getInstructionIndex() + ": " + inst.instruction.toString());
-        	}
-        }
-        for (AnalyzedDexInstruction inst : instructions) {
-        	try {
-        		inst.propagateUsageConstraints();
-        	} catch (AssertionError ex) {
-        		throw new AssertionError("Constraint analysis failed on insn propagation " + inst.getInstructionIndex() + ": " + inst.instruction.toString());
-        	}
-        }
+        for (AnalyzedDexInstruction inst : instructions)
+            inst.initDefinitionConstraints();
+        for (AnalyzedDexInstruction inst : instructions)
+    		inst.propagateUsageConstraints();
     }
 
 

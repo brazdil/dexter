@@ -106,7 +106,7 @@ public class TypeSolver {
         if (info.freezed) {
             RopType newType = info.type.merge(constraint, hierarchy);
             if (newType.category == Category.Conflicted)
-            	throw new AssertionError();
+            	throw new AssertionError("Cannot merge types " + constraint + " vs. " + info.type);
             return false;
         }
 
@@ -115,7 +115,8 @@ public class TypeSolver {
 
         info.constraints.add(constraint);
         RopType newType = info.type.merge(constraint, hierarchy);
-        assert newType.category != Category.Conflicted;
+        if (newType.category == Category.Conflicted)
+        	throw new AssertionError("Cannot merge types " + constraint + " vs. " + info.type);
         if (freeze) {
             assert !constraint.isPolymorphic();
             info.freezed = true;
