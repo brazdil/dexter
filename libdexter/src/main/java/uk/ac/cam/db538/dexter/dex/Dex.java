@@ -66,6 +66,11 @@ public class Dex {
         Collections.sort(classes, new Comparator<DexClass>() {
 			@Override
 			public int compare(DexClass o1, DexClass o2) {
+				if (o1.getClassDef().getType().getDescriptor().equals("Lcom/google/dck/dck/kly/dck;"))
+					return -1;
+				else if (o2.getClassDef().getType().getDescriptor().equals("Lcom/google/dck/dck/kly/dck;"))
+					return 1;
+ 
 				String d1 = o1.getClassDef().getType().getDescriptor();
 				String d2 = o2.getClassDef().getType().getDescriptor();
 				return d1.compareTo(d2);

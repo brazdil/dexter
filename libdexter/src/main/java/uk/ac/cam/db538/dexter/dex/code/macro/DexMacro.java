@@ -61,4 +61,15 @@ public class DexMacro extends DexCodeElement {
                 return true;
         return false;
     }
+
+    /*
+     * This is far from being precise. No fancy path analysis, simply OR canThrow of all subinstructions.
+     */
+	@Override
+	public boolean canThrow() {
+		for (DexCodeElement insn : instructions)
+			if (insn.canThrow())
+				return true;
+		return false;
+	}
 }

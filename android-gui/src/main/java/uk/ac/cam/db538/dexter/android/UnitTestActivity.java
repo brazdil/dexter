@@ -52,6 +52,7 @@ public class UnitTestActivity extends Activity {
 
     private LinearLayout spaceTestCases;
     private View[] viewTestCases;
+    private boolean executed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +66,8 @@ public class UnitTestActivity extends Activity {
         ttfRobotoThin = Typeface.createFromAsset(getAssets(), "Roboto-Thin.ttf");
 
         spaceTestCases = (LinearLayout) findViewById(R.id.testListSpace);
+
+        executed = false;
     }
 
     @Override

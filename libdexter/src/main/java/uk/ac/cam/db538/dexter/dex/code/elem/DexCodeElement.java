@@ -61,4 +61,8 @@ public abstract class DexCodeElement {
         set.addAll(lvaReferencedRegisters());
         return set;
     }
+    
+    public boolean canThrow() {
+    	return false;
+    }
 }

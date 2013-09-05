@@ -46,6 +46,12 @@ public abstract class DexInstruction extends DexCodeElement {
     }
 
     @Override
+    public boolean canThrow() {
+    	DexClassType[] exceptions = throwsExceptions();
+    	return (exceptions != null) && (exceptions.length > 0);
+    }
+    
+    @Override
     public boolean cfgEndsBasicBlock() {
         DexClassType[] exceptions = throwsExceptions();
         return exceptions != null && exceptions.length > 0;

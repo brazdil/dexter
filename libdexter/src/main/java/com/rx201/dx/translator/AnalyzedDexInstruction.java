@@ -211,11 +211,11 @@ public class AnalyzedDexInstruction {
     @Override
     public String toString() {
         if (auxillaryElement != null)
-            return auxillaryElement.toString();
+            return instructionIndex + ": " + auxillaryElement.toString();
         else if (instruction != null)
-            return instruction.toString();
+            return instructionIndex + ": " + instruction.toString();
         else
-            return "null:" + instructionIndex;
+            return instructionIndex + ": null";
     }
 
 }

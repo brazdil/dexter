@@ -465,7 +465,7 @@ public final class CodeGenerator {
     }
 
     private boolean needsTaintClearVisited(DexRegisterType type) {
-        switch (hierarchy.classifyType(type)) {
+    	switch (hierarchy.classifyType(type)) {
         case REF_UNDECIDABLE:
         case REF_INTERNAL:
         case ARRAY_REFERENCE:
@@ -479,7 +479,7 @@ public final class CodeGenerator {
     }
 
     public DexCodeElement taintClearVisited(DexRegisterType type) {
-        if (needsTaintClearVisited(type))
+        if (type != null && needsTaintClearVisited(type))
             return taintClearVisited();
         else
             return empty();
