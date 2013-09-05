@@ -477,6 +477,8 @@ public class TaintTransform extends Transform {
         		macroHandleResult = codeGen.getResultReferenceTaint(regResTaint, (DexReferenceType) codeGen.taintType(resType));
         	else
         		throw new Error();
+        	
+        	macroHandleResult = nonthrowingResultHandling(macroHandleResult, regResTaint, resType instanceof DexPrimitiveType);
         }
             
         // Was this a call to a constructor ?
@@ -488,9 +490,12 @@ public class TaintTransform extends Transform {
 
             if (isCallToSuperclassConstructor(insnInvoke, code, method))
                 // Handle calls to internal superclass constructor
-                macroHandleResult = new DexMacro(
-                		insertInstanceFieldInit(method.getParentClass(), regThis),
-                		codeGen.taintDefineInternal(regThis));
+                macroHandleResult = nonthrowingResultHandling(
+                		new DexMacro(
+                				insertInstanceFieldInit(method.getParentClass(), regThis),
+                				codeGen.taintDefineInternal(regThis)),
+        				regThis.getTaintRegister(),
+        				false);
             else
                 // Handle call to a standard internal constructor
                 macroHandleResult = codeGen.empty(); // codeGen.taintLookup_NoExtraTaint(regThis.getTaintRegister(), regThis, hierarchy.classifyType(insnInvoke.getClassType()));
@@ -498,9 +503,24 @@ public class TaintTransform extends Transform {
         } else
         	
             macroHandleResult = codeGen.empty();
-
+        
         // generate instrumentation
         return new DexMacro(macroSetParamTaints, codeGen.setInternalCallFlag(), methodCall, macroHandleResult);
+    }
+    
+    private DexCodeElement nonthrowingResultHandling(DexCodeElement standard, DexSingleRegister regTaint, boolean primitiveResult) {
+    	DexTryStart tryStart = codeGen.tryBlock(codeGen.catchAll());
+    	DexLabel lAfter = codeGen.label();
+    	DexSingleRegister auxException = codeGen.auxReg();
+    	return new DexMacro(
+    			tryStart,
+    			standard,
+    			tryStart.getEndMarker(),
+    			codeGen.jump(lAfter),
+    			tryStart.getCatchAllHandler(),
+    			codeGen.move_ex(auxException),
+    			primitiveResult ? codeGen.setEmptyTaint(regTaint) : codeGen.setZero(regTaint),
+    			lAfter);
     }
 
     private DexCodeElement instrument_MethodCall_External(MethodCall methodCall, DexCode code, DexMethod method) {
@@ -733,13 +753,17 @@ public class TaintTransform extends Transform {
         
         else {
 	        if (insn.getOpcode() == Opcode_GetPut.Object)
-	            return new DexMacro(
-	            		   wrapWithTryBlock(insn, code),
-	                       codeGen.setTaint_ArrayReference(regFromTaint, regArrayTaint, insn.getRegIndex()));
+	            return wrapWithTryBlock(
+	            		new DexMacro(
+	            		   insn,
+	                       codeGen.setTaint_ArrayReference(regFromTaint, regArrayTaint, insn.getRegIndex())),
+	                    code);
 	        else
-	        	return new DexMacro(
-   	        			   wrapWithTryBlock(insn, code),
-	                       codeGen.setTaint_ArrayPrimitive(regFromTaint, regArrayTaint, insn.getRegIndex()));
+	            return wrapWithTryBlock(
+	            		new DexMacro(
+	            		   insn,
+	                       codeGen.setTaint_ArrayPrimitive(regFromTaint, regArrayTaint, insn.getRegIndex())),
+	                    code);
         }
     }
 
@@ -767,16 +791,21 @@ public class TaintTransform extends Transform {
 	            regIndexBackup = regIndex;
 	
 	        if (insn.getOpcode() == Opcode_GetPut.Object)
-	            return new DexMacro(
+	            return wrapWithTryBlock(
+	            	   new DexMacro(
 	                       codeGen.move_prim(regIndexBackup, regIndex),
-	                       wrapWithTryBlock(insn, code),
+	                       insn,
 	                       codeGen.getTaint_ArrayReference(regToTaint, regArrayTaint, regIndexBackup),
-	                       codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insn, regTo)));
+	                       codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insn, regTo))),
+                       code);
+	                       
 	        else
-	            return new DexMacro(
+	            return wrapWithTryBlock(
+	            		new DexMacro(
 	                       codeGen.move_prim(regIndexBackup, regIndex),
-	                       wrapWithTryBlock(insn, code),
-	                       codeGen.getTaint_ArrayPrimitive(regToTaint, regArrayTaint, regIndexBackup));
+	                       insn,
+	                       codeGen.getTaint_ArrayPrimitive(regToTaint, regArrayTaint, regIndexBackup)),
+	                    code);
         }
     }
     
@@ -889,44 +918,43 @@ public class TaintTransform extends Transform {
         	regObjectBackup = regObject;
         
         DexRegisterType resultType = insnIget.getFieldDef().getFieldId().getType();
+        boolean isPrimitive = resultType instanceof DexPrimitiveType;
 
         DexCodeElement instrumentedInsn = new DexMacro(
         	codeGen.move_obj(regObjectBackup, regObject),
-    		wrapWithTryBlock(insnIget, code));
-        
-        DexCodeElement finalCast;
-        if (resultType instanceof DexPrimitiveType)
-        	finalCast = codeGen.empty();
-        else
-        	finalCast = codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insnIget, regTo));
+    		insnIget);
         
         if (classDef.isInternal()) {
 
             DexClass parentClass = dex.getClass(classDef);
             DexInstanceField field = parentClass.getInstanceField(fieldDef);
             DexInstanceField taintField = getTaintField(field);
-
-            return new DexMacro(
+            
+            instrumentedInsn = new DexMacro(
                        instrumentedInsn,
                        codeGen.iget(regToTaint, regObjectBackup, taintField.getFieldDef()),
-                       finalCast);
+                       isPrimitive ? 
+                       		codeGen.empty() :
+                   			codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insnIget, regTo)));
 
         } else {
 
-            if (resultType instanceof DexPrimitiveType)
-            	return new DexMacro(
+            if (isPrimitive)
+            	instrumentedInsn = new DexMacro(
                            instrumentedInsn,
                            codeGen.getTaintExternal(regToTaint, regObjectTaint));
 
             else {
                 DexSingleRegister auxToTaint = codeGen.auxReg();
-                return new DexMacro(
+                instrumentedInsn = new DexMacro(
                 		   instrumentedInsn,
                            codeGen.getTaintExternal(auxToTaint, regObjectTaint),
                            codeGen.taintLookup(regToTaint, regObjectBackup, auxToTaint, hierarchy.classifyType(resultType)),
-                           finalCast);
+                           codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insnIget, regTo)));
             }
         }
+        
+        return wrapWithTryBlock(instrumentedInsn, code);
     }
 
     private DexCodeElement instrument_StaticPut(DexInstruction_StaticPut insnSput) {
@@ -940,8 +968,8 @@ public class TaintTransform extends Transform {
         DexTaintRegister regFromTaint = insnSput.getRegFrom().getTaintRegister();
 
         return new DexMacro(
-                   codeGen.sput(regFromTaint, taintField.getFieldDef()),
-                   insnSput);
+                   insnSput,
+                   codeGen.sput(regFromTaint, taintField.getFieldDef()));                   
     }
 
     private DexCodeElement instrument_StaticGet(DexInstruction_StaticGet insnSget) {
