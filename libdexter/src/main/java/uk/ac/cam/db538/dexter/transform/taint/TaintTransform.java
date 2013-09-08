@@ -969,7 +969,7 @@ public class TaintTransform extends Transform {
     }
 
     private DexCodeElement instrument_MoveException(DexInstruction_MoveException insn) {
-        return new DexMacro(
+        return builder.create(
                    insn,
                    codeGen.taintLookup_NoExtraTaint(insn.getRegTo().getTaintRegister(), insn.getRegTo(), hierarchy.classifyType(analysis_DefReg(insn, insn.getRegTo()))));
     }
