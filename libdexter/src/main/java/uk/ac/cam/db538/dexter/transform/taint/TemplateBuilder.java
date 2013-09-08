@@ -13,7 +13,6 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
-import uk.ac.cam.db538.dexter.utils.Pair;
 
 import com.rx201.dx.translator.DexCodeAnalyzer;
 import com.rx201.dx.translator.RopType;
@@ -55,11 +54,12 @@ public class TemplateBuilder {
 	}
 
     private DexCodeElement generateThrowingPath(DexInstruction insn, DexCodeElement inside) {
-    	if (!insn.canThrow())
+    	if (!insn.canThrow() || insn.lvaReferencedRegisters().isEmpty())
     		return insn;
     	
-    	Pair<? extends DexCodeElement, ? extends DexSingleRegister> taintCombination = combineReferencedTaint(insn);
-    	return taintException(inside, taintCombination.getValA(), taintCombination.getValB());
+    	DexSingleRegister auxCombinedTaint = codeGen.auxReg();
+    	DexCodeElement taintCombination = combineReferencedTaint(insn, auxCombinedTaint);
+    	return taintException(inside, taintCombination, auxCombinedTaint);
     }
     
     public DexCodeElement taintException(DexCodeElement insideBlock, DexCodeElement afterMoveException, DexSingleRegister regTaint) {
@@ -83,13 +83,11 @@ public class TemplateBuilder {
     }
     
     private DexCodeElement generateNonThrowingPath(DexInstruction insn, DexCodeElement tainting) {
-    	if (!tainting.canThrow())
+    	if (!tainting.canThrow() || insn.lvaDefinedRegisters().isEmpty())
     		return tainting;
     	
     	DexTryStart block = codeGen.tryBlock(codeGen.catchAll());
     	DexLabel lAfter = codeGen.label();
-    	
-    	DexSingleRegister auxExObj = codeGen.auxReg();
     	
     	return new DexMacro(
     			block,
@@ -101,14 +99,12 @@ public class TemplateBuilder {
     			 * Should never happen. Only for the compiler's sake.
     			 */
     			block.getCatchAllHandler(),
-    			codeGen.move_ex(auxExObj),
     			defineAllRegisters(insn),
     			
     			lAfter);
     }
     
-    private Pair<? extends DexCodeElement, ? extends DexSingleRegister> combineReferencedTaint(DexInstruction insn) {
-    	DexSingleRegister auxCombinedTaint = codeGen.auxReg();
+    private DexCodeElement combineReferencedTaint(DexInstruction insn, DexSingleRegister auxCombinedTaint) {
     	DexSingleRegister auxObjTaint = codeGen.auxReg();
 
     	List<DexCodeElement> taintCombination = new ArrayList<DexCodeElement>();
@@ -125,7 +121,7 @@ public class TemplateBuilder {
     		}
     	}
 
-    	return Pair.create(new DexMacro(taintCombination), auxCombinedTaint);
+    	return new DexMacro(taintCombination);
     }
     
     private DexCodeElement defineAllRegisters(DexInstruction insn) {
