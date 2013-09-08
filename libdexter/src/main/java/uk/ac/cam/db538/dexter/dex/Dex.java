@@ -66,9 +66,9 @@ public class Dex {
         Collections.sort(classes, new Comparator<DexClass>() {
 			@Override
 			public int compare(DexClass o1, DexClass o2) {
-				if (o1.getClassDef().getType().getDescriptor().equals("Lcom/google/dck/dck/kly/dck;"))
+				if (o1.getClassDef().getType().getDescriptor().equals("Lcom/inmobi/adtracker/androidsdk/dck/jnc/brn;"))
 					return -1;
-				else if (o2.getClassDef().getType().getDescriptor().equals("Lcom/google/dck/dck/kly/dck;"))
+				else if (o2.getClassDef().getType().getDescriptor().equals("Lcom/inmobi/adtracker/androidsdk/dck/jnc/brn;"))
 					return 1;
  
 				String d1 = o1.getClassDef().getType().getDescriptor();

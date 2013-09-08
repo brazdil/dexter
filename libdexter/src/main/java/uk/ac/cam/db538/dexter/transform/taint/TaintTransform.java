@@ -609,16 +609,21 @@ public class TaintTransform extends Transform {
     private DexCodeElement instrument_Return(DexInstruction_Return insn) {
     	DexTaintRegister regFromTaint = insn.getRegFrom().getTaintRegister();
     	
+        DexTryStart tryBlock = codeGen.tryBlock(codeGen.catchAll());
+    	DexCodeElement setResultTaint;
         if (insn.getOpcode() == RegisterType.REFERENCE)
-            return new DexMacro(
-            		codeGen.setResultReferenceTaint(regFromTaint),
-            		insn);
+            setResultTaint = codeGen.setResultReferenceTaint(regFromTaint);
         else
-            return new DexMacro(
-                    codeGen.setResultPrimitiveTaint(regFromTaint),
-                    insn);
+            setResultTaint = codeGen.setResultPrimitiveTaint(regFromTaint);
+        
+        return new DexMacro(
+        	tryBlock,
+        	setResultTaint,
+        	tryBlock.getEndMarker(),
+        	tryBlock.getCatchAllHandler(),
+        	insn);
     }
-
+    
     private DexCodeElement instrument_Move(DexInstruction_Move insn, DexCode code) {
         if (insn.getType() == RegisterType.REFERENCE)
     		return builder.create(
