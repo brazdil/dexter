@@ -993,13 +993,13 @@ public class TaintTransform extends Transform {
 
     private DexCodeElement insertInstanceFieldInit(DexClass clazz, DexSingleRegister regThis) {
         DexSingleRegister regTaintObject = codeGen.auxReg();
-        DexSingleRegister regNullObject = codeGen.auxReg();
         DexSingleRegister regEmptyTaint = codeGen.auxReg();
 
         List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
 
         insns.add(codeGen.setEmptyTaint(regEmptyTaint));
-        insns.add(codeGen.setZero(regNullObject));
+        
+        boolean nullTaintReady = false;
         
         for (DexInstanceField ifield : clazz.getInstanceFields()) {
             if (isTaintField(ifield))
@@ -1011,7 +1011,14 @@ public class TaintTransform extends Transform {
             if (ifield_type == TypeClassification.PRIMITIVE)
             	insns.add(codeGen.iput(regEmptyTaint, regThis, tfield.getFieldDef()));
             else {
-            	insns.add(codeGen.taintNull(regTaintObject, regNullObject, regEmptyTaint, ifield_type));
+            	if (!nullTaintReady) {
+            		/*
+            		 * The type of NULL taint we create does not matter.
+            		 * It will get converted after IGET anyway.
+            		 */
+            		insns.add(codeGen.taintCreate_External_Null(regTaintObject, regEmptyTaint));
+            		nullTaintReady = true;
+            	}
             	insns.add(codeGen.iput(regTaintObject, regThis, tfield.getFieldDef()));
             }
         }
@@ -1023,13 +1030,13 @@ public class TaintTransform extends Transform {
     	DexMethod clinitMethod = clazz.getMethod(getClinit(clazz));
     	
         DexSingleRegister regTaintObject = codeGen.auxReg();
-        DexSingleRegister regNullObject = codeGen.auxReg();
         DexSingleRegister regEmptyTaint = codeGen.auxReg();
 
     	List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
 
     	insns.add(codeGen.setEmptyTaint(regEmptyTaint));
-        insns.add(codeGen.setZero(regNullObject));
+        
+        boolean nullTaintReady = false;
         
         for (DexStaticField tfield : clazz.getStaticFields()) {
             if (!isTaintField(tfield))
@@ -1047,7 +1054,14 @@ public class TaintTransform extends Transform {
             if (sfield_type == TypeClassification.PRIMITIVE)
             	insns.add(codeGen.sput(regEmptyTaint, tfield.getFieldDef()));
             else {
-            	insns.add(codeGen.taintNull(regTaintObject, regNullObject, regEmptyTaint, sfield_type));
+            	if (!nullTaintReady) {
+            		/*
+            		 * The type of NULL taint we create does not matter.
+            		 * It will get converted after SGET anyway.
+            		 */
+            		insns.add(codeGen.taintCreate_External_Null(regTaintObject, regEmptyTaint));
+            		nullTaintReady = true;
+            	}
             	insns.add(codeGen.sput(regTaintObject, tfield.getFieldDef()));
             }
         }
