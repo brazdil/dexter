@@ -1,16 +1,207 @@
-From 18e631b7b9183f9b7a285184be47e71bea3ee3ee Mon Sep 17 00:00:00 2001
+From 2a1e753227709d3b2086bca979e2491641c8636f Mon Sep 17 00:00:00 2001
 From: Rubin Xu <Rubin.Xu@cl.cam.ac.uk>
-Date: Thu, 5 Sep 2013 13:44:16 +0000
-Subject: [PATCH] SsaBasicBlock memory usage.
+Date: Tue, 10 Sep 2013 00:27:00 +0100
+Subject: [PATCH] sparse bit set
 
 ---
- dx/src/com/android/dx/ssa/SsaMethod.java           |    5 +-
- .../dk/netarkivet/common/utils/SparseBitSet.java   |  350 ++++++++++++++++++++
- 2 files changed, 354 insertions(+), 1 deletion(-)
+ dx/src/com/android/dx/command/dump/SsaDumper.java  |    5 +-
+ dx/src/com/android/dx/ssa/DomFront.java            |    5 +-
+ dx/src/com/android/dx/ssa/Dominators.java          |    8 +-
+ dx/src/com/android/dx/ssa/SsaBasicBlock.java       |   17 +-
+ dx/src/com/android/dx/ssa/SsaConverter.java        |    7 +-
+ dx/src/com/android/dx/ssa/SsaMethod.java           |   13 +-
+ dx/src/com/android/dx/ssa/SsaRenamer.java          |    5 +-
+ .../ssa/back/FirstFitLocalCombiningAllocator.java  |    5 +-
+ .../com/android/dx/ssa/back/LivenessAnalyzer.java  |   13 +-
+ dx/src/com/android/dx/ssa/back/SsaToRop.java       |    5 +-
+ .../dk/netarkivet/common/utils/SparseBitSet.java   |  346 ++++++++++++++++++++
+ 11 files changed, 402 insertions(+), 27 deletions(-)
  create mode 100644 dx/src/dk/netarkivet/common/utils/SparseBitSet.java
 
+diff --git a/dx/src/com/android/dx/command/dump/SsaDumper.java b/dx/src/com/android/dx/command/dump/SsaDumper.java
+index 80953c1..b54c7a9 100644
+--- a/dx/src/com/android/dx/command/dump/SsaDumper.java
++++ b/dx/src/com/android/dx/command/dump/SsaDumper.java
+@@ -31,6 +31,9 @@ import com.android.dx.ssa.SsaMethod;
+ import com.android.dx.util.ByteArray;
+ import com.android.dx.util.Hex;
+ import com.android.dx.util.IntList;
++
++import dk.netarkivet.common.utils.SparseBitSet;
++
+ import java.io.PrintStream;
+ import java.util.ArrayList;
+ import java.util.BitSet;
+@@ -129,7 +132,7 @@ public class SsaDumper extends BlockDumper {
+             sb.append("block ")
+                     .append(Hex.u2(block.getRopLabel())).append('\n');
+ 
+-            BitSet preds = block.getPredecessors();
++            SparseBitSet preds = block.getPredecessors();
+ 
+             for (int i = preds.nextSetBit(0); i >= 0;
+                  i = preds.nextSetBit(i+1)) {
+diff --git a/dx/src/com/android/dx/ssa/DomFront.java b/dx/src/com/android/dx/ssa/DomFront.java
+index c3e65ac..4e4dcfe 100644
+--- a/dx/src/com/android/dx/ssa/DomFront.java
++++ b/dx/src/com/android/dx/ssa/DomFront.java
+@@ -17,6 +17,9 @@
+ package com.android.dx.ssa;
+ 
+ import com.android.dx.util.IntSet;
++
++import dk.netarkivet.common.utils.SparseBitSet;
++
+ import java.util.ArrayList;
+ import java.util.BitSet;
+ 
+@@ -168,7 +171,7 @@ public class DomFront {
+         for (int b = 0; b < szNodes; b++) {
+             SsaBasicBlock nb = nodes.get(b);
+             DomInfo nbInfo = domInfos[b];
+-            BitSet pred = nb.getPredecessors();
++            SparseBitSet pred = nb.getPredecessors();
+ 
+             if (pred.cardinality() > 1) {
+                 for (int i = pred.nextSetBit(0); i >= 0;
+diff --git a/dx/src/com/android/dx/ssa/Dominators.java b/dx/src/com/android/dx/ssa/Dominators.java
+index 503e857..1efa628 100644
+--- a/dx/src/com/android/dx/ssa/Dominators.java
++++ b/dx/src/com/android/dx/ssa/Dominators.java
+@@ -20,6 +20,8 @@ import java.util.ArrayList;
+ import java.util.BitSet;
+ import java.util.HashSet;
+ 
++import dk.netarkivet.common.utils.SparseBitSet;
++
+ /**
+  * This class computes dominator and post-dominator information using the
+  * Lengauer-Tarjan method.
+@@ -91,7 +93,7 @@ public final class Dominators {
+         return result;
+     }
+ 
+-    private BitSet getSuccs(SsaBasicBlock block) {
++    private SparseBitSet getSuccs(SsaBasicBlock block) {
+         if (postdom) {
+             return block.getPredecessors();
+         } else {
+@@ -99,7 +101,7 @@ public final class Dominators {
+         }
+     }
+ 
+-    private BitSet getPreds(SsaBasicBlock block) {
++    private SparseBitSet getPreds(SsaBasicBlock block) {
+         if (postdom) {
+             return block.getSuccessors();
+         } else {
+@@ -192,7 +194,7 @@ public final class Dominators {
+             SsaBasicBlock w = vertex.get(i);
+             DFSInfo wInfo = info[w.getIndex()];
+ 
+-            BitSet preds = getPreds(w);
++            SparseBitSet preds = getPreds(w);
+             for (int j = preds.nextSetBit(0);
+                  j >= 0;
+                  j = preds.nextSetBit(j + 1)) {
+diff --git a/dx/src/com/android/dx/ssa/SsaBasicBlock.java b/dx/src/com/android/dx/ssa/SsaBasicBlock.java
+index 56d8c8c..066f356 100644
+--- a/dx/src/com/android/dx/ssa/SsaBasicBlock.java
++++ b/dx/src/com/android/dx/ssa/SsaBasicBlock.java
+@@ -30,6 +30,9 @@ import com.android.dx.rop.code.SourcePosition;
+ import com.android.dx.util.Hex;
+ import com.android.dx.util.IntList;
+ import com.android.dx.util.IntSet;
++
++import dk.netarkivet.common.utils.SparseBitSet;
++
+ import java.util.ArrayList;
+ import java.util.BitSet;
+ import java.util.Collections;
+@@ -51,10 +54,10 @@ public final class SsaBasicBlock {
+     private ArrayList<SsaInsn> insns;
+ 
+     /** {@code non-null;} predecessor set (by block list index) */
+-    private BitSet predecessors;
++    private SparseBitSet predecessors;
+ 
+     /** {@code non-null;} successor set (by block list index) */
+-    private BitSet successors;
++    private SparseBitSet successors;
+ 
+     /**
+      * {@code non-null;} ordered successor list
+@@ -124,8 +127,8 @@ public final class SsaBasicBlock {
+         this.insns = new ArrayList<SsaInsn>();
+         this.ropLabel = ropLabel;
+ 
+-        this.predecessors = new BitSet(parent.getBlocks().size());
+-        this.successors = new BitSet(parent.getBlocks().size());
++        this.predecessors = new SparseBitSet();
++        this.successors = new SparseBitSet();
+         this.successorList = new IntList();
+ 
+         domChildren = new ArrayList<SsaBasicBlock>();
+@@ -339,14 +342,14 @@ public final class SsaBasicBlock {
+     /**
+      * @return {@code non-null;} predecessors set, indexed by block index
+      */
+-    public BitSet getPredecessors() {
++    public SparseBitSet getPredecessors() {
+         return predecessors;
+     }
+ 
+     /**
+      * @return {@code non-null;} successors set, indexed by block index
+      */
+-    public BitSet getSuccessors() {
++    public SparseBitSet getSuccessors() {
+         return successors;
+     }
+ 
+@@ -423,7 +426,7 @@ public final class SsaBasicBlock {
+ 
+ 
+         // Update us.
+-        predecessors = new BitSet(parent.getBlocks().size());
++        predecessors = new SparseBitSet();
+         predecessors.set(newPred.index);
+ 
+         // Update our (soon-to-be) old predecessors.
+diff --git a/dx/src/com/android/dx/ssa/SsaConverter.java b/dx/src/com/android/dx/ssa/SsaConverter.java
+index 1fd6f78..b372ae7 100644
+--- a/dx/src/com/android/dx/ssa/SsaConverter.java
++++ b/dx/src/com/android/dx/ssa/SsaConverter.java
+@@ -19,6 +19,9 @@ package com.android.dx.ssa;
+ import com.android.dx.rop.code.RegisterSpec;
+ import com.android.dx.rop.code.RopMethod;
+ import com.android.dx.util.IntIterator;
++
++import dk.netarkivet.common.utils.SparseBitSet;
++
+ import java.util.ArrayList;
+ import java.util.BitSet;
+ 
+@@ -202,7 +205,7 @@ public class SsaConverter {
+                     && block.getInsns().get(0).isMoveException()) {
+ 
+                 // block.getPredecessors() is changed in the loop below.
+-                BitSet preds = (BitSet)block.getPredecessors().clone();
++            	SparseBitSet preds = (SparseBitSet)block.getPredecessors().clone();
+                 for (int j = preds.nextSetBit(0); j >= 0;
+                      j = preds.nextSetBit(j + 1)) {
+                     SsaBasicBlock predecessor = blocks.get(j);
+@@ -239,7 +242,7 @@ public class SsaConverter {
+             SsaBasicBlock block = blocks.get(i);
+ 
+             // Successors list is modified in loop below.
+-            BitSet successors = (BitSet)block.getSuccessors().clone();
++            SparseBitSet successors = (SparseBitSet)block.getSuccessors().clone();
+             for (int j = successors.nextSetBit(0);
+                  j >= 0; j = successors.nextSetBit(j+1)) {
+ 
 diff --git a/dx/src/com/android/dx/ssa/SsaMethod.java b/dx/src/com/android/dx/ssa/SsaMethod.java
-index 7d7b565..4b01525 100644
+index 7d7b565..33a4cfc 100644
 --- a/dx/src/com/android/dx/ssa/SsaMethod.java
 +++ b/dx/src/com/android/dx/ssa/SsaMethod.java
 @@ -27,6 +27,9 @@ import com.android.dx.rop.code.RopMethod;
@@ -23,21 +214,169 @@ index 7d7b565..4b01525 100644
  import java.util.ArrayList;
  import java.util.BitSet;
  import java.util.Collections;
-@@ -134,7 +137,7 @@ public final class SsaMethod {
+@@ -132,9 +135,9 @@ public final class SsaMethod {
+      * @param labelList list of rop block labels
+      * @return BitSet of block indices
       */
-     static BitSet bitSetFromLabelList(BasicBlockList blocks,
+-    static BitSet bitSetFromLabelList(BasicBlockList blocks,
++    static SparseBitSet bitSetFromLabelList(BasicBlockList blocks,
              IntList labelList) {
 -        BitSet result = new BitSet(blocks.size());
-+        BitSet result = new SparseBitSet();
++    	SparseBitSet result = new SparseBitSet();
  
          for (int i = 0, sz = labelList.size(); i < sz; i++) {
              result.set(blocks.indexOfLabel(labelList.get(i)));
+@@ -375,7 +378,7 @@ public final class SsaMethod {
+             if (block.isReachable()) continue;
+ 
+             block.setReachable(1);
+-            BitSet succs = block.getSuccessors();
++            SparseBitSet succs = block.getSuccessors();
+             for (int i = succs.nextSetBit(0); i >= 0;
+                      i = succs.nextSetBit(i + 1)) {
+                 blockList.add(blocks.get(i));
+@@ -772,7 +775,7 @@ public final class SsaMethod {
+             SsaBasicBlock parent = stack.pop();
+ 
+             if (!visited.get(cur.getIndex())) {
+-                BitSet children
++            	SparseBitSet children
+                     = reverse ? cur.getPredecessors() : cur.getSuccessors();
+                 for (int i = children.nextSetBit(0); i >= 0
+                         ; i = children.nextSetBit(i + 1)) {
+@@ -848,7 +851,7 @@ public final class SsaMethod {
+                 insns.add(SsaInsn.makeFromRop(gotoInsn, block));
+ 
+                 // Remove secondary successors from this block
+-                BitSet succs = block.getSuccessors();
++                SparseBitSet succs = block.getSuccessors();
+                 for (int i = succs.nextSetBit(0); i >= 0;
+                          i = succs.nextSetBit(i + 1)) {
+                     if (i != block.getPrimarySuccessorIndex()) {
+diff --git a/dx/src/com/android/dx/ssa/SsaRenamer.java b/dx/src/com/android/dx/ssa/SsaRenamer.java
+index 66391a0..859bafd 100644
+--- a/dx/src/com/android/dx/ssa/SsaRenamer.java
++++ b/dx/src/com/android/dx/ssa/SsaRenamer.java
+@@ -24,6 +24,9 @@ import com.android.dx.rop.code.Rops;
+ import com.android.dx.rop.code.SourcePosition;
+ import com.android.dx.rop.type.Type;
+ import com.android.dx.util.IntList;
++
++import dk.netarkivet.common.utils.SparseBitSet;
++
+ import java.util.ArrayList;
+ import java.util.BitSet;
+ import java.util.HashMap;
+@@ -650,7 +653,7 @@ public class SsaRenamer implements Runnable {
+                 }
+             };
+ 
+-            BitSet successors = block.getSuccessors();
++            SparseBitSet successors = block.getSuccessors();
+             for (int i = successors.nextSetBit(0); i >= 0;
+                     i = successors.nextSetBit(i + 1)) {
+                 SsaBasicBlock successor = ssaMeth.getBlocks().get(i);
+diff --git a/dx/src/com/android/dx/ssa/back/FirstFitLocalCombiningAllocator.java b/dx/src/com/android/dx/ssa/back/FirstFitLocalCombiningAllocator.java
+index 743955e..987cf75 100644
+--- a/dx/src/com/android/dx/ssa/back/FirstFitLocalCombiningAllocator.java
++++ b/dx/src/com/android/dx/ssa/back/FirstFitLocalCombiningAllocator.java
+@@ -33,6 +33,9 @@ import com.android.dx.ssa.SsaInsn;
+ import com.android.dx.ssa.SsaMethod;
+ import com.android.dx.util.IntIterator;
+ import com.android.dx.util.IntSet;
++
++import dk.netarkivet.common.utils.SparseBitSet;
++
+ import java.util.ArrayList;
+ import java.util.BitSet;
+ import java.util.Map;
+@@ -461,7 +464,7 @@ public class FirstFitLocalCombiningAllocator extends RegisterAllocator {
+         for (NormalSsaInsn insn : moveResultPseudoInsns) {
+             RegisterSpec moveRegSpec = insn.getResult();
+             int moveReg = moveRegSpec.getReg();
+-            BitSet predBlocks = insn.getBlock().getPredecessors();
++            SparseBitSet predBlocks = insn.getBlock().getPredecessors();
+ 
+             // Expect one predecessor block only
+             if (predBlocks.cardinality() != 1) {
+diff --git a/dx/src/com/android/dx/ssa/back/LivenessAnalyzer.java b/dx/src/com/android/dx/ssa/back/LivenessAnalyzer.java
+index 0ea195a..d828713 100644
+--- a/dx/src/com/android/dx/ssa/back/LivenessAnalyzer.java
++++ b/dx/src/com/android/dx/ssa/back/LivenessAnalyzer.java
+@@ -21,6 +21,9 @@ import com.android.dx.ssa.PhiInsn;
+ import com.android.dx.ssa.SsaBasicBlock;
+ import com.android.dx.ssa.SsaInsn;
+ import com.android.dx.ssa.SsaMethod;
++
++import dk.netarkivet.common.utils.SparseBitSet;
++
+ import java.util.ArrayList;
+ import java.util.BitSet;
+ import java.util.List;
+@@ -39,12 +42,12 @@ public class LivenessAnalyzer {
+      * that have already been visited. "M" as written in the original Appel
+      * algorithm.
+      */
+-    private final BitSet visitedBlocks;
++    private final SparseBitSet visitedBlocks;
+ 
+     /**
+      * {@code non-null;} set of blocks remaing to visit as "live out as block"
+      */
+-    private final BitSet liveOutBlocks;
++    private final SparseBitSet liveOutBlocks;
+ 
+     /**
+      * {@code >=0;} SSA register currently being analyzed.
+@@ -113,8 +116,8 @@ public class LivenessAnalyzer {
+ 
+         this.ssaMeth = ssaMeth;
+         this.regV = reg;
+-        visitedBlocks = new BitSet(blocksSz);
+-        liveOutBlocks = new BitSet(blocksSz);
++        visitedBlocks = new SparseBitSet();
++        liveOutBlocks = new SparseBitSet();
+         this.interference = interference;
+     }
+ 
+@@ -217,7 +220,7 @@ public class LivenessAnalyzer {
+             // v is live-in at n
+             blockN.addLiveIn(regV);
+ 
+-            BitSet preds = blockN.getPredecessors();
++            SparseBitSet preds = blockN.getPredecessors();
+ 
+             liveOutBlocks.or(preds);
+         } else {
+diff --git a/dx/src/com/android/dx/ssa/back/SsaToRop.java b/dx/src/com/android/dx/ssa/back/SsaToRop.java
+index 401c67f..554fc90 100644
+--- a/dx/src/com/android/dx/ssa/back/SsaToRop.java
++++ b/dx/src/com/android/dx/ssa/back/SsaToRop.java
+@@ -32,6 +32,9 @@ import com.android.dx.ssa.SsaInsn;
+ import com.android.dx.ssa.SsaMethod;
+ import com.android.dx.util.Hex;
+ import com.android.dx.util.IntList;
++
++import dk.netarkivet.common.utils.SparseBitSet;
++
+ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.BitSet;
+@@ -144,7 +147,7 @@ public class SsaToRop {
+ 
+                 if ((insns.size() == 1)
+                         && (insns.get(0).getOpcode() == Rops.GOTO)) {
+-                    BitSet preds = (BitSet) b.getPredecessors().clone();
++                	SparseBitSet preds = (SparseBitSet) b.getPredecessors().clone();
+ 
+                     for (int i = preds.nextSetBit(0); i >= 0;
+                             i = preds.nextSetBit(i + 1)) {
 diff --git a/dx/src/dk/netarkivet/common/utils/SparseBitSet.java b/dx/src/dk/netarkivet/common/utils/SparseBitSet.java
 new file mode 100644
-index 0000000..45c3d4b
+index 0000000..0227e78
 --- /dev/null
 +++ b/dx/src/dk/netarkivet/common/utils/SparseBitSet.java
-@@ -0,0 +1,350 @@
+@@ -0,0 +1,346 @@
 +/* $Id: SparseBitSet.java 2628 2013-03-20 16:25:10Z svc $
 + * $Revision: 2628 $
 + * $Date: 2013-03-20 17:25:10 +0100 (Wed, 20 Mar 2013) $
@@ -71,7 +410,7 @@ index 0000000..45c3d4b
 +/** A sparse implementation of a BitSet, that does not require memory linear
 + * to the largest index. This is done at the cost of performance, but should
 + * be fairly efficient on few set bits. */
-+public class SparseBitSet extends BitSet {
++public class SparseBitSet {
 +    /** A set of the indices of bits that are set in this BitSet. */
 +    private Set<Integer> setbits = new HashSet<Integer>();
 +
@@ -81,10 +420,8 @@ index 0000000..45c3d4b
 +    public SparseBitSet() {
 +        //Initialise super class to a zero-length bitset, to avoid allocating
 +        //a bit array.
-+        super(0);
 +    }
 +
-+    @Override
 +    public void flip(int bitIndex) {
 +        if (bitIndex < 0) {
 +            throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
@@ -96,7 +433,6 @@ index 0000000..45c3d4b
 +        }
 +    }
 +
-+    @Override
 +    public void flip(int fromIndex, int toIndex) {
 +        if (fromIndex < 0) {
 +            throw new IndexOutOfBoundsException("fromIndex < 0: " + fromIndex);
@@ -113,7 +449,7 @@ index 0000000..45c3d4b
 +        }
 +    }
 +
-+    @Override
++    
 +    public void set(int bitIndex) {
 +        if (bitIndex < 0) {
 +            throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
@@ -121,7 +457,7 @@ index 0000000..45c3d4b
 +        setbits.add(bitIndex);
 +    }
 +
-+    @Override
++    
 +    public void set(int bitIndex, boolean value) {
 +        if (bitIndex < 0) {
 +            throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
@@ -133,7 +469,7 @@ index 0000000..45c3d4b
 +        }
 +    }
 +
-+    @Override
++    
 +    public void set(int fromIndex, int toIndex) {
 +        if (fromIndex < 0) {
 +            throw new IndexOutOfBoundsException("fromIndex < 0: " + fromIndex);
@@ -150,7 +486,7 @@ index 0000000..45c3d4b
 +        }
 +    }
 +
-+    @Override
++    
 +    public void set(int fromIndex, int toIndex, boolean value) {
 +        if (fromIndex < 0) {
 +            throw new IndexOutOfBoundsException("fromIndex < 0: " + fromIndex);
@@ -167,7 +503,7 @@ index 0000000..45c3d4b
 +        }
 +    }
 +
-+    @Override
++    
 +    public void clear(int bitIndex) {
 +        if (bitIndex < 0) {
 +            throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
@@ -175,7 +511,7 @@ index 0000000..45c3d4b
 +        setbits.remove(bitIndex);
 +    }
 +
-+    @Override
++    
 +    public void clear(int fromIndex, int toIndex) {
 +        if (fromIndex < 0) {
 +            throw new IndexOutOfBoundsException("fromIndex < 0: " + fromIndex);
@@ -192,12 +528,12 @@ index 0000000..45c3d4b
 +        }
 +    }
 +
-+    @Override
++    
 +    public void clear() {
 +        setbits.clear();
 +    }
 +
-+    @Override
++    
 +    public boolean get(int bitIndex) {
 +        if (bitIndex < 0) {
 +            throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
@@ -205,8 +541,8 @@ index 0000000..45c3d4b
 +        return setbits.contains(bitIndex);
 +    }
 +
-+    @Override
-+    public BitSet get(int fromIndex, int toIndex) {
++    
++    public SparseBitSet get(int fromIndex, int toIndex) {
 +        if (fromIndex < 0) {
 +            throw new IndexOutOfBoundsException("fromIndex < 0: " + fromIndex);
 +        }
@@ -226,7 +562,7 @@ index 0000000..45c3d4b
 +        return bitsubset;
 +    }
 +
-+    @Override
++    
 +    public int nextSetBit(int fromIndex) {
 +        if (fromIndex < 0) {
 +            throw new IndexOutOfBoundsException("fromIndex < 0: " + fromIndex);
@@ -240,7 +576,7 @@ index 0000000..45c3d4b
 +        return index;
 +    }
 +
-+    @Override
++    
 +    public int nextClearBit(int fromIndex) {
 +        if (fromIndex < 0) {
 +            throw new IndexOutOfBoundsException("fromIndex < 0: " + fromIndex);
@@ -253,7 +589,7 @@ index 0000000..45c3d4b
 +        return Integer.MIN_VALUE;
 +    }
 +
-+    @Override
++    
 +    public int length() {
 +        int index = -1;
 +        for (Integer i : setbits) {
@@ -264,12 +600,12 @@ index 0000000..45c3d4b
 +        return index + 1;
 +    }
 +
-+    @Override
++    
 +    public boolean isEmpty() {
 +        return setbits.isEmpty();
 +    }
 +
-+    @Override
++    
 +    public boolean intersects(BitSet set) {
 +        for (Integer index : setbits) {
 +            if (set.get(index)) {
@@ -280,13 +616,13 @@ index 0000000..45c3d4b
 +    }
 +
 +
-+    @Override
++    
 +    public int cardinality() {
 +        return setbits.size();
 +    }
 +
-+    @Override
-+    public void and(BitSet set) {
++    
++    public void and(SparseBitSet set) {
 +        Set<Integer> andbits = new HashSet<Integer>();
 +        for (Integer index : setbits) {
 +            if (set.get(index)) {
@@ -296,8 +632,8 @@ index 0000000..45c3d4b
 +        setbits = andbits;
 +    }
 +
-+    @Override
-+    public void or(BitSet set) {
++    
++    public void or(SparseBitSet set) {
 +        Set<Integer> orbits = new HashSet<Integer>(setbits);
 +        for (int index = set.nextSetBit(0); index != -1;
 +             index = set.nextSetBit(index + 1)) {
@@ -306,8 +642,8 @@ index 0000000..45c3d4b
 +        setbits = orbits;
 +    }
 +
-+    @Override
-+    public void xor(BitSet set) {
++    
++    public void xor(SparseBitSet set) {
 +        Set<Integer> xorbits = new HashSet<Integer>();
 +        for (Integer index : setbits) {
 +            if (!set.get(index)) {
@@ -323,8 +659,8 @@ index 0000000..45c3d4b
 +        setbits = xorbits;
 +    }
 +
-+    @Override
-+    public void andNot(BitSet set) {
++    
++    public void andNot(SparseBitSet set) {
 +        Set<Integer> andnotbits = new HashSet<Integer>(setbits);
 +        for (Integer index : setbits) {
 +            if (set.get(index)) {
@@ -375,15 +711,14 @@ index 0000000..45c3d4b
 +               && setbits.equals(((SparseBitSet) obj).setbits);
 +    }
 +
-+    @Override
++    
 +    public Object clone() {
-+        super.clone();
 +        SparseBitSet newSparseBitSet = new SparseBitSet();
 +        newSparseBitSet.setbits = new HashSet<Integer>(setbits);
 +        return newSparseBitSet;
 +    }
 +
-+    @Override
++    
 +    public String toString() {
 +        return setbits.toString();
 +    }
