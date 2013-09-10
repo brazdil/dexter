@@ -122,7 +122,7 @@ public class DexCodeGeneration {
     public CodeItem generateCodeItem(DexFile dexFile) {
         long time = System.currentTimeMillis();
 
-        DalvCodeBridge translatedCode = new DalvCodeBridge(processMethod(method.getMethodBody()), method);
+        DalvCodeBridge translatedCode = new DalvCodeBridge(processMethod(method.getMethodBody()), method, dexOptions);
 
         // Need to intern instructions to the new dexFile, as they are from a different dex file
         Instruction[] tmpInstructions = translatedCode.getInstructions();

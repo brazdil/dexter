@@ -35,9 +35,9 @@ class DalvCodeBridge {
     private DalvCode dvCode;
     private CodeItem codeItem;
 
-    public DalvCodeBridge(DalvCode dvCode, DexMethod dxMethod) {
+    public DalvCodeBridge(DalvCode dvCode, DexMethod dxMethod, DexOptions dexOptions) {
         this.dvCode = dvCode;
-        process(dxMethod);
+        process(dxMethod, dexOptions);
     }
 
     private CstType toCstType(String descriptor) {
@@ -50,7 +50,7 @@ class DalvCodeBridge {
                          );
     }
 
-    private void process(DexMethod dxMethod) {
+    private void process(DexMethod dxMethod, DexOptions dexOptions) {
         MethodDefinition methodDef = dxMethod.getMethodDef();
 
         String methodName = methodDef.getMethodId().getName();
@@ -68,7 +68,7 @@ class DalvCodeBridge {
         for (AccessFlags flag : dexClass.getClassDef().getAccessFlags())
             classAccessFlags |= flag.getValue();
 
-        DexFile outputDex = new DexFile(new DexOptions());
+        DexFile outputDex = new DexFile(dexOptions);
         ClassDefItem outClass = new ClassDefItem(thisClass, classAccessFlags,
                 superClass, interfaces, null);
 
