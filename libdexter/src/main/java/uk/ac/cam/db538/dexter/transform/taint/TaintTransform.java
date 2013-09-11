@@ -290,6 +290,11 @@ public class TaintTransform extends Transform {
         invokeClassification = null;
         noninstrumentableElements = null;
         codeAnalysis = null;
+        
+        if (method.getMethodDef().getMethodId().getName().equals("startActivityForResult")) {
+        	code.getInstructionList().dump();
+        	System.exit(0);
+        }        	
 
         return super.doLast(code, method);
     }
@@ -529,6 +534,9 @@ public class TaintTransform extends Transform {
     			lAfter);
     }
 
+    /*
+     * TODO: handle throwing semantics
+     */
     private DexCodeElement instrument_MethodCall_External(MethodCall methodCall, DexCode code, DexMethod method) {
         DexInstruction_Invoke insnInvoke = methodCall.getInvoke();
         DexInstruction_MoveResult insnMoveResult = methodCall.getResult();

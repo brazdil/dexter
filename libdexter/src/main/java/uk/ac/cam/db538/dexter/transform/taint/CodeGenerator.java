@@ -389,9 +389,9 @@ public final class CodeGenerator {
         // COMBINE TAINT OF ALL PARAMETERS
 
         // Initialize the combined taint variable
-        insns.add(setEmptyTaint(regCombinedTaint));
-
-        if (countValidParameters(insnInvoke) > 0) {
+        if (countValidParameters(insnInvoke) == 0) {
+        	insns.add(setEmptyTaint(regCombinedTaint));
+        } else {
 
             // Clear the TaintInternal VisitedSet (only needs to be done once per traversal)
             insns.add(taintClearVisited());
@@ -399,21 +399,33 @@ public final class CodeGenerator {
             // Get and combine the taint of each parameter
             // (skip the first argument if method a constructor)
             forEachValidParameter(insnInvoke, new ParamCallback() {
+            	private boolean first = true;
+            	
                 @Override
                 public void apply(DexRegister regParam, DexRegisterType typeParam) {
                     DexTaintRegister regArgTaint = regParam.getTaintRegister();
-                    if (isPrimitive(typeParam))
-                        insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regArgTaint));
-                    else {
-                        insns.add(getTaint(regAux, regArgTaint));
-                        insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regAux));
+                    if (isPrimitive(typeParam)) {
+                    	if (first) {
+                    		insns.add(move_prim(regCombinedTaint, regArgTaint));
+                    		first = false;
+                    	} else
+                    		insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regArgTaint));
+                    } else {
+                        if (first) {
+                        	insns.add(getTaint(regCombinedTaint, regArgTaint));
+                        	first = false;
+                        } else {
+                        	insns.add(getTaint(regAux, regArgTaint));
+                        	insns.add(combineTaint(regCombinedTaint, regCombinedTaint, regAux));
+                        }
                     }
                 }
             });
 
             // DISTRIBUTE TAINT TO ALL MUTABLE NON-NULL PARAMETERS
 
-            if (countMutableParameters(insnInvoke) > 0) {
+            if ((countMutableParameters(insnInvoke) > 0) && 
+        		(countValidParameters(insnInvoke) > 1)) /* no need to redistribute if there is only one param */ { 
 
                 // Clear the TaintInternal VisitedSet (only needs to be done once per traversal)
                 insns.add(new DexInstruction_Invoke(dexAux.getMethod_TaintInternal_ClearVisited(), null, hierarchy));
