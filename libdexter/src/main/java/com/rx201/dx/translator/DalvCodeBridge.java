@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.TryItem;
+import org.jf.dexlib.DebugInfoItem;
 import org.jf.dexlib.DexFileFromMemory;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Util.AccessFlags;
@@ -27,7 +28,6 @@ import com.android.dx.rop.cst.CstString;
 import com.android.dx.rop.cst.CstType;
 import com.android.dx.rop.type.StdTypeList;
 import com.android.dx.rop.type.Type;
-
 import com.android.dex.util.ExceptionWithContext;
 
 class DalvCodeBridge {
@@ -161,6 +161,10 @@ class DalvCodeBridge {
 
     public int getRegisterCount() {
         return codeItem.getRegisterCount();
+    }
+    
+    public DebugInfoItem getDebugItem() {
+    	return codeItem.getDebugInfo();
     }
 
 }

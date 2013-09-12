@@ -10,6 +10,7 @@ import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
 import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
 import org.jf.dexlib.CodeItem.TryItem;
+import org.jf.dexlib.DebugInfoItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Item;
@@ -66,6 +67,7 @@ public class DexCodeGeneration {
     private DexCodeAnalyzer analyzer;
 
     public static boolean DEBUG = true;
+    public static boolean ADD_LINENO = false;
     public static boolean INFO = true;
 
     public static long totalAnalysisTime = 0;
@@ -182,12 +184,22 @@ public class DexCodeGeneration {
 
 
         int registerCount = translatedCode.getRegisterCount();
-
+        
+        DebugInfoItem newDebugInfo = null;
+        DebugInfoItem debugInfo = translatedCode.getDebugItem();
+        if (debugInfo != null) {
+        	newDebugInfo = DebugInfoItem.internDebugInfoItem(dexFile, 
+        			debugInfo.getLineStart(), 
+        			new StringIdItem[0], 
+        			debugInfo.getEncodedDebugInfo(), 
+        			new Item[0]);
+        }
+        
         time = System.currentTimeMillis() - time;
 //	    System.out.println("Translation time: " + time);
         totalCGTime += time;
         
-        return CodeItem.internCodeItem(dexFile, registerCount, inWords, outWords, /* debugInfo */ null, instructions, newTries, newCatchHandlers);
+        return CodeItem.internCodeItem(dexFile, registerCount, inWords, outWords, newDebugInfo, instructions, newTries, newCatchHandlers);
 
     }
 
@@ -207,7 +219,7 @@ public class DexCodeGeneration {
             dump(rmeth);
         }
 
-        DalvCode dcode = RopTranslator.translate(rmeth, PositionList.NONE, null, inWords, dexOptions);
+        DalvCode dcode = RopTranslator.translate(rmeth, ADD_LINENO ? PositionList.LINES : PositionList.NONE, null, inWords, dexOptions);
         time = System.currentTimeMillis() - time;
         totalDxTime += time;
 
