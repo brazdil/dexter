@@ -291,11 +291,6 @@ public class TaintTransform extends Transform {
         noninstrumentableElements = null;
         codeAnalysis = null;
         
-        if (method.getMethodDef().getMethodId().getName().equals("startActivityForResult")) {
-        	code.getInstructionList().dump();
-        	System.exit(0);
-        }        	
-
         return super.doLast(code, method);
     }
 
