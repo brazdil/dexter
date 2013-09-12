@@ -108,7 +108,7 @@ class DexConvertedResult {
         primarySuccessor = null;
         successors = new ArrayList<AnalyzedDexInstruction>();
     }
-
+    
     public DexConvertedResult setPrimarySuccessor(AnalyzedDexInstruction successor) {
         primarySuccessor = successor;
         return this;
@@ -137,6 +137,12 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
     private DexConvertedResult result;
     private AnalyzedDexInstruction curInst;
     private InstructionList instructionList;
+
+    private int lineNo;
+    
+    private SourcePosition getSourcePosition() {
+    	return new SourcePosition(null, -1, lineNo++);
+    }
 
     public DexInstructionTranslator(DexCodeAnalyzer analyzer, InstructionList instructionList) {
         this.analyzer = analyzer;
@@ -338,22 +344,22 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 ////////////////////////////////////////////////////////////////////////////////
     private void doPlainInsn(Rop opcode, RegisterSpec dst, DexRegister ... srcs) {
-        result.addInstruction(new PlainInsn(opcode, SourcePosition.NO_INFO, dst, makeOperands(srcs)));
+        result.addInstruction(new PlainInsn(opcode, getSourcePosition(), dst, makeOperands(srcs)));
     }
 
     private void doPlainCstInsn(Rop opcode, RegisterSpec dst, Constant constant, DexRegister ... srcs) {
-        result.addInstruction(new PlainCstInsn(opcode, SourcePosition.NO_INFO, dst, makeOperands(srcs), constant));
+        result.addInstruction(new PlainCstInsn(opcode, getSourcePosition(), dst, makeOperands(srcs), constant));
     }
 
     private void doThrowingInsn(Rop opcode, DexRegister ... srcs) {
         List<AnalyzedDexInstruction> catchers = getCatchers(opcode);
-        result.addInstruction(new ThrowingInsn(opcode, SourcePosition.NO_INFO, makeOperands(srcs), getCaughtExceptions(catchers)));
+        result.addInstruction(new ThrowingInsn(opcode, getSourcePosition(), makeOperands(srcs), getCaughtExceptions(catchers)));
         doThrowingSuccessors(catchers);
     }
 
     private void doThrowingCstInsn(Rop opcode, Constant constant, DexRegister ... srcs) {
         List<AnalyzedDexInstruction> catchers = getCatchers(opcode);
-        result.addInstruction(new ThrowingCstInsn(opcode, SourcePosition.NO_INFO, makeOperands(srcs), getCaughtExceptions(catchers), constant));
+        result.addInstruction(new ThrowingCstInsn(opcode, getSourcePosition(), makeOperands(srcs), getCaughtExceptions(catchers), constant));
         doThrowingSuccessors(catchers);
     }
 
@@ -361,7 +367,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
     // helps with flow analysis and does not contribute to the actual assembled code.
     private void doPseudoMoveResult(DexRegister to) {
         RegisterSpec dst = getDestRegSpec(to);
-        result.addAuxInstruction(new PlainInsn(Rops.opMoveResultPseudo(dst), SourcePosition.NO_INFO, dst, RegisterSpecList.EMPTY));
+        result.addAuxInstruction(new PlainInsn(Rops.opMoveResultPseudo(dst), getSourcePosition(), dst, RegisterSpecList.EMPTY));
     }
 
     private CstBaseMethodRef makeMethodRef(DexReferenceType classType, String methodName, DexPrototype methodPrototype) {
@@ -610,13 +616,13 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
         // add Instruction manually because type information is not available in analyzer
         result.addInstruction(new PlainCstInsn(Rops.CONST_INT,
-        		SourcePosition.NO_INFO,
+        		getSourcePosition(),
         		tmp0Spec,
         		RegisterSpecList.EMPTY,
         		makeCstInteger(arrayLen)));
         Rop opcode = Rops.opNewArray(Type.intern(arrayType.getDescriptor()));
         result.addInstruction(new ThrowingCstInsn(opcode,
-        		SourcePosition.NO_INFO,
+        		getSourcePosition(),
         		RegisterSpecList.make(tmp0Spec),
         		getCaughtExceptions(getCatchers(opcode)),
         		makeCstType(arrayType)));
@@ -631,12 +637,12 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
         for(int i=0; i<arrayLen; i++) {
         	result.addAuxInstruction(new PlainCstInsn(Rops.CONST_INT,
-        			SourcePosition.NO_INFO,
+        			getSourcePosition(),
         			tmp0Spec,
         			RegisterSpecList.EMPTY,
         			makeCstInteger(i)));
         	result.addAuxInstruction(new ThrowingInsn(opcode,
-        			SourcePosition.NO_INFO,
+        			getSourcePosition(),
         			RegisterSpecList.make(
         					RegisterSpec.make(DexRegisterHelper.normalize(instruction.getArgumentRegisters().get(i)), elementType),
         					dstRegSpec,
@@ -695,7 +701,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
             }
         }
 
-        result.addInstruction(new FillArrayDataInsn(Rops.FILL_ARRAY_DATA, SourcePosition.NO_INFO,
+        result.addInstruction(new FillArrayDataInsn(Rops.FILL_ARRAY_DATA, getSourcePosition(),
                               makeOperands(instruction.getRegArray()), values, arrayType));
         // Rops.FILL_ARRAY_DATA claims it is non-throwing, but experiments suggest otherwise.
         doThrowingSuccessors(getCatchers(null));
@@ -735,7 +741,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
         result.addSuccessor(defaultSuccessor);
         result.setPrimarySuccessor(defaultSuccessor);
 
-        result.addInstruction(new SwitchInsn(Rops.SWITCH, SourcePosition.NO_INFO, null, makeOperands(instruction.getRegTest()), caseList));
+        result.addInstruction(new SwitchInsn(Rops.SWITCH, getSourcePosition(), null, makeOperands(instruction.getRegTest()), caseList));
     }
 
 
