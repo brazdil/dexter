@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.transform.taint;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -13,7 +14,9 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
+import com.rx201.dx.translator.AnalyzedDexInstruction;
 import com.rx201.dx.translator.DexCodeAnalyzer;
 import com.rx201.dx.translator.RopType;
 
@@ -50,7 +53,7 @@ public class TemplateBuilder {
 	public DexMacro create(DexInstruction insn, DexCodeElement replacementInsn, DexCodeElement tainting) {
 		return new DexMacro(
 			generateThrowingPath(insn, replacementInsn),
-			generateNonThrowingPath(insn, tainting));
+			nonthrowingTaintDefinition(insn, tainting));
 	}
 
     private DexCodeElement generateThrowingPath(DexInstruction insn, DexCodeElement inside) {
@@ -82,14 +85,21 @@ public class TemplateBuilder {
     			lAfter);
     }
     
-    private DexCodeElement generateNonThrowingPath(DexInstruction insn, DexCodeElement tainting) {
-    	if (!tainting.canThrow() || insn.lvaDefinedRegisters().isEmpty())
+    public DexCodeElement nonthrowingTaintDefinition(DexCodeElement tainting, List<Pair<DexRegister, Boolean>> defRegs) {
+    	if (!tainting.canThrow())
     		return tainting;
     	
     	DexTryStart block = codeGen.tryBlock(codeGen.catchAll());
     	DexLabel lAfter = codeGen.label();
     	
-    	return new DexMacro(
+    	if (defRegs == null || defRegs.isEmpty())
+        	return new DexMacro(
+        			block,
+        			tainting,
+        			block.getEndMarker(),
+        			block.getCatchAllHandler());
+    	else
+    		return new DexMacro(
     			block,
     			tainting,
     			block.getEndMarker(),
@@ -99,9 +109,13 @@ public class TemplateBuilder {
     			 * Should never happen. Only for the compiler's sake.
     			 */
     			block.getCatchAllHandler(),
-    			defineAllRegisters(insn),
+    			defineAllRegisters(defRegs),
     			
     			lAfter);
+    }
+    
+    public DexCodeElement nonthrowingTaintDefinition(DexInstruction insn, DexCodeElement tainting) {
+    	return nonthrowingTaintDefinition(tainting, getDefinedRegisters(insn));
     }
     
     private DexCodeElement combineReferencedTaint(DexInstruction insn, DexSingleRegister auxCombinedTaint) {
@@ -124,18 +138,32 @@ public class TemplateBuilder {
     	return new DexMacro(taintCombination);
     }
     
-    private DexCodeElement defineAllRegisters(DexInstruction insn) {
-    	List<DexCodeElement> taintAssignemnt = new ArrayList<DexCodeElement>();
+    private List<Pair<DexRegister, Boolean>> getDefinedRegisters(DexInstruction insn) {
+    	if (insn == null)
+    		return Collections.emptyList();
     	
-    	for (DexRegister regDef : insn.lvaDefinedRegisters()) {
-    		RopType type = analyzedCode.reverseLookup(insn).getDefinedRegisterSolver(regDef).getType();
-    		if (isPrimitive(type))
-    			taintAssignemnt.add(codeGen.setEmptyTaint(regDef.getTaintRegister()));
-    		else
-    			taintAssignemnt.add(codeGen.setZero(regDef.getTaintRegister()));
+    	List<Pair<DexRegister, Boolean>> defRegs = new ArrayList<Pair<DexRegister, Boolean>>();
+    	
+    	AnalyzedDexInstruction aInsn = analyzedCode.reverseLookup(insn);
+    	for (DexRegister defReg : insn.lvaDefinedRegisters()) {
+    		RopType type = aInsn.getDefinedRegisterSolver(defReg).getType();
+			defRegs.add(Pair.create(defReg, isPrimitive(type)));
     	}
     	
-    	return new DexMacro(taintAssignemnt);
+    	return defRegs;
+    }
+    
+    private DexCodeElement defineAllRegisters(List<Pair<DexRegister, Boolean>> defRegs) {
+    	List<DexCodeElement> taintAssignment = new ArrayList<DexCodeElement>(defRegs.size());
+    	
+    	for (Pair<DexRegister, Boolean> pair : defRegs) {
+    		if (pair.getValB()) // is primitive?
+    			taintAssignment.add(codeGen.setEmptyTaint(pair.getValA().getTaintRegister()));
+    		else // no => set to NULL
+    			taintAssignment.add(codeGen.setZero(pair.getValA().getTaintRegister()));
+    	}
+    	
+    	return new DexMacro(taintAssignment);
     }
 
     private boolean isPrimitive(RopType type) {

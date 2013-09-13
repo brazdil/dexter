@@ -93,6 +93,7 @@ import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.TryBlockSplitter;
 import uk.ac.cam.db538.dexter.transform.taint.sourcesink.LeakageAlert;
 import uk.ac.cam.db538.dexter.transform.taint.sourcesink.SourceSinkDefinition;
+import uk.ac.cam.db538.dexter.utils.Pair;
 import uk.ac.cam.db538.dexter.utils.Utils;
 import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
@@ -599,6 +600,19 @@ public class TaintTransform extends Transform {
                        codeGen.finishExternalCall(regCombinedTaint, insnInvoke, insnMoveResult),
                        sourcesinkAfter);
 
+        }
+
+        // ensure non-throwing semantics of code after result
+        if (completeCall_AfterResult.canThrow()) {
+        	List<Pair<DexRegister, Boolean>> defRegs;
+        	if (methodCall.movesResult())
+        		defRegs = Arrays.asList(Pair.create(insnMoveResult.getRegTo(), insnMoveResult.getType() != RegisterType.REFERENCE));
+        	else
+        		defRegs = null;
+        		
+    		completeCall_AfterResult = builder.nonthrowingTaintDefinition(
+        			completeCall_AfterResult, 
+        			defRegs);
         }
         
         return new DexMacro(

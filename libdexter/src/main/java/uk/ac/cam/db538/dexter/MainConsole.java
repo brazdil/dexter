@@ -20,7 +20,7 @@ import com.rx201.dx.translator.DexCodeGeneration;
 public class MainConsole {
 
     public static void main(String[] args) throws IOException {
-    	DexCodeGeneration.ADD_LINENO = false;
+    	DexCodeGeneration.ADD_LINENO = true;
         DexCodeGeneration.DEBUG = false;
         DexCodeGeneration.INFO = true;
         
