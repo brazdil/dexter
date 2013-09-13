@@ -476,7 +476,8 @@ public class TaintTransform extends Transform {
         if (methodCall.movesResult()) {
         	
         	DexRegisterType resType = (DexRegisterType) prototype.getReturnType();
-        	DexTaintRegister regResTaint = insnMoveResult.getRegTo().getTaintRegister();
+        	DexRegister regRes = insnMoveResult.getRegTo();
+        	DexTaintRegister regResTaint = regRes.getTaintRegister();
         	
         	if (resType instanceof DexPrimitiveType)
         		macroHandleResult = codeGen.getResultPrimitiveTaint(regResTaint);
@@ -485,7 +486,9 @@ public class TaintTransform extends Transform {
         	else
         		throw new Error();
         	
-        	macroHandleResult = nonthrowingResultHandling(macroHandleResult, regResTaint, resType instanceof DexPrimitiveType);
+        	macroHandleResult = builder.nonthrowingTaintDefinition(
+        			macroHandleResult, 
+        			Arrays.asList(Pair.create(regRes, resType instanceof DexPrimitiveType)));
         }
             
         // Was this a call to a constructor ?
@@ -497,12 +500,11 @@ public class TaintTransform extends Transform {
 
             if (isCallToSuperclassConstructor(insnInvoke, code, method))
                 // Handle calls to internal superclass constructor
-                macroHandleResult = nonthrowingResultHandling(
+                macroHandleResult = builder.nonthrowingTaintDefinition( 
                 		new DexMacro(
                 				insertInstanceFieldInit(method.getParentClass(), regThis),
                 				codeGen.taintDefineInternal(regThis)),
-        				regThis.getTaintRegister(),
-        				false);
+                		Arrays.asList(Pair.create((DexRegister) regThis, false)));
             else
                 // Handle call to a standard internal constructor
                 macroHandleResult = codeGen.empty(); // codeGen.taintLookup_NoExtraTaint(regThis.getTaintRegister(), regThis, hierarchy.classifyType(insnInvoke.getClassType()));
@@ -515,24 +517,6 @@ public class TaintTransform extends Transform {
         return new DexMacro(macroSetParamTaints, codeGen.setInternalCallFlag(), methodCall, macroHandleResult);
     }
     
-    private DexCodeElement nonthrowingResultHandling(DexCodeElement standard, DexSingleRegister regTaint, boolean primitiveResult) {
-    	DexTryStart tryStart = codeGen.tryBlock(codeGen.catchAll());
-    	DexLabel lAfter = codeGen.label();
-    	DexSingleRegister auxException = codeGen.auxReg();
-    	return new DexMacro(
-    			tryStart,
-    			standard,
-    			tryStart.getEndMarker(),
-    			codeGen.jump(lAfter),
-    			tryStart.getCatchAllHandler(),
-    			codeGen.move_ex(auxException),
-    			primitiveResult ? codeGen.setEmptyTaint(regTaint) : codeGen.setZero(regTaint),
-    			lAfter);
-    }
-
-    /*
-     * TODO: handle throwing semantics
-     */
     private DexCodeElement instrument_MethodCall_External(MethodCall methodCall, DexCode code, DexMethod method) {
         DexInstruction_Invoke insnInvoke = methodCall.getInvoke();
         DexInstruction_MoveResult insnMoveResult = methodCall.getResult();
