@@ -1,6 +1,7 @@
 package com.rx201.dx.translator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,8 +53,13 @@ import com.android.dx.rop.code.SourcePosition;
 import com.android.dx.rop.cst.CstInteger;
 import com.android.dx.rop.type.Type;
 import com.android.dx.ssa.Optimizer;
+import com.android.dx.ssa.SsaBasicBlock;
+import com.android.dx.ssa.SsaInsn;
+import com.android.dx.ssa.SsaMethod;
 import com.android.dx.util.Hex;
 import com.android.dx.util.IntList;
+
+import dk.netarkivet.common.utils.SparseBitSet;
 
 public class DexCodeGeneration {
 
@@ -443,7 +449,7 @@ public class DexCodeGeneration {
     }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    private void dump(RopMethod rmeth) {
+    private static void dump(RopMethod rmeth) {
         StringBuilder sb = new StringBuilder();
 
         BasicBlockList blocks = rmeth.getBlocks();
@@ -455,6 +461,8 @@ public class DexCodeGeneration {
             BasicBlock bb = blocks.get(blocks.indexOfLabel(label));
             sb.append("block ");
             sb.append(Hex.u2(label));
+            sb.append("  index: ");
+            sb.append(Hex.u2(blocks.indexOfLabel(label)));
             sb.append("\n");
 
             IntList preds = rmeth.labelToPredecessors(label);
@@ -496,5 +504,67 @@ public class DexCodeGeneration {
         System.out.println(sb.toString());
     }
 
+    private static void dumpSSA(SsaMethod ssaMeth) {
+
+        StringBuffer sb = new StringBuffer(2000);
+
+        sb.append("first ");
+        sb.append(Hex.u2(
+                ssaMeth.blockIndexToRopLabel(ssaMeth.getEntryBlockIndex())));
+        sb.append('\n');
+
+        ArrayList<SsaBasicBlock> blocks = ssaMeth.getBlocks();
+        ArrayList<SsaBasicBlock> sortedBlocks =
+            (ArrayList<SsaBasicBlock>) blocks.clone();
+        Collections.sort(sortedBlocks, SsaBasicBlock.LABEL_COMPARATOR);
+
+        for (SsaBasicBlock block : sortedBlocks) {
+            sb.append("block ")
+                    .append(Hex.u2(block.getRopLabel())).append('\n');
+
+            SparseBitSet preds = block.getPredecessors();
+
+            for (int i = preds.nextSetBit(0); i >= 0;
+                 i = preds.nextSetBit(i+1)) {
+                sb.append("  pred ");
+                sb.append(Hex.u2(ssaMeth.blockIndexToRopLabel(i)));
+                sb.append('\n');
+            }
+
+            sb.append("  live in:" + block.getLiveInRegs());
+            sb.append("\n");
+
+            for (SsaInsn insn : block.getInsns()) {
+                sb.append("  ");
+                sb.append(insn.toHuman());
+                sb.append('\n');
+            }
+
+            if (block.getSuccessors().cardinality() == 0) {
+                sb.append("  returns\n");
+            } else {
+                int primary = block.getPrimarySuccessorRopLabel();
+
+                IntList succLabelList = block.getRopLabelSuccessorList();
+
+                int szSuccLabels = succLabelList.size();
+
+                for (int i = 0; i < szSuccLabels; i++) {
+                    sb.append("  next ");
+                    sb.append(Hex.u2(succLabelList.get(i)));
+
+                    if (szSuccLabels != 1 && primary == succLabelList.get(i)) {
+                        sb.append(" *");
+                    }
+                    sb.append('\n');
+                }
+            }
+
+            sb.append("  live out:" + block.getLiveOutRegs());
+            sb.append("\n");
+        }
+
+        System.out.println(sb.toString());
+    }
 }
 
