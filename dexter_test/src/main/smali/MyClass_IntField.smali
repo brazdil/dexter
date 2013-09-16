@@ -8,9 +8,13 @@
 .method public constructor <init>(I)V
     .registers 2
 
-    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+    # Doing this BEFORE the initializer as a regression test
+    # against initializing taint filds AFTER the superclass
+    # constructor is called
+
     iput p1, p0, LMyClass_IntField;->X:I
 
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
     return-void
     
 .end method

@@ -292,10 +292,11 @@ public class TaintTransform extends Transform {
 	@Override
     public DexCode doLast(DexCode code, DexMethod method) {
 
+		code = insertInstanceFieldInit(code, method);
         code = TryBlockSplitter.checkAndFixTryBlocks(code);
         code = InvokeClassifier.expandCalls(code);
         code = insertTaintInit(code, method);
-
+        
         invokeClassification = null;
         noninstrumentableElements = null;
         codeAnalysis = null;
@@ -496,9 +497,7 @@ public class TaintTransform extends Transform {
             if (isCallToSuperclassConstructor(insnInvoke, code, method))
                 // Handle calls to internal superclass constructor
                 macroHandleResult = builder.nonthrowingTaintDefinition( 
-                		new DexMacro(
-                				insertInstanceFieldInit(method.getParentClass(), regThis),
-                				codeGen.taintDefineInternal(regThis)),
+        				codeGen.taintDefineInternal(regThis),
                 		Arrays.asList(Pair.create((DexRegister) regThis, false)));
             else
                 // Handle call to a standard internal constructor
@@ -560,7 +559,6 @@ public class TaintTransform extends Transform {
                        // At this point, the object reference is valid
                        // Need to generate new TaintInternal object with it
 
-                       insertInstanceFieldInit(method.getParentClass(), regThis),
                        sourcesinkJustAfter,
                        codeGen.taintCreate_External(null, regThis, regCombinedTaint),
                        codeGen.taintDefineInternal(regThis),
@@ -987,7 +985,13 @@ public class TaintTransform extends Transform {
     			codeGen.jump(lNull));
     }
 
-    private DexCodeElement insertInstanceFieldInit(DexClass clazz, DexSingleRegister regThis) {
+    private DexCode insertInstanceFieldInit(DexCode code, DexMethod method) {
+    	if (!isConstructorWithSuperclassCall(code, method))
+    		return code;
+    	
+    	DexClass clazz = method.getParentClass();
+    	DexSingleRegister regThis = (DexSingleRegister) code.getParameters().get(0).getRegister();
+    	
         DexSingleRegister regTaintObject = codeGen.auxReg();
         DexSingleRegister regEmptyTaint = codeGen.auxReg();
 
@@ -1019,7 +1023,9 @@ public class TaintTransform extends Transform {
             }
         }
 
-        return new DexMacro(insns);
+        insns.addAll(code.getInstructionList());
+        
+        return new DexCode(code, new InstructionList(insns));
     }
     
     private void insertStaticFieldInit(DexClass clazz) {
@@ -1372,8 +1378,7 @@ public class TaintTransform extends Transform {
     private MethodDefinition getClinit(DexClass clazz) {
         return clazz.getClassDef().getMethod(getClinitId());
     }
-    
-    
+        
     private void createTaintFields() {
         for (DexClass clazz : dex.getClasses())  {
             for(DexInstanceField field : clazz.getInstanceFields())
@@ -1399,6 +1404,26 @@ public class TaintTransform extends Transform {
         DexClass staticFieldsClass = dexAux.getType_StaticTaintFields();
         createEmptyClinit(staticFieldsClass);
         insertStaticFieldInit(staticFieldsClass);
+    }
+    
+    private boolean isConstructorWithSuperclassCall(DexCode code, DexMethod method) {
+    	if (!code.isConstructor())
+    		return false;
+    	
+    	for (DexCodeElement elem : code.getInstructionList()) {
+    		DexInstruction_Invoke invoke;
+    		if (elem instanceof MethodCall)
+    			invoke = ((MethodCall) elem).getInvoke();
+    		else if (elem instanceof DexInstruction_Invoke)
+    			invoke = (DexInstruction_Invoke) elem;
+    		else
+    			continue;
+    		
+    		if (isCallToSuperclassConstructor(invoke, code, method))
+    			return true;
+    	}
+    	
+    	return false;
     }
 
 	@Override
