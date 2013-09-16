@@ -187,6 +187,7 @@ public class TemplateBuilder {
 			
 		case Reference:
 		case Null:
+		case WildcardRef:
 			return false;
 			
 		default:
