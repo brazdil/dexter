@@ -25,6 +25,7 @@ import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.transform.taint.TaintTransform;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 /**
@@ -124,11 +125,9 @@ public class InstrumentService extends IntentService {
             renamerAux = null;
             System.gc();
 
-            broadcastStatus("Modifying...");
-
-//                 dex.instrument(false);
 
             broadcastStatus("Assembling...");
+            dexApp.setTransform(new TaintTransform());
             byte[] fileApp_New = dexApp.writeToFile();
 
             broadcastStatus("Signing...");

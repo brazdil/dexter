@@ -263,7 +263,7 @@ public class UnitTestActivity extends Activity {
                         setMessage("Instrumenting...");
 
                         Transform transform = new TestingTaintTransform();
-                        transform.apply(dexTestApp);
+                        dexTestApp.setTransform(transform);
                     }
 
                     setMessage("Saving...");
@@ -272,7 +272,7 @@ public class UnitTestActivity extends Activity {
 
                     Manifest manifest = new Manifest();
                     manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-                    File fileApk = fileApk = new File(UnitTestActivity.this.getFilesDir(), DEXTER_TEST_APK);
+                    File fileApk = new File(UnitTestActivity.this.getFilesDir(), DEXTER_TEST_APK);
                     JarOutputStream jos = new JarOutputStream(new FileOutputStream(fileApk), manifest);
                     JarEntry entryClassesDex = new JarEntry("classes.dex");
                     jos.putNextEntry(entryClassesDex);
