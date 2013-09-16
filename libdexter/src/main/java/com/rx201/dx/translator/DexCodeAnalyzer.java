@@ -99,6 +99,11 @@ public class DexCodeAnalyzer {
             code.getInstructionList().dump();
             throw new Error(ex);
         }
+        
+        //Free up memory
+        basicBlocks = null;
+        for(AnalyzedDexInstruction instruction : instructions)
+            instruction.freeMemory();
     }
 
     private void buildUseDefSets() {
