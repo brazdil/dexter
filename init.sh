@@ -29,6 +29,7 @@ git clone -q "$LIBCORE_REPO" "$LIBCORE_DIR" || exit
 echo "cloning \"$DALVIK_REPO\"..."
 git clone -q "$DALVIK_REPO" "$DALVIK_DIR" || exit
 git apply --directory "$DALVIK_DIR" 0001-SsaBasicBlock-memory-usage.patch
+git apply --directory "$DALVIK_DIR" 0002-SparseRegisterSpecSet.patch
 echo "copying libcore build.gradle"
 cp "$LIBCORE_BUILDFILE" "$LIBCORE_DIR"/dex/build.gradle || exit
 echo "copying dx build.gradle"

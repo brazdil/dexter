@@ -1,0 +1,552 @@
+From 72883e122c96deccbf405efd50ca7e01cb2fd964 Mon Sep 17 00:00:00 2001
+From: Rubin Xu <Rubin.Xu@cl.cam.ac.uk>
+Date: Mon, 16 Sep 2013 21:18:26 +0000
+Subject: [PATCH] SparseRegisterSpecSet
+
+---
+ .../com/android/dx/ssa/LocalVariableExtractor.java |    8 +-
+ dx/src/com/android/dx/ssa/LocalVariableInfo.java   |   32 +-
+ dx/src/com/rx201/dx/SparseRegisterSpecSet.java     |  377 ++++++++++++++++++++
+ 3 files changed, 399 insertions(+), 18 deletions(-)
+ create mode 100644 dx/src/com/rx201/dx/SparseRegisterSpecSet.java
+
+diff --git a/dx/src/com/android/dx/ssa/LocalVariableExtractor.java b/dx/src/com/android/dx/ssa/LocalVariableExtractor.java
+index b86bed6..3acc80d 100644
+--- a/dx/src/com/android/dx/ssa/LocalVariableExtractor.java
++++ b/dx/src/com/android/dx/ssa/LocalVariableExtractor.java
+@@ -19,6 +19,8 @@ package com.android.dx.ssa;
+ import com.android.dx.rop.code.RegisterSpec;
+ import com.android.dx.rop.code.RegisterSpecSet;
+ import com.android.dx.util.IntList;
++import com.rx201.dx.SparseRegisterSpecSet;
++
+ import java.util.ArrayList;
+ import java.util.BitSet;
+ import java.util.List;
+@@ -100,7 +102,7 @@ public class LocalVariableExtractor {
+      * @param blockIndex {@code >= 0;} block index of the block to process
+      */
+     private void processBlock(int blockIndex) {
+-        RegisterSpecSet primaryState
++        SparseRegisterSpecSet primaryState
+                 = resultInfo.mutableCopyOfStarts(blockIndex);
+         SsaBasicBlock block = blocks.get(blockIndex);
+         List<SsaInsn> insns = block.getInsns();
+@@ -124,7 +126,7 @@ public class LocalVariableExtractor {
+         boolean canThrowDuringLastInsn = hasExceptionHandlers
+                 && (lastInsn.getResult() != null);
+         int freezeSecondaryStateAt = insnSz - 1;
+-        RegisterSpecSet secondaryState = primaryState;
++        SparseRegisterSpecSet secondaryState = primaryState;
+ 
+         /*
+          * Iterate over the instructions, adding information for each place
+@@ -196,7 +198,7 @@ public class LocalVariableExtractor {
+ 
+         for (int i = 0; i < succSz; i++) {
+             int succ = successors.get(i);
+-            RegisterSpecSet state = (succ == primarySuccessor) ?
++            SparseRegisterSpecSet state = (succ == primarySuccessor) ?
+                 primaryState : secondaryState;
+ 
+             if (resultInfo.mergeStarts(succ, state)) {
+diff --git a/dx/src/com/android/dx/ssa/LocalVariableInfo.java b/dx/src/com/android/dx/ssa/LocalVariableInfo.java
+index 1520531..1b2b9b2 100644
+--- a/dx/src/com/android/dx/ssa/LocalVariableInfo.java
++++ b/dx/src/com/android/dx/ssa/LocalVariableInfo.java
+@@ -19,6 +19,8 @@ package com.android.dx.ssa;
+ import com.android.dx.rop.code.RegisterSpec;
+ import com.android.dx.rop.code.RegisterSpecSet;
+ import com.android.dx.util.MutabilityControl;
++import com.rx201.dx.SparseRegisterSpecSet;
++
+ import java.util.HashMap;
+ import java.util.List;
+ 
+@@ -36,14 +38,14 @@ public class LocalVariableInfo         extends MutabilityControl {
+      * that has no locals; it is empty and immutable but has an appropriate
+      * max size for the method
+      */
+-    private final RegisterSpecSet emptySet;
++    private final SparseRegisterSpecSet emptySet;
+ 
+     /**
+      * {@code non-null;} array consisting of register sets representing the
+      * sets of variables already assigned upon entry to each block,
+      * where array indices correspond to block indices
+      */
+-    private final RegisterSpecSet[] blockStarts;
++    private final SparseRegisterSpecSet[] blockStarts;
+ 
+     /** {@code non-null;} map from instructions to the variable each assigns */
+     private final HashMap<SsaInsn, RegisterSpec> insnAssignments;
+@@ -61,8 +63,8 @@ public class LocalVariableInfo         extends MutabilityControl {
+         List<SsaBasicBlock> blocks = method.getBlocks();
+ 
+         this.regCount = method.getRegCount();
+-        this.emptySet = new RegisterSpecSet(regCount);
+-        this.blockStarts = new RegisterSpecSet[blocks.size()];
++        this.emptySet = new SparseRegisterSpecSet(regCount);
++        this.blockStarts = new SparseRegisterSpecSet[blocks.size()];
+         this.insnAssignments =
+             new HashMap<SsaInsn, RegisterSpec>(/*hint here*/);
+ 
+@@ -76,7 +78,7 @@ public class LocalVariableInfo         extends MutabilityControl {
+      * @param index {@code >= 0;} the block index
+      * @param specs {@code non-null;} the register set to associate with the block
+      */
+-    public void setStarts(int index, RegisterSpecSet specs) {
++    public void setStarts(int index, SparseRegisterSpecSet specs) {
+         throwIfImmutable();
+ 
+         if (specs == null) {
+@@ -105,8 +107,8 @@ public class LocalVariableInfo         extends MutabilityControl {
+      * to the associated set (including storing one for the first time) or
+      * {@code false} if there was no change
+      */
+-    public boolean mergeStarts(int index, RegisterSpecSet specs) {
+-        RegisterSpecSet start = getStarts0(index);
++    public boolean mergeStarts(int index, SparseRegisterSpecSet specs) {
++        SparseRegisterSpecSet start = getStarts0(index);
+         boolean changed = false;
+ 
+         if (start == null) {
+@@ -114,7 +116,7 @@ public class LocalVariableInfo         extends MutabilityControl {
+             return true;
+         }
+ 
+-        RegisterSpecSet newStart = start.mutableCopy();
++        SparseRegisterSpecSet newStart = start.mutableCopy();
+         newStart.intersect(specs, true);
+ 
+         if (start.equals(newStart)) {
+@@ -135,8 +137,8 @@ public class LocalVariableInfo         extends MutabilityControl {
+      * @param index {@code >= 0;} the block index
+      * @return {@code non-null;} the associated register set
+      */
+-    public RegisterSpecSet getStarts(int index) {
+-        RegisterSpecSet result = getStarts0(index);
++    public SparseRegisterSpecSet getStarts(int index) {
++        SparseRegisterSpecSet result = getStarts0(index);
+ 
+         return (result != null) ? result : emptySet;
+     }
+@@ -149,7 +151,7 @@ public class LocalVariableInfo         extends MutabilityControl {
+      * @param block {@code non-null;} the block in question
+      * @return {@code non-null;} the associated register set
+      */
+-    public RegisterSpecSet getStarts(SsaBasicBlock block) {
++    public SparseRegisterSpecSet getStarts(SsaBasicBlock block) {
+         return getStarts(block.getIndex());
+     }
+ 
+@@ -162,11 +164,11 @@ public class LocalVariableInfo         extends MutabilityControl {
+      * @param index {@code >= 0;} the block index
+      * @return {@code non-null;} the associated register set
+      */
+-    public RegisterSpecSet mutableCopyOfStarts(int index) {
+-        RegisterSpecSet result = getStarts0(index);
++    public SparseRegisterSpecSet mutableCopyOfStarts(int index) {
++        SparseRegisterSpecSet result = getStarts0(index);
+ 
+         return (result != null) ?
+-            result.mutableCopy() : new RegisterSpecSet(regCount);
++            result.mutableCopy() : new SparseRegisterSpecSet(regCount);
+     }
+ 
+     /**
+@@ -239,7 +241,7 @@ public class LocalVariableInfo         extends MutabilityControl {
+      * @return {@code null-ok;} associated register set or {@code null} if there
+      * is none
+      */
+-    private RegisterSpecSet getStarts0(int index) {
++    private SparseRegisterSpecSet getStarts0(int index) {
+         try {
+             return blockStarts[index];
+         } catch (ArrayIndexOutOfBoundsException ex) {
+diff --git a/dx/src/com/rx201/dx/SparseRegisterSpecSet.java b/dx/src/com/rx201/dx/SparseRegisterSpecSet.java
+new file mode 100644
+index 0000000..3c9028e
+--- /dev/null
++++ b/dx/src/com/rx201/dx/SparseRegisterSpecSet.java
+@@ -0,0 +1,377 @@
++/*
++ * Copyright (C) 2007 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.rx201.dx;
++
++import java.util.ArrayList;
++import java.util.Collections;
++import java.util.HashMap;
++import java.util.Set;
++
++import com.android.dx.rop.code.LocalItem;
++import com.android.dx.rop.code.RegisterSpec;
++import com.android.dx.util.MutabilityControl;
++
++/**
++ * Set of {@link RegisterSpec} instances, where a given register number
++ * may appear only once in the set.
++ * 
++ * rx201: A more memory-efficient version of the com.android.dx.rop.code.RegisterSpecSet
++ * for method with large number of registers.
++ */
++public final class SparseRegisterSpecSet
++        extends MutabilityControl {
++    /** {@code non-null;} no-element instance */
++    public static final SparseRegisterSpecSet EMPTY = new SparseRegisterSpecSet(0);
++
++    /**
++     * {@code non-null;} array of register specs, where each element is
++     * {@code null} or is an instance whose {@code reg}
++     * matches the array index
++     */
++    private final HashMap<Integer, RegisterSpec> specs;
++
++    /** {@code >= -1;} size of the set or {@code -1} if not yet calculated */
++    private int size;
++
++    private int maxSize;
++
++    /**
++     * Constructs an instance. The instance is initially empty.
++     *
++     * @param maxSize {@code >= 0;} the maximum register number (exclusive) that
++     * may be represented in this instance
++     */
++    public SparseRegisterSpecSet(int maxSize) {
++        super(maxSize != 0);
++
++        this.specs = new HashMap<Integer, RegisterSpec>();
++        this.size = 0;
++        this.maxSize = maxSize;
++    }
++
++    /** {@inheritDoc} */
++    @Override
++    public boolean equals(Object other) {
++        if (!(other instanceof SparseRegisterSpecSet)) {
++            return false;
++        }
++
++        SparseRegisterSpecSet otherSet = (SparseRegisterSpecSet) other;
++        HashMap<Integer, RegisterSpec> otherSpecs = otherSet.specs;
++        
++        Set<Integer> indices = specs.keySet();
++        if (!indices.equals(otherSpecs.keySet()))
++            return false;
++        
++        for (Integer i : indices) {
++            RegisterSpec s1 = specs.get(i);
++            RegisterSpec s2 = otherSpecs.get(i);
++
++            if (s1 == s2) {
++                continue;
++            }
++
++            if ((s1 == null) || !s1.equals(s2)) {
++                return false;
++            }
++        }
++
++        return true;
++    }
++
++    /** {@inheritDoc} */
++    @Override
++    public int hashCode() {
++        ArrayList<Integer> indices = new ArrayList<Integer>(specs.keySet());
++        Collections.sort(indices);
++        int hash = 0;
++
++        for (Integer i : indices) {
++            RegisterSpec spec = specs.get(i);
++            int oneHash = (spec == null) ? 0 : spec.hashCode();
++            hash = (hash * 31) + oneHash;
++        }
++
++        return hash;
++    }
++
++    /** {@inheritDoc} */
++    @Override
++    public String toString() {
++        StringBuffer sb = new StringBuffer();
++
++        sb.append('{');
++
++        boolean any = false;
++        for (Integer i : specs.keySet()) {
++            RegisterSpec spec = specs.get(i);
++            if (spec != null) {
++                if (any) {
++                    sb.append(", ");
++                } else {
++                    any = true;
++                }
++                sb.append(i.toString());
++                sb.append(": ");
++                sb.append(spec);
++            }
++        }
++
++        sb.append('}');
++        return sb.toString();
++    }
++
++    /**
++     * Gets the maximum number of registers that may be in this instance, which
++     * is also the maximum-plus-one of register numbers that may be
++     * represented.
++     *
++     * @return {@code >= 0;} the maximum size
++     */
++    public int getMaxSize() {
++        return maxSize;
++    }
++
++    /**
++     * Gets the current size of this instance.
++     *
++     * @return {@code >= 0;} the size
++     */
++    public int size() {
++        int result = size;
++
++        if (result < 0) {
++
++            result = specs.size();
++
++            size = result;
++        }
++
++        return result;
++    }
++
++    /**
++     * Gets the element with the given register number, if any.
++     *
++     * @param reg {@code >= 0;} the desired register number
++     * @return {@code null-ok;} the element with the given register number or
++     * {@code null} if there is none
++     */
++    public RegisterSpec get(int reg) {
++        try {
++            return specs.get(reg);
++        } catch (ArrayIndexOutOfBoundsException ex) {
++            // Translate the exception.
++            throw new IllegalArgumentException("bogus reg");
++        }
++    }
++
++    /**
++     * Gets the element with the same register number as the given
++     * spec, if any. This is just a convenient shorthand for
++     * {@code get(spec.getReg())}.
++     *
++     * @param spec {@code non-null;} spec with the desired register number
++     * @return {@code null-ok;} the element with the matching register number or
++     * {@code null} if there is none
++     */
++    public RegisterSpec get(RegisterSpec spec) {
++        return get(spec.getReg());
++    }
++
++    /**
++     * Returns the spec in this set that's currently associated with a
++     * given local (type, name, and signature), or {@code null} if there is
++     * none. This ignores the register number of the given spec but
++     * matches on everything else.
++     *
++     * @param spec {@code non-null;} local to look for
++     * @return {@code null-ok;} first register found that matches, if any
++     */
++    public RegisterSpec findMatchingLocal(RegisterSpec spec) {
++
++        for (RegisterSpec s : specs.values()) {
++
++            if (spec.matchesVariable(s)) {
++                return s;
++            }
++        }
++
++        return null;
++    }
++
++    /**
++     * Returns the spec in this set that's currently associated with a given
++     * local (name and signature), or {@code null} if there is none.
++     *
++     * @param local {@code non-null;} local item to search for
++     * @return {@code null-ok;} first register found with matching name and signature
++     */
++    public RegisterSpec localItemToSpec(LocalItem local) {
++
++        for (RegisterSpec spec : specs.values()) {
++
++            if ((spec != null) && local.equals(spec.getLocalItem())) {
++                return spec;
++            }
++        }
++
++        return null;
++    }
++
++    /**
++     * Removes a spec from the set. Only the register number
++     * of the parameter is significant.
++     *
++     * @param toRemove {@code non-null;} register to remove.
++     */
++    public void remove(RegisterSpec toRemove) {
++        try {
++            specs.remove(toRemove.getReg());
++            size = -1;
++        } catch (ArrayIndexOutOfBoundsException ex) {
++            // Translate the exception.
++            throw new IllegalArgumentException("bogus reg");
++        }
++    }
++
++    /**
++     * Puts the given spec into the set. If there is already an element in
++     * the set with the same register number, it is replaced. Additionally,
++     * if the previous element is for a category-2 register, then that
++     * previous element is nullified. Finally, if the given spec is for
++     * a category-2 register, then the immediately subsequent element
++     * is nullified.
++     *
++     * @param spec {@code non-null;} the register spec to put in the instance
++     */
++    public void put(RegisterSpec spec) {
++        throwIfImmutable();
++
++        if (spec == null) {
++            throw new NullPointerException("spec == null");
++        }
++
++        size = -1;
++
++        try {
++            int reg = spec.getReg();
++            specs.put(reg, spec);
++
++            if (reg > 0) {
++                int prevReg = reg - 1;
++                RegisterSpec prevSpec = specs.get(prevReg);
++                if ((prevSpec != null) && (prevSpec.getCategory() == 2)) {
++                    specs.remove(prevReg);
++                }
++            }
++
++            if (spec.getCategory() == 2) {
++                specs.remove(reg + 1);
++            }
++        } catch (ArrayIndexOutOfBoundsException ex) {
++            // Translate the exception.
++            throw new IllegalArgumentException("spec.getReg() out of range");
++        }
++    }
++
++    /**
++     * Put the entire contents of the given set into this one.
++     *
++     * @param set {@code non-null;} the set to put into this instance
++     */
++    public void putAll(SparseRegisterSpecSet set) {
++
++        for (RegisterSpec spec : set.specs.values()) {
++            put(spec);
++        }
++    }
++
++    /**
++     * Intersects this instance with the given one, modifying this
++     * instance. The intersection consists of the pairwise
++     * {@link RegisterSpec#intersect} of corresponding elements from
++     * this instance and the given one where both are non-null.
++     *
++     * @param other {@code non-null;} set to intersect with
++     * @param localPrimary whether local variables are primary to
++     * the intersection; if {@code true}, then the only non-null
++     * result elements occur when registers being intersected have
++     * equal names (or both have {@code null} names)
++     */
++    public void intersect(SparseRegisterSpecSet other, boolean localPrimary) {
++        throwIfImmutable();
++
++        HashMap<Integer, RegisterSpec> otherSpecs = other.specs;
++
++        size = -1;
++
++        for (Integer i : specs.keySet()) {
++            RegisterSpec spec = specs.get(i);
++
++            RegisterSpec intersection =
++                spec.intersect(otherSpecs.get(i), localPrimary);
++            if (intersection != spec) {
++                specs.put(i, intersection);
++            }
++        }
++
++    }
++
++    /**
++     * Returns an instance that is identical to this one, except that
++     * all register numbers are offset by the given amount. Mutability
++     * of the result is inherited from the original.
++     *
++     * @param delta the amount to offset the register numbers by
++     * @return {@code non-null;} an appropriately-constructed instance
++     */
++    public SparseRegisterSpecSet withOffset(int delta) {
++        int len = maxSize;
++        SparseRegisterSpecSet result = new SparseRegisterSpecSet(len + delta);
++
++        for (RegisterSpec spec : specs.values()) {
++            result.put(spec.withOffset(delta));
++        }
++
++        result.size = size;
++
++        if (isImmutable()) {
++            result.setImmutable();
++        }
++
++        return result;
++    }
++
++    /**
++     * Makes and return a mutable copy of this instance.
++     *
++     * @return {@code non-null;} the mutable copy
++     */
++    public SparseRegisterSpecSet mutableCopy() {
++        int len = maxSize;
++        SparseRegisterSpecSet copy = new SparseRegisterSpecSet(len);
++
++        for (RegisterSpec spec : specs.values()) {
++            copy.put(spec);
++        }
++
++        copy.size = size;
++
++        return copy;
++    }
++}
+-- 
+1.7.9.5
+
