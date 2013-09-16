@@ -120,4 +120,7 @@ public abstract class Transform {
         doLast(cls);
     }
     
+    public boolean handleLast(DexClass cls) {
+    	return false;
+    }
 }

@@ -131,8 +131,17 @@ public class TaintTransform extends Transform {
         createTaintFields();
         mergeAuxDex();
     }
+    
+    private boolean isStaticTaintFieldsClass(DexClass clazz) {
+    	return clazz.equals(this.dexAux.getType_StaticTaintFields());
+    }
+    
+    @Override
+	public boolean handleLast(DexClass cls) {
+		return isStaticTaintFieldsClass(cls);
+	}
 
-    private DexCodeAnalyzer codeAnalysis;
+	private DexCodeAnalyzer codeAnalysis;
     private Map<MethodCall, CallDestinationType> invokeClassification;
     private Set<DexCodeElement> noninstrumentableElements;
     private TemplateBuilder builder;
@@ -1392,4 +1401,12 @@ public class TaintTransform extends Transform {
         insertStaticFieldInit(staticFieldsClass);
     }
 
+	@Override
+	public void doClass(DexClass cls) {
+		if (isStaticTaintFieldsClass(cls)) {
+			createEmptyClinit(cls);
+			insertStaticFieldInit(cls);
+		} else
+			super.doClass(cls);
+	}
 }

@@ -65,15 +65,21 @@ public class Dex {
         this.classes = Utils.finalList(classes);
     }
     
-    private static void sortClassesByName(List<DexClass> classes) {
+    private void sortClassesByName(List<DexClass> classes) {
         Collections.sort(classes, new Comparator<DexClass>() {
 			@Override
 			public int compare(DexClass o1, DexClass o2) {
-//				if (o1.getClassDef().getType().getDescriptor().equals("Lcom/kakao/talk/bbqzplvtdp/xoikokewcy;"))
-//					return -1;
-//				else if (o2.getClassDef().getType().getDescriptor().equals("Lcom/kakao/talk/bbqzplvtdp/xoikokewcy;"))
-//					return 1;
- 
+				if (o1.equals(o2))
+					return 0;
+				
+				// StaticTaintFields class must be compiled as the last
+				if (transform != null) {
+					if (Dex.this.transform.handleLast(o1))
+						return 1;
+					else if (Dex.this.transform.handleLast(o2))
+						return -1;
+				}
+					
 				String d1 = o1.getClassDef().getType().getDescriptor();
 				String d2 = o2.getClassDef().getType().getDescriptor();
 				return d1.compareTo(d2);
