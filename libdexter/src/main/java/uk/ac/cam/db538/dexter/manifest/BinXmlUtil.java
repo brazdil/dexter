@@ -55,12 +55,16 @@ public class BinXmlUtil {
         String appName;
         @Override
         public String toString() {
-            if (appName != null && appName.contains(".")) {
-                return appName;
-            } else if (appName != null && packageName != null) {
-                return packageName + "." + appName;
-            }
-            return null;
+        	if (packageName == null)
+        		return appName;
+        	else if (appName == null)
+        		return null;
+        	else if (appName.startsWith("."))
+        		return packageName + appName;
+        	else if (!appName.contains("."))
+        		return packageName + "." + appName;
+        	else
+        		return appName;
         }
     }
 
