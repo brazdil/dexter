@@ -28,7 +28,7 @@ public class TestingTaintTransform extends TaintTransform {
 
     @Override
     public boolean exclude(DexClass clazz) {
-    	return false;
+        return super.exclude(clazz);
 //        String name = clazz.getClassDef().getType().getDescriptor();
 //        return name.equals("LTestList;");
     }
