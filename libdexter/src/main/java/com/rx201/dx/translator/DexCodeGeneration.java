@@ -214,6 +214,8 @@ public class DexCodeGeneration {
             return null;
 
         RopMethod rmeth = toRop(code);
+        // Free memory used by the analyser, which is no longer required after this point.
+        analyzer = null;
         if (DEBUG) {
             System.out.println("==== Before Optimization ====");
             dump(rmeth);

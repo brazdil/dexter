@@ -26,8 +26,8 @@ public class AnalyzedDexInstruction {
     /**
      * Instructions that can pass on execution to this one during normal execution
      */
-    protected final LinkedList<AnalyzedDexInstruction> predecessors = new LinkedList<AnalyzedDexInstruction>();
-    protected final Set<AnalyzedDexInstruction> exceptionPredecessors = new HashSet<AnalyzedDexInstruction>();
+    protected LinkedList<AnalyzedDexInstruction> predecessors = new LinkedList<AnalyzedDexInstruction>();
+    protected  Set<AnalyzedDexInstruction> exceptionPredecessors = new HashSet<AnalyzedDexInstruction>();
     /**
      * Instructions that can execution could pass on to next during normal execution
      */
@@ -44,7 +44,7 @@ public class AnalyzedDexInstruction {
     protected final HashMap<DexRegister, TypeSolver> definedRegisterMap;
 
 
-    protected final HashMap<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>> constrainedRegisters;
+    protected HashMap<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>> constrainedRegisters;
 
     public final int instructionIndex;
 
@@ -62,7 +62,7 @@ public class AnalyzedDexInstruction {
         this.constrainedRegisters = new HashMap<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>>();
         this.instructionIndex = index;
         this.auxillaryElement = null;
-
+        
         useSet = new HashMap<DexRegister, Pair<RopType, Boolean>>();
         defSet = new HashMap<DexRegister, Pair<RopType, Boolean>>();
         moveSet = new HashMap<DexRegister, DexRegister>();
@@ -218,4 +218,11 @@ public class AnalyzedDexInstruction {
             return instructionIndex + ": null";
     }
 
+    public void freeMemory() {
+        exceptionPredecessors = null;
+        constrainedRegisters = null;
+        moveSet = null;
+        defSet = null;
+        useSet = null;
+    }
 }
