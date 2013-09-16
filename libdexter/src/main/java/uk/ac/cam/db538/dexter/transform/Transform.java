@@ -3,41 +3,32 @@ package uk.ac.cam.db538.dexter.transform;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jf.dexlib.Util.AccessFlags;
+
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexEmpty;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
 
 public abstract class Transform {
 
-    private final ProgressCallback progressCallback;
-
     public Transform() {
-        this(null);
     }
 
-    public Transform(ProgressCallback progressCallback) {
-        this.progressCallback = progressCallback;
-    }
-
-    private Dex dex;
+    protected Dex dex;
 
     public final void apply(Dex dex) {
         this.dex = dex;
-
-        progressUpdate(0, 1);
-
-        doFirst(dex);
-
-        int finished = 1;
-        int count = dex.getClasses().size() + 2;
-        progressUpdate(++finished, count);
 
         /*
          * classes are mutable
@@ -54,19 +45,15 @@ public abstract class Transform {
 
             doLast(clazz);
 
-            progressUpdate(++finished, count);
         }
 
-        doLast(dex);
-
-        progressUpdate(count, count);
     }
 
     public boolean exclude(DexClass clazz) {
         return false;
     }
 
-    private List<DexMethod> apply(List<DexMethod> oldMethods) {
+    public List<DexMethod> apply(List<DexMethod> oldMethods) {
         List<DexMethod> newMethods = new ArrayList<DexMethod>(oldMethods.size());
         for (DexMethod newMethod : oldMethods) {
             newMethod = doFirst(newMethod);
@@ -99,7 +86,6 @@ public abstract class Transform {
         return newMethods;
     }
 
-    public void doFirst(Dex dex) { }
     public void doFirst(DexClass clazz) { }
     public DexMethod doFirst(DexMethod method) {
         return method;
@@ -111,7 +97,6 @@ public abstract class Transform {
         return element;
     }
 
-    public void doLast(Dex dex) { }
     public void doLast(DexClass clazz) { }
     public DexMethod doLast(DexMethod method) {
         return method;
@@ -123,12 +108,16 @@ public abstract class Transform {
         return element;
     }
 
-    private void progressUpdate(int finished, int outOf) {
-        if (this.progressCallback != null)
-            this.progressCallback.update(finished, outOf);
+    public void prepare(Dex dex) {
+        this.dex = dex;
     }
 
-    protected AuxiliaryDex getAuxiliaryDex() {
-        return this.dex.getAuxiliaryDex();
+    public void doClass(DexClass cls) {
+        if (exclude(cls))
+            return;
+        doFirst(cls);
+        cls.replaceMethods(apply(cls.getMethods()));
+        doLast(cls);
     }
+    
 }

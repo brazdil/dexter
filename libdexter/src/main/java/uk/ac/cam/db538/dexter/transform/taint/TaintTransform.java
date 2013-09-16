@@ -15,7 +15,6 @@ import lombok.val;
 import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.Util.AccessFlags;
 
-import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -106,24 +105,21 @@ public class TaintTransform extends Transform {
 
     public TaintTransform() { }
 
-    public TaintTransform(ProgressCallback progressCallback) {
-        super(progressCallback);
-    }
-
-    private Dex dex;
-    private AuxiliaryDex dexAux;
     protected CodeGenerator codeGen;
+    protected AuxiliaryDex dexAux;
     protected RuntimeHierarchy hierarchy;
     private DexTypeCache typeCache;
 
     private Map<DexInstanceField, DexInstanceField> taintInstanceFields;
     private Map<StaticFieldDefinition, DexStaticField> taintStaticFields;
     
+    /**
+     * Perform necessary global transforms all together that are prerequisite of per class/method transform   
+     */
     @Override
-    public void doFirst(Dex dex) {
-        super.doFirst(dex);
+    public void prepare(Dex dex) {
+        super.prepare(dex);
 
-        this.dex = dex;
         dexAux = dex.getAuxiliaryDex();
         codeGen = new CodeGenerator(dexAux);
         hierarchy = dexAux.getHierarchy();
@@ -131,6 +127,9 @@ public class TaintTransform extends Transform {
 
         taintInstanceFields = new HashMap<DexInstanceField, DexInstanceField>();
         taintStaticFields = new HashMap<StaticFieldDefinition, DexStaticField>();
+        
+        createTaintFields();
+        mergeAuxDex();
     }
 
     private DexCodeAnalyzer codeAnalysis;
@@ -327,19 +326,6 @@ public class TaintTransform extends Transform {
         super.doLast(clazz);
     }
 
-    @Override
-    public void doLast(Dex dex) {
-        super.doLast(dex);
-
-        // insert classes from dexAux to the resulting DEX
-        dex.addClasses(dexAux.getClasses());
-        
-        // add static field initializer into StaticTaintFields class
-        DexClass staticFieldsClass = dexAux.getType_StaticTaintFields();
-        createEmptyClinit(staticFieldsClass);
-        insertStaticFieldInit(staticFieldsClass);
-    }
-    
     public LeakageAlert getLeakageAlert() {
     	return new LeakageAlert() {
 			@Override
@@ -1028,6 +1014,8 @@ public class TaintTransform extends Transform {
     }
     
     private void insertStaticFieldInit(DexClass clazz) {
+        codeGen.resetAsmIds();
+        
     	DexMethod clinitMethod = clazz.getMethod(getClinit(clazz));
     	
         DexSingleRegister regTaintObject = codeGen.auxReg();
@@ -1375,4 +1363,33 @@ public class TaintTransform extends Transform {
     private MethodDefinition getClinit(DexClass clazz) {
         return clazz.getClassDef().getMethod(getClinitId());
     }
+    
+    
+    private void createTaintFields() {
+        for (DexClass clazz : dex.getClasses())  {
+            for(DexInstanceField field : clazz.getInstanceFields())
+                getTaintField(field);
+            for(DexStaticField field : clazz.getStaticFields())
+                getTaintField(field.getFieldDef());
+        }
+    }
+    
+    @Override
+    public boolean exclude(DexClass clazz) {
+        if (dexAux != null && (dexAux.getClasses().contains(clazz)))
+            return true;
+        
+        return false;
+    }
+    
+    private void mergeAuxDex() {
+        // insert classes from dexAux to the resulting DEX
+        dex.addClasses(dexAux.getClasses());
+        
+        // add static field initializer into StaticTaintFields class
+        DexClass staticFieldsClass = dexAux.getType_StaticTaintFields();
+        createEmptyClinit(staticFieldsClass);
+        insertStaticFieldInit(staticFieldsClass);
+    }
+
 }

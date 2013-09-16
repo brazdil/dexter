@@ -92,7 +92,7 @@ public class TranslationTest {
         System.out.println("Instrumenting application");
         DexCodeGeneration.DEBUG = true;
         Transform transform = new TaintTransform();
-        transform.apply(dexApp);
+        dexApp.setTransform(transform);
 
         System.out.println("Recompiling application");
         dexApp.writeToFile();

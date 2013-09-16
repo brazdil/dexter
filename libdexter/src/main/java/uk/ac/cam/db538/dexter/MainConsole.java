@@ -68,7 +68,7 @@ public class MainConsole {
         	transform = new TestingTaintTransform();
         else
         	transform = new TaintTransform();
-        transform.apply(dexApp);
+        dexApp.setTransform(transform);
 
         System.out.println("Recompiling application");
         val newDex = dexApp.writeToFile();

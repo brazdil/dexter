@@ -14,10 +14,12 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import uk.ac.cam.db538.dexter.ProgressCallback;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.utils.Utils;
 
@@ -28,6 +30,7 @@ public class Dex {
     @Getter private List<DexClass> classes;
 
     private final ProgressCallback progressCallback;
+    private Transform transform;
 
 //  @Getter private DexClass externalStaticFieldTaint_Class;
 //  @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
@@ -128,8 +131,16 @@ public class Dex {
         progressUpdate(0, count);
         val asmCache = new DexAssemblingCache(outFile, hierarchy);
         for (val cls : classes) {
+            
+            //Apply transform
+            transform.doClass(cls);
+            
             cls.writeToFile(outFile, asmCache);
             progressUpdate(++i, count);
+            
+            //Free method code memory, assuming they will never be used again.
+            cls.replaceMethods(new ArrayList<DexMethod>());
+            
         }
 
         // Apply jumbo-instruction fix requires ReferencedItem being
@@ -163,5 +174,13 @@ public class Dex {
         newClasses.addAll(cls);
         sortClassesByName(newClasses);
         this.classes = Utils.finalList(newClasses);
+    }
+
+    public void setTransform(Transform transform) {
+        if (this.transform != null) 
+            throw new RuntimeException("Cannot change existing transform");
+        
+        this.transform = transform;
+        transform.prepare(this);
     }
 }

@@ -26,10 +26,6 @@ public class TestingTaintTransform extends TaintTransform {
     public TestingTaintTransform() {
     }
 
-    public TestingTaintTransform(ProgressCallback progressCallback) {
-        super(progressCallback);
-    }
-
     @Override
     public boolean exclude(DexClass clazz) {
     	return false;
