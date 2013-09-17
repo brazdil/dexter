@@ -13,6 +13,11 @@ import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
+import com.android.dx.ssa.Optimizer;
+import com.android.dx.ssa.SsaConverter;
+import com.android.dx.ssa.SsaRenamer;
+import com.rx201.dx.translator.DexCodeGeneration;
+
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
@@ -22,6 +27,7 @@ import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
 import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class Dex {
@@ -203,23 +209,34 @@ public class Dex {
     	BaseClassDefinition clazzDef = hierarchy.getClassDefinition(DexClassType.parse(className, getTypeCache()));
     	DexClass clazz = this.getClass(clazzDef);
     	
-    	dumpMethod_internal(methodStr, clazz);
+    	DexMethod method;
+    	
+    	method = findMethodByDefStr(methodStr, clazz);
+    	dumpMethod(method);
+    	
     	transform.doClass(clazz);
-    	dumpMethod_internal(methodStr, clazz);
+    	
+    	method = findMethodByDefStr(methodStr, clazz);
+    	dumpMethod(method);
+    	
+    	DexCodeGeneration codeGen = new DexCodeGeneration(method);
+    	Optimizer.DEBUG_SSA_DUMP = true;
+    	codeGen.processMethod(method.getMethodBody());
     }
     
-    private void dumpMethod_internal(String methodStr, DexClass clazz) {
-    	for (DexMethod method : clazz.getMethods()) {
-    		String mstr = method.getMethodDef().toString();
-    		if (mstr.equals(methodStr)) {
-    			System.err.println("METHOD: " + mstr);
-    			method.getMethodBody().getInstructionList().dump();
-    			System.err.println("END METHOD");
-    			System.err.println();
-    			return;
-    		}
-    	}
+    private DexMethod findMethodByDefStr(String methodStr, DexClass clazz) {
+    	for (DexMethod method : clazz.getMethods())
+    		if (method.getMethodDef().toString().equals(methodStr))
+    			return method;
     	
     	throw new RuntimeException("Method " + methodStr + " not found");
+    }
+    
+    private void dumpMethod(DexMethod method) {
+		System.err.println("METHOD: " + method.getMethodDef().toString());
+		method.getMethodBody().getInstructionList().dump();
+		System.err.println("END METHOD");
+		System.err.println();
+		return;
     }
 }

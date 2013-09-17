@@ -209,7 +209,7 @@ public class DexCodeGeneration {
 
     }
 
-    private DalvCode processMethod(DexCode code) {
+    public DalvCode processMethod(DexCode code) {
         if (code == null)
             return null;
 
@@ -503,69 +503,6 @@ public class DexCodeGeneration {
                 }
             }
         }
-        System.out.println(sb.toString());
-    }
-
-    private static void dumpSSA(SsaMethod ssaMeth) {
-
-        StringBuffer sb = new StringBuffer(2000);
-
-        sb.append("first ");
-        sb.append(Hex.u2(
-                ssaMeth.blockIndexToRopLabel(ssaMeth.getEntryBlockIndex())));
-        sb.append('\n');
-
-        ArrayList<SsaBasicBlock> blocks = ssaMeth.getBlocks();
-        ArrayList<SsaBasicBlock> sortedBlocks =
-            (ArrayList<SsaBasicBlock>) blocks.clone();
-        Collections.sort(sortedBlocks, SsaBasicBlock.LABEL_COMPARATOR);
-
-        for (SsaBasicBlock block : sortedBlocks) {
-            sb.append("block ")
-                    .append(Hex.u2(block.getRopLabel())).append('\n');
-
-            SparseBitSet preds = block.getPredecessors();
-
-            for (int i = preds.nextSetBit(0); i >= 0;
-                 i = preds.nextSetBit(i+1)) {
-                sb.append("  pred ");
-                sb.append(Hex.u2(ssaMeth.blockIndexToRopLabel(i)));
-                sb.append('\n');
-            }
-
-            sb.append("  live in:" + block.getLiveInRegs());
-            sb.append("\n");
-
-            for (SsaInsn insn : block.getInsns()) {
-                sb.append("  ");
-                sb.append(insn.toHuman());
-                sb.append('\n');
-            }
-
-            if (block.getSuccessors().cardinality() == 0) {
-                sb.append("  returns\n");
-            } else {
-                int primary = block.getPrimarySuccessorRopLabel();
-
-                IntList succLabelList = block.getRopLabelSuccessorList();
-
-                int szSuccLabels = succLabelList.size();
-
-                for (int i = 0; i < szSuccLabels; i++) {
-                    sb.append("  next ");
-                    sb.append(Hex.u2(succLabelList.get(i)));
-
-                    if (szSuccLabels != 1 && primary == succLabelList.get(i)) {
-                        sb.append(" *");
-                    }
-                    sb.append('\n');
-                }
-            }
-
-            sb.append("  live out:" + block.getLiveOutRegs());
-            sb.append("\n");
-        }
-
         System.out.println(sb.toString());
     }
 }
