@@ -317,11 +317,6 @@ public class TaintTransform extends Transform {
 
     @Override
     public void doLast(DexClass clazz) {
-        // add InternalClassAnnotation
-        clazz.replaceAnnotations(Utils.concat(
-                                     clazz.getAnnotations(),
-                                     new DexAnnotation(dexAux.getAnno_InternalClass().getType(), AnnotationVisibility.RUNTIME)));
-
         // implement the InternalDataStructure interface
         if (!clazz.getClassDef().isInterface()) {
             clazz.getClassDef().addImplementedInterface((InterfaceDefinition) dexAux.getType_InternalStructure().getClassDef());

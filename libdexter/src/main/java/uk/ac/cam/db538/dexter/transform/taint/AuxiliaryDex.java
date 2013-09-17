@@ -8,7 +8,6 @@ import org.jf.dexlib.DexFile;
 import uk.ac.cam.db538.dexter.aux.InvokeTaintStore;
 import uk.ac.cam.db538.dexter.aux.StaticTaintFields;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
-import uk.ac.cam.db538.dexter.aux.anno.InternalClass;
 import uk.ac.cam.db538.dexter.aux.anno.InternalMethod;
 import uk.ac.cam.db538.dexter.aux.struct.Assigner;
 import uk.ac.cam.db538.dexter.aux.struct.InternalDataStructure;
@@ -56,7 +55,6 @@ public class AuxiliaryDex extends Dex {
 
     @Getter private final DexClass type_StaticTaintFields;
 
-    @Getter private final InterfaceDefinition anno_InternalClass;
     @Getter private final InterfaceDefinition anno_InternalMethod;
 
     @Getter private final DexClass type_InternalStructure;
@@ -121,7 +119,6 @@ public class AuxiliaryDex extends Dex {
         this.type_StaticTaintFields = getDexClass(StaticTaintFields.class, hierarchy, renamer);
 
         // Annotations
-        this.anno_InternalClass = getIfaceDef(InternalClass.class, hierarchy, renamer);
         this.anno_InternalMethod = getIfaceDef(InternalMethod.class, hierarchy, renamer);
 
         // InternalStructure interface
