@@ -24,8 +24,8 @@ public class MainConsole {
         DexCodeGeneration.DEBUG = false;
         DexCodeGeneration.INFO = true;
         
-        if (args.length != 2) {
-            System.err.println("usage: dexter <framework-dir> <apk-file>");
+        if (args.length != 2 && args.length != 3) {
+            System.err.println("usage: dexter <framework-dir> <apk-file> (<method-id>)");
             System.exit(1);
         }
 
@@ -40,6 +40,12 @@ public class MainConsole {
             System.err.println("<framework-dir> is not a directory");
             System.exit(1);
         }
+        
+        String methodId;
+        if (args.length == 3)
+        	methodId = args[2];
+        else
+        	methodId = null;
 
         val hierarchyBuilder = new HierarchyBuilder();
 
@@ -62,7 +68,6 @@ public class MainConsole {
         AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux);
         Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
 
-        System.out.println("Instrumenting application");
         Transform transform;
         if (apkFile.getName().equals("test.apk"))
         	transform = new TestingTaintTransform();
@@ -70,11 +75,17 @@ public class MainConsole {
         	transform = new TaintTransform();
         dexApp.setTransform(transform);
 
-        System.out.println("Recompiling application");
-        val newDex = dexApp.writeToFile();
+        if (methodId == null) {
+        
+        	System.out.println("Recompiling application");
+        	val newDex = dexApp.writeToFile();
 
-        System.out.println("Generating new apk");
-        Apk.produceAPK(apkFile, new File(apkFile.getAbsolutePath() + "_new.apk"), null, newDex);
+        	System.out.println("Generating new apk");
+        	Apk.produceAPK(apkFile, new File(apkFile.getAbsolutePath() + "_new.apk"), null, newDex);
+        	
+        } else
+       	
+        	dexApp.dumpMethod(methodId);
 
 
         System.out.println("DONE");

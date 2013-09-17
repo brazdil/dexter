@@ -66,9 +66,10 @@ public abstract class Transform {
                 boolean instructionsChanged = false;
                 InstructionList oldInstructions = newMethodBody.getInstructionList();
                 List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>(oldInstructions.size());
+                int line = 0;
                 for (DexCodeElement oldInsn : oldInstructions) {
                     DexCodeElement newInsn = doLast(doFirst(oldInsn, newMethodBody, newMethod), newMethodBody, newMethod);
-                    newInstructions.add(new DexMacro(new DexEmpty(), newInsn));
+                    newInstructions.add(new DexMacro(new DexEmpty(line++), newInsn));
                     instructionsChanged |= (newInsn != oldInsn);
                 }
                 if (instructionsChanged)

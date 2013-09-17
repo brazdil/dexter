@@ -16,6 +16,7 @@ import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -145,7 +146,7 @@ public class Dex {
             progressUpdate(++i, count);
             
             //Free method code memory, assuming they will never be used again.
-            cls.replaceMethods(new ArrayList<DexMethod>());
+            cls.replaceMethods(Collections.<DexMethod> emptyList());
             
         }
 
@@ -188,5 +189,37 @@ public class Dex {
         
         this.transform = transform;
         transform.prepare(this);
+    }
+    
+    /*
+     * Expects format Lpackage/class;->method(prototype)returntype
+     */
+    public void dumpMethod(String methodStr) {
+    	
+    	int arrowIndex = methodStr.indexOf("->");
+    	assert (arrowIndex > 0);
+    	
+    	String className = methodStr.substring(0, arrowIndex);
+    	BaseClassDefinition clazzDef = hierarchy.getClassDefinition(DexClassType.parse(className, getTypeCache()));
+    	DexClass clazz = this.getClass(clazzDef);
+    	
+    	dumpMethod_internal(methodStr, clazz);
+    	transform.doClass(clazz);
+    	dumpMethod_internal(methodStr, clazz);
+    }
+    
+    private void dumpMethod_internal(String methodStr, DexClass clazz) {
+    	for (DexMethod method : clazz.getMethods()) {
+    		String mstr = method.getMethodDef().toString();
+    		if (mstr.equals(methodStr)) {
+    			System.err.println("METHOD: " + mstr);
+    			method.getMethodBody().getInstructionList().dump();
+    			System.err.println("END METHOD");
+    			System.err.println();
+    			return;
+    		}
+    	}
+    	
+    	throw new RuntimeException("Method " + methodStr + " not found");
     }
 }
