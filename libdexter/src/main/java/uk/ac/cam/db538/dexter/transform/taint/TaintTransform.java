@@ -459,7 +459,9 @@ public class TaintTransform extends Transform {
 
         DexCodeElement macroSetParamTaints;
         if (!argRegisters.isEmpty())
-            macroSetParamTaints = codeGen.setParamTaints(argRegisters, prototype, insnInvoke.getClassType(), isStatic);
+            macroSetParamTaints = new DexMacro(
+        		codeGen.setParamTaints(argRegisters, prototype, insnInvoke.getClassType(), isStatic),
+        		codeGen.setInternalCallFlag());
         else
             macroSetParamTaints = codeGen.empty();
         
@@ -506,7 +508,7 @@ public class TaintTransform extends Transform {
             macroHandleResult = codeGen.empty();
         
         // generate instrumentation
-        return new DexMacro(macroSetParamTaints, codeGen.setInternalCallFlag(), methodCall, macroHandleResult);
+        return new DexMacro(macroSetParamTaints, methodCall, macroHandleResult);
     }
     
     private DexCodeElement instrument_MethodCall_External(MethodCall methodCall, DexCode code, DexMethod method) {
