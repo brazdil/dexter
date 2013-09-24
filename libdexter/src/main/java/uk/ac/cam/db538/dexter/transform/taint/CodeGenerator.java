@@ -252,7 +252,8 @@ public final class CodeGenerator {
         int i = 0;
         for (Parameter arg : args) {
         	
-            DexSingleRegister argRegTaint = arg.getRegister().getTaintRegister();
+        	DexRegister argReg = arg.getRegister();
+            DexSingleRegister argRegTaint = argReg.getTaintRegister();
             DexRegisterType argType = arg.getType();
             
     		insns.add(constant(auxIndex, i++));
@@ -275,7 +276,7 @@ public final class CodeGenerator {
                 
             	if (internalOrigin) {
             		insns.add(new DexInstruction_ArrayGet(argRegTaint, auxReferenceParamArray, auxIndex, Opcode_GetPut.Object, hierarchy));
-            		insns.add(cast(argRegTaint, (DexReferenceType) taintType(argTypeRef)));
+            		insns.add(taintCast((DexSingleRegister) argReg, argRegTaint, argTypeRef));
             	} else
             		insns.add(taintLookup(argRegTaint, (DexSingleRegister) arg.getRegister(), auxAddedTaint, hierarchy.classifyType(argTypeRef)));
                 
