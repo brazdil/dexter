@@ -485,24 +485,6 @@ public class TaintTransform extends Transform {
         	macroHandleResult = builder.nonthrowingTaintDefinition(
         			macroHandleResult, 
         			Arrays.asList(Pair.create(regRes, resType instanceof DexPrimitiveType)));
-        }
-            
-        // Was this a call to a constructor ?
-
-        else if (insnInvoke.getMethodId().isConstructor()) {
-
-            assert(!methodCall.movesResult());
-            DexSingleRegister regThis = (DexSingleRegister) argRegisters.get(0);
-
-            if (isCallToSuperclassConstructor(insnInvoke, code, method))
-                // Handle calls to internal superclass constructor
-                macroHandleResult = builder.nonthrowingTaintDefinition( 
-        				codeGen.taintDefineInternal(regThis),
-                		Arrays.asList(Pair.create((DexRegister) regThis, false)));
-            else
-                // Handle call to a standard internal constructor
-                macroHandleResult = codeGen.empty(); // codeGen.taintLookup_NoExtraTaint(regThis.getTaintRegister(), regThis, hierarchy.classifyType(insnInvoke.getClassType()));
-
         } else
         	
             macroHandleResult = codeGen.empty();
@@ -516,11 +498,6 @@ public class TaintTransform extends Transform {
         DexInstruction_MoveResult insnMoveResult = methodCall.getResult();
 
         DexSingleAuxiliaryRegister regCombinedTaint = codeGen.auxReg();
-        
-        DexCodeElement wrappedCall = builder.taintException(
-	    		methodCall.expand_JustInternals(),
-	    		codeGen.empty(),
-	    		regCombinedTaint);
         
         // Apply source/sink instrumentation
         
@@ -542,16 +519,20 @@ public class TaintTransform extends Transform {
         
         DexCodeElement completeCall_BeforeResult;
         DexCodeElement completeCall_AfterResult;
+        DexCodeElement completeCall_AfterException;
+        
         if (isCallToSuperclassConstructor(insnInvoke, code, method)) {
 
             // Handle calls to external superclass constructor
-
+        	
             assert(!methodCall.movesResult());
             DexSingleRegister regThis = (DexSingleRegister) insnInvoke.getArgumentRegisters().get(0);
+            DexSingleRegister regThisTaint = regThis.getTaintRegister();
 
             completeCall_BeforeResult = new DexMacro(
             		   sourcesinkBefore,
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
+                       codeGen.taintSetPendingDefinition(regThisTaint, regCombinedTaint),
                        codeGen.log("CALL extsuper " + method.getMethodDef()),
                        sourcesinkJustBefore);
             
@@ -561,9 +542,12 @@ public class TaintTransform extends Transform {
                        // Need to generate new TaintInternal object with it
 
                        sourcesinkJustAfter,
-                       codeGen.taintCreate_External(null, regThis, regCombinedTaint),
-                       codeGen.taintDefineInternal(regThis),
+                       codeGen.taintLookup_NoExtraTaint(null, regThis, TypeClassification.REF_INTERNAL),
                        sourcesinkAfter);
+            
+            completeCall_AfterException = builder.nonthrowingTaintDefinition(
+            		   codeGen.taintErasePendingDefinition(),
+            		   null);
 
         } else {
 
@@ -578,6 +562,7 @@ public class TaintTransform extends Transform {
                        codeGen.finishExternalCall(regCombinedTaint, insnInvoke, insnMoveResult),
                        sourcesinkAfter);
 
+            completeCall_AfterException = codeGen.empty();
         }
 
         // ensure non-throwing semantics of code after result
@@ -597,7 +582,10 @@ public class TaintTransform extends Transform {
     		methodCall.expand_ReplaceInternals(
 				new DexMacro(
 					completeCall_BeforeResult,
-					wrappedCall)),
+					builder.taintException(
+			    		methodCall.expand_JustInternals(),
+			    		completeCall_AfterException,
+			    		regCombinedTaint))),
     		completeCall_AfterResult);
     }
 

@@ -81,8 +81,9 @@ public class AuxiliaryDex extends Dex {
     @Getter private final DexClass type_TaintArrayReference;
     @Getter private final DexInstanceField field_TaintArrayReference_TArray;
 
+    @Getter private final DexMethod method_Assigner_SetConstructedSuperTaint;
+    @Getter private final DexMethod method_Assigner_EraseConstructedSuperTaint;
     @Getter private final DexMethod method_Assigner_DefineExternal;
-    @Getter private final DexMethod method_Assigner_DefineInternal;
     @Getter private final DexMethod method_Assigner_NewExternal;
     @Getter private final DexMethod method_Assigner_NewExternal_Null;
     @Getter private final DexMethod method_Assigner_NewExternal_Undefined;
@@ -150,8 +151,9 @@ public class AuxiliaryDex extends Dex {
 
         // Assigner
         val clsAssigner = getDexClass(Assigner.class, hierarchy, renamer);
+        this.method_Assigner_SetConstructedSuperTaint = findStaticMethodByName(clsAssigner, "setConstructedSuperTaint");
+        this.method_Assigner_EraseConstructedSuperTaint = findStaticMethodByName(clsAssigner, "eraseConstructedSuperTaint");
         this.method_Assigner_DefineExternal = findStaticMethodByName(clsAssigner, "defineExternal");
-        this.method_Assigner_DefineInternal = findStaticMethodByName(clsAssigner, "defineInternal");
         this.method_Assigner_NewExternal = findStaticMethodByName(clsAssigner, "newExternal");
         this.method_Assigner_NewExternal_Null = findStaticMethodByName(clsAssigner, "newExternal_NULL");
         this.method_Assigner_NewExternal_Undefined = findStaticMethodByName(clsAssigner, "newExternal_Undefined");

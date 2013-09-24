@@ -9,22 +9,18 @@ public class TaintInternal implements Taint {
 	private InternalDataStructure obj;
 	private TaintExternal t_super; 
 	
-	TaintInternal(InternalDataStructure obj, Taint t_super) {
+	TaintInternal(InternalDataStructure obj, TaintExternal t_super) {
 		define(obj, t_super);
 	}
 	
-	void define(InternalDataStructure obj, Taint t_super) {
+	void define(InternalDataStructure obj, TaintExternal t_super) {
 		assert this.obj == null;
 		assert this.t_super == null;
 		assert obj != null;
 		assert t_super != null;
 		
 		this.obj = obj;
-		
-		if (t_super instanceof TaintInternal)
-			this.t_super = ((TaintInternal) t_super).t_super;
-		else
-			this.t_super = (TaintExternal) t_super;
+		this.t_super = t_super;
 	}
 	
 	public int get() {

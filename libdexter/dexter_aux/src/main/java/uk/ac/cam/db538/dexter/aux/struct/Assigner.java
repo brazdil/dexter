@@ -6,7 +6,7 @@ import uk.ac.cam.db538.dexter.aux.TaintConstants;
 public final class Assigner {
 
 	private Assigner() { }
-
+	
 	public static final TaintExternal newExternal(Object obj, int initialTaint) {
 		TaintExternal tobj = newExternal_Undefined(obj.getClass());
 		defineExternal(obj, tobj, initialTaint);
@@ -25,7 +25,7 @@ public final class Assigner {
 	}
 
 	public static final TaintInternal newInternal_NULL(int taint) {
-		Taint t_super = newExternal_NULL(taint);
+		TaintExternal t_super = newExternal_NULL(taint);
 		return new TaintInternal(null, t_super);
 	}
 	
@@ -39,23 +39,6 @@ public final class Assigner {
 		Cache.insert(obj, tobj);
 		
 		System.out.println("DEFe " + obj.getClass().getSimpleName() + " ~ " + System.identityHashCode(obj));
-	}
-	
-	public static final void defineInternal(Object obj, TaintInternal tobj) {
-		if (obj == null)
-			RuntimeUtils.die("Cannot create internal taint for NULL");
-
-		Taint t_super = Cache.get(obj);
-		if (t_super == null)
-			RuntimeUtils.die("Internal object is not initialized");
-		
-		if (!(obj instanceof InternalDataStructure))
-			RuntimeUtils.die("Given object is not internal");
-		
-		tobj.define((InternalDataStructure) obj, t_super);
-		Cache.set(obj, tobj);
-		
-		System.out.println("DEFi " + obj.getClass().getSimpleName() + " ~ " + System.identityHashCode(obj));
 	}
 	
 	public static final TaintArrayPrimitive newArrayPrimitive(Object obj, int length, int lengthTaint) {
@@ -87,18 +70,31 @@ public final class Assigner {
 		
 		return tobj;
 	}
-	
+
 	public static final TaintInternal lookupInternal(Object obj, int taint) {
 		if (obj == null)
 			RuntimeUtils.die("Cannot lookup internal taint of NULL");
-		
+		else if (!(obj instanceof InternalDataStructure))
+			RuntimeUtils.die("Given object is not internal");
+
 		taint = TaintConstants.sinkTaint(obj, taint);
 
 		System.out.println("SEEKi " + obj.getClass().getSimpleName() + " ~ " + System.identityHashCode(obj));		
 		
 		TaintInternal tobj = (TaintInternal) Cache.get(obj);
-		if (tobj == null)
-			RuntimeUtils.die("Internal object is not initialized");
+		if (tobj == null) {
+			
+			UndefinedObject undef = getConstructedSuperTaint();
+			if (undef == null)
+				RuntimeUtils.die("Internal object is not initialized");
+			
+			// define the object
+			tobj = undef.t_obj;
+			tobj.define((InternalDataStructure) obj, new TaintExternal(undef.t_init));
+			Cache.insert(obj, tobj);
+			
+			System.out.println("DEFi " + obj.getClass().getSimpleName() + " ~ " + System.identityHashCode(obj));
+		}
 		
 		if (taint != TaintConstants.EMPTY.value) {
 			TaintInternal.clearVisited();
@@ -166,5 +162,39 @@ public final class Assigner {
 			tobj.set(taint);
 		
 		return tobj;
+	}
+
+	private static class UndefinedObject {
+		public TaintInternal t_obj;
+		public int t_init;
+		
+		UndefinedObject(TaintInternal t_obj, int t_init) {
+			this.t_obj = t_obj;
+			this.t_init = t_init;
+		}
+	}
+	
+	private static ThreadLocal<UndefinedObject> T_UNDEF;
+	
+	static {
+		T_UNDEF = new ThreadLocal<UndefinedObject>();
+	}
+	
+	public static final void eraseConstructedSuperTaint() {
+		T_UNDEF.set(null);
+	}
+	
+	public static final void setConstructedSuperTaint(TaintInternal t_obj, int t_init) {
+		if (T_UNDEF.get() != null)
+			RuntimeUtils.die("Simultaneous construction of two objects");
+		else
+			T_UNDEF.set(new UndefinedObject(t_obj, t_init));
+	}
+	
+	private static final UndefinedObject getConstructedSuperTaint() {
+		UndefinedObject result = T_UNDEF.get();
+		if (result != null)
+			T_UNDEF.set(null);
+		return result;
 	}
 }

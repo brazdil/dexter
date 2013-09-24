@@ -709,10 +709,6 @@ public final class CodeGenerator {
         return invoke(dexAux.getMethod_Assigner_DefineExternal(), regObject, regObject.getTaintRegister(), regInitialTaint);
     }
 
-    public DexCodeElement taintDefineInternal(DexSingleRegister regObject) {
-        return invoke(dexAux.getMethod_Assigner_DefineInternal(), regObject, regObject.getTaintRegister());
-    }
-
     public DexCodeElement taintCreate_External_Undefined(DexSingleRegister regTo, DexSingleRegister regType) {
     	return invoke_result_obj(regTo, dexAux.getMethod_Assigner_NewExternal_Undefined(), regType);    	
     }
@@ -757,6 +753,14 @@ public final class CodeGenerator {
         return new DexMacro(
                    new DexInstruction_Invoke(dexAux.getMethod_Assigner_NewArrayReference(), Arrays.asList(regObject, regLength, regLengthTaint), hierarchy),
                    new DexInstruction_MoveResult(regTo, true, hierarchy));
+    }
+    
+    public DexCodeElement taintSetPendingDefinition(DexSingleRegister regObjectTaint, DexSingleRegister regInitTaint) {
+    	return invoke(dexAux.getMethod_Assigner_SetConstructedSuperTaint(), regObjectTaint, regInitTaint);
+    }
+
+    public DexCodeElement taintErasePendingDefinition() {
+    	return invoke(dexAux.getMethod_Assigner_EraseConstructedSuperTaint());
     }
 
     public DexCodeElement taintNull(DexSingleRegister regTo, DexSingleRegister regNullObject, DexSingleRegister regNullTaint, TypeClassification type) {
