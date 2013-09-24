@@ -9,6 +9,7 @@ import org.jf.dexlib.DexFile;
 
 import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
@@ -20,9 +21,10 @@ import com.rx201.dx.translator.DexCodeGeneration;
 public class MainConsole {
 
     public static void main(String[] args) throws IOException {
-    	DexCodeGeneration.ADD_LINENO = true;
         DexCodeGeneration.DEBUG = false;
         DexCodeGeneration.INFO = true;
+    	DexCodeGeneration.ADD_LINENO = true;
+        DexClass.FAKE_SOURCE_FILE = true;
         
         if (args.length != 2 && args.length != 3) {
             System.err.println("usage: dexter <framework-dir> <apk-file> (<method-id>)");

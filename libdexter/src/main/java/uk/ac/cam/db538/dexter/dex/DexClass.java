@@ -20,6 +20,7 @@ import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.ClassDefItem.StaticFieldInitializer;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.EncodedValue.EncodedValue;
 
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
@@ -34,6 +35,8 @@ import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexClass {
 
+	public static boolean FAKE_SOURCE_FILE = false;
+	
     @Getter private final Dex parentFile;
     @Getter private final BaseClassDefinition classDef;
 
@@ -154,7 +157,12 @@ public class DexClass {
         val asmSuperType = cache.getType(classDef.getSuperclass().getType());
         val asmAccessFlags = DexUtils.assembleAccessFlags(classDef.getAccessFlags());
         val asmInterfaces = cache.getTypeList(getInterfaceTypes());
-        val asmSourceFile = cache.getStringConstant(sourceFile);
+        
+        StringIdItem asmSourceFile;
+        if (FAKE_SOURCE_FILE)
+        	asmSourceFile = cache.getStringConstant(this.getClassDef().getType().getShortName() + ".dexter");
+        else
+        	asmSourceFile = cache.getStringConstant(sourceFile);
 
         val asmClassAnnotations = new ArrayList<AnnotationItem>(classAnnotations.size());
         for (val anno : classAnnotations)

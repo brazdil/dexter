@@ -10,6 +10,9 @@ CLASS_PATH=`echo "$2" | sed "s/L\(.*\);\..* (.*).*/\1/"`
 METHOD_NAME=`echo "$2" | sed "s/L.*;\.\(.*\) (.*).*/\1/"`
 METHOD_PROTOTYPE=`echo "$2" | sed "s/L.*;\..* \((.*).*\)/\1/"`
 
+echo "class: $CLASS_PATH"
+echo "method name: $METHOD_NAME"
+echo "prototype: $METHOD_PROTOTYPE"
 
 echo "extracting Dexter's representation"
 ./run_console.sh framework "$APK_ORIG" "L${CLASS_PATH};->${METHOD_NAME}${METHOD_PROTOTYPE}" 2> "${METHOD_NAME}.dexter"
