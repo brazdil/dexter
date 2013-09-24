@@ -70,7 +70,6 @@ public class TemplateBuilder {
     	DexLabel lAfter = codeGen.label();
     	
     	DexSingleRegister auxExObj = codeGen.auxReg();
-    	DexSingleRegister auxExTaint = codeGen.auxReg();
     	
     	return new DexMacro(
     			block,
@@ -80,7 +79,7 @@ public class TemplateBuilder {
     			block.getCatchAllHandler(),
     			codeGen.move_ex(auxExObj),
     			afterMoveException,
-    			codeGen.taintLookup(auxExTaint, auxExObj, regTaint, hierarchy.classifyType(cache.TYPE_Throwable)),
+    			codeGen.taintLookup(null, auxExObj, regTaint, hierarchy.classifyType(cache.TYPE_Throwable)),
     			codeGen.thrw(auxExObj),
     			lAfter);
     }
