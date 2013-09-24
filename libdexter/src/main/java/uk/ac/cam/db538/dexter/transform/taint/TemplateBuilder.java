@@ -91,6 +91,8 @@ public class TemplateBuilder {
     	DexTryStart block = codeGen.tryBlock(codeGen.catchAll());
     	DexLabel lAfter = codeGen.label();
     	
+    	DexSingleRegister auxEx = codeGen.auxReg();
+    	
     	if (defRegs == null || defRegs.isEmpty())
         	return new DexMacro(
         			block,
@@ -108,6 +110,8 @@ public class TemplateBuilder {
     			 * Should never happen. Only for the compiler's sake.
     			 */
     			block.getCatchAllHandler(),
+    			codeGen.move_ex(auxEx),
+    			nonthrowingTaintDefinition(codeGen.printStackTrace(auxEx), null),
     			defineAllRegisters(defRegs),
     			
     			lAfter);

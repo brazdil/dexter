@@ -899,8 +899,8 @@ public class TaintTransform extends Transform {
             tainting = new DexMacro(
             		   codeGen.iget(regToTaint, regObjectBackup, taintField.getFieldDef()),
             		   isPrimitive ? 
-            				   codeGen.empty() :
-            					   codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insnIget, regTo)));
+        				   codeGen.empty() :
+    					   codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insnIget, regTo)));
 
         } else {
 
@@ -911,7 +911,7 @@ public class TaintTransform extends Transform {
                 DexSingleRegister auxToTaint = codeGen.auxReg();
                 tainting = new DexMacro(
                        codeGen.getTaintExternal(auxToTaint, regObjectTaint),
-                       codeGen.taintLookup(regToTaint, regObjectBackup, auxToTaint, hierarchy.classifyType(resultType)),
+                       codeGen.taintLookup(regToTaint, (DexSingleRegister) regTo, auxToTaint, hierarchy.classifyType(resultType)),
                        codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insnIget, regTo)));
             }
         }

@@ -884,6 +884,10 @@ public final class CodeGenerator {
                    taintClearVisited(typeTo),
                    setTaint(regAux, regTo));
     }
+    
+    public DexCodeElement printStackTrace(DexSingleRegister regException) {
+    	return invoke(method_Throwable_printStackTrace, regException);
+    }
 
     /*
      * Combines taint of all the given registers. Does not matter if the given registers
