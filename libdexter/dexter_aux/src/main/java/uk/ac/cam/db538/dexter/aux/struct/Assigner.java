@@ -145,6 +145,7 @@ public final class Assigner {
 			}
 
 			tobj = new TaintArrayPrimitive(length, taint, taint);
+			Cache.insert(obj, tobj);
 		} else
 			tobj.set(taint);
 		
@@ -156,9 +157,10 @@ public final class Assigner {
 			return new TaintArrayReference(0, taint);
 		
 		TaintArrayReference tobj = (TaintArrayReference) Cache.get(obj);
-		if (tobj == null)
+		if (tobj == null) {
 			tobj = new TaintArrayReference((Object[]) obj, taint);
-		else
+			Cache.insert(obj, tobj);
+		} else
 			tobj.set(taint);
 		
 		return tobj;
