@@ -75,7 +75,7 @@ public class RuntimeHierarchy {
         else {
             val classDef = getBaseClassDefinition((DexReferenceType) type);
 
-            if (classDef.isInternal())
+            if (classDef.isInternal() && !classDef.isAbstract())
                 return TypeClassification.REF_INTERNAL;
             else if (classDef.hasInternalNonAbstractChildren())
                 return TypeClassification.REF_UNDECIDABLE;
