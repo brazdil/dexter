@@ -51,13 +51,10 @@ import com.android.dx.rop.code.SourcePosition;
 import com.android.dx.rop.cst.CstInteger;
 import com.android.dx.rop.type.Type;
 import com.android.dx.ssa.Optimizer;
-import com.android.dx.ssa.SsaBasicBlock;
-import com.android.dx.ssa.SsaInsn;
-import com.android.dx.ssa.SsaMethod;
+import com.android.dx.ssa.SsaConverter;
 import com.android.dx.util.Hex;
 import com.android.dx.util.IntList;
 
-import dk.netarkivet.common.utils.SparseBitSet;
 
 public class DexCodeGeneration {
 
@@ -74,10 +71,19 @@ public class DexCodeGeneration {
     public static boolean ADD_LINENO = false;
     public static boolean INFO = true;
 
+    public static DexMethod debugMethod = null;
+    
     public static long totalAnalysisTime = 0;
     public static long totalCGTime = 0;
     public static long totalDxTime = 0;
     public DexCodeGeneration(DexMethod method) {
+        if (debugMethod != null) {
+            boolean dbg = method.getMethodDef().toString().equals(
+                    debugMethod.getMethodDef().toString());
+            
+            Optimizer.DEBUG_SSA_DUMP = dbg;
+            DEBUG = dbg;
+        }
         MethodDefinition methodDef = method.getMethodDef();
         DexMethodId methodId = methodDef.getMethodId();
 
