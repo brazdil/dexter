@@ -1,7 +1,6 @@
 package com.rx201.dx.translator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +24,6 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
-import org.jf.dexlib.Util.DebugInfoBuilder;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
@@ -219,6 +217,7 @@ public class DexCodeGeneration {
         if (DEBUG) {
             System.out.println("==== Before Optimization ====");
             dump(rmeth);
+            dumpGraph(rmeth);
         }
         long time = System.currentTimeMillis();
         rmeth = Optimizer.optimize(rmeth, inWords, isStatic, false, DexTranslationAdvice.THE_ONE);
@@ -503,6 +502,49 @@ public class DexCodeGeneration {
                 }
             }
         }
+        System.out.println(sb.toString());
+    }
+
+    private static void dumpGraph(RopMethod rmeth) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("digraph G {\n");
+
+        BasicBlockList blocks = rmeth.getBlocks();
+        int[] order = blocks.getLabelsInOrder();
+
+        for (int label : order) {
+            BasicBlock bb = blocks.get(blocks.indexOfLabel(label));
+            sb.append("block" + Hex.u2(label));
+            sb.append(" [label=\"");
+            InsnList il = bb.getInsns();
+            int ilsz = il.size();
+            for (int i = 0; i < ilsz; i++) {
+                sb.append(il.get(i).toHuman().replaceAll("\\\"", "\\\\\""));
+                sb.append("\\n");
+            }
+            sb.append("\"];\n");
+        }
+        
+        for (int label : order) {
+            BasicBlock bb = blocks.get(blocks.indexOfLabel(label));
+            IntList successors = bb.getSuccessors();
+            int ssz = successors.size();
+            int primary = bb.getPrimarySuccessor();
+            for (int i = 0; i < ssz; i++) {
+                int succ = successors.get(i);
+                
+                sb.append("block" + Hex.u2(label));
+                sb.append(" -> block" + Hex.u2(succ));
+                
+                if ((ssz != 1) && (succ != primary)) {
+                    sb.append(" [color=red]");
+                }
+
+                sb.append(";\n");
+            }
+        }
+
+        sb.append("}\n");
         System.out.println(sb.toString());
     }
 }
