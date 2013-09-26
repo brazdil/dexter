@@ -382,16 +382,13 @@ public class TaintTransform extends Transform {
         DexLabel labelEnd = codeGen.label();
 
         DexMacro init = new DexMacro(
-        		codeGen.log("CALL " + method.getMethodDef()),
         		codeGen.isInternalCall(regInternalCallFlag),
                 codeGen.ifZero(regInternalCallFlag, labelExternal),
                 // INTERNAL ORIGIN
-                codeGen.log("... internal origin ..."),
                 codeGen.initTaints(code, true),
                 codeGen.jump(labelEnd),
                 labelExternal,
                 // EXTERNAL ORIGIN
-                codeGen.log("... external origin..."),
                 codeGen.initTaints(code, false),
                 labelEnd);
 
@@ -533,7 +530,6 @@ public class TaintTransform extends Transform {
             		   sourcesinkBefore,
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
                        codeGen.taintSetPendingDefinition(regThisTaint, regCombinedTaint),
-                       codeGen.log("CALL extsuper " + method.getMethodDef()),
                        sourcesinkJustBefore);
             
             completeCall_AfterResult = new DexMacro(

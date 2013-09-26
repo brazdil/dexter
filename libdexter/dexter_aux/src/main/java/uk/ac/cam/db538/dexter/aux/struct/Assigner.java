@@ -37,8 +37,6 @@ public final class Assigner {
 		taint = TaintConstants.sinkTaint(obj, taint);
 		tobj.define(taint);
 		Cache.insert(obj, tobj);
-		
-		System.out.println("DEFe " + obj.getClass().getSimpleName() + " ~ " + System.identityHashCode(obj));
 	}
 	
 	public static final TaintArrayPrimitive newArrayPrimitive(Object obj, int length, int lengthTaint) {
@@ -78,8 +76,6 @@ public final class Assigner {
 			RuntimeUtils.die("Given object is not internal");
 
 		taint = TaintConstants.sinkTaint(obj, taint);
-
-		System.out.println("SEEKi " + obj.getClass().getSimpleName() + " ~ " + System.identityHashCode(obj));		
 		
 		TaintInternal tobj = (TaintInternal) Cache.get(obj);
 		if (tobj == null) {
@@ -92,8 +88,6 @@ public final class Assigner {
 			tobj = undef.t_obj;
 			tobj.define((InternalDataStructure) obj, new TaintExternal(undef.t_init));
 			Cache.insert(obj, tobj);
-			
-			System.out.println("DEFi " + obj.getClass().getSimpleName() + " ~ " + System.identityHashCode(obj));
 		}
 		
 		if (taint != TaintConstants.EMPTY.value) {
