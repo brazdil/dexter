@@ -27,10 +27,6 @@ public class InterfaceDefinition extends BaseClassDefinition {
         this.implementors = Collections.unmodifiableList(this._implementors);
     }
 
-    public boolean isAnnotation() {
-        return getAccessFlags().contains(AccessFlags.ANNOTATION);
-    }
-
     @Override
     boolean hasInternalNonAbstractChildren() {
         if (super.hasInternalNonAbstractChildren())
