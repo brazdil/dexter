@@ -28,9 +28,15 @@ echo "cloning \"$LIBCORE_REPO\"..."
 git clone -q "$LIBCORE_REPO" "$LIBCORE_DIR" || exit
 echo "cloning \"$DALVIK_REPO\"..."
 git clone -q "$DALVIK_REPO" "$DALVIK_DIR" || exit
-git apply --directory "$DALVIK_DIR" 0001-SsaBasicBlock-memory-usage.patch
-git apply --directory "$DALVIK_DIR" 0002-SparseRegisterSpecSet.patch
-git apply --directory "$DALVIK_DIR" 0003-SSA-form-dump.patch
+
+ROOT=$(pwd)
+cd "$DALVIK_DIR"
+git am --ignore-whitespace --ignore-space-change $ROOT/0001-SsaBasicBlock-memory-usage.patch
+git am --ignore-whitespace --ignore-space-change $ROOT/0002-SparseRegisterSpecSet.patch
+git am --ignore-whitespace --ignore-space-change $ROOT/0003-SSA-form-dump.patch
+#git am --ignore-whitespace --ignore-space-change $ROOT/0004-Additional-debugging-information-and-SSA-dump-in-gra.patch
+cd $ROOT
+
 echo "copying libcore build.gradle"
 cp "$LIBCORE_BUILDFILE" "$LIBCORE_DIR"/dex/build.gradle || exit
 echo "copying dx build.gradle"
