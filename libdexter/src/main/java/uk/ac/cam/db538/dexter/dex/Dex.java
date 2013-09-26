@@ -146,7 +146,8 @@ public class Dex {
         for (val cls : classes) {
             
             //Apply transform
-            transform.doClass(cls);
+            if (transform != null)
+                transform.doClass(cls);
             
             cls.writeToFile(outFile, asmCache);
             progressUpdate(++i, count);
