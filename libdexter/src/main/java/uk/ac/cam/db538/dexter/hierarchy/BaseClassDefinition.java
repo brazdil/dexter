@@ -134,7 +134,7 @@ public abstract class BaseClassDefinition implements Serializable {
         for (val child : this.children)
             if (child.hasInternalNonAbstractChildren())
                 return true;
-
+        
         return false;
     }
 
@@ -347,7 +347,12 @@ public abstract class BaseClassDefinition implements Serializable {
         return list;
     }
 
-    protected static interface Acceptor<T> {
+    @Override
+	public String toString() {
+    	return type.toString();
+	}
+
+	protected static interface Acceptor<T> {
         public boolean accept(T item);
     }
 
