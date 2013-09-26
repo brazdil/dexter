@@ -42,17 +42,27 @@ public class MainConsole {
             System.err.println("<framework-dir> is not a directory");
             System.exit(1);
         }
-        
+        File frameworkCache = new File(frameworkDir, "hierarchy.cache");
+
         String methodId;
         if (args.length == 3)
         	methodId = args[2];
         else
         	methodId = null;
 
-        val hierarchyBuilder = new HierarchyBuilder();
-
-        System.out.println("Scanning framework");
-        hierarchyBuilder.importFrameworkFolder(frameworkDir);
+        HierarchyBuilder hierarchyBuilder = null;
+		try {
+			if (frameworkCache.exists()) {
+				System.out.println("Loading framework from cache.");
+				hierarchyBuilder = HierarchyBuilder.deserialize(frameworkCache);
+			}
+		} catch (Exception e) {}
+		if (hierarchyBuilder == null) {
+			System.out.println("Scanning framework");
+			hierarchyBuilder = new HierarchyBuilder();
+		    hierarchyBuilder.importFrameworkFolder(frameworkDir);
+			hierarchyBuilder.serialize(frameworkCache);
+		}
 
         System.out.println("Scanning application");
         val fileApp = new DexFile(apkFile);
