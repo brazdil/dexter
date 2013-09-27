@@ -156,6 +156,9 @@ public class HierarchyBuilder implements Serializable {
 
     public RuntimeHierarchy build() {
         val classList = new HashMap<DexClassType, BaseClassDefinition>();
+        val unresolvedClassList = new HashMap<DexClassType, BaseClassDefinition>();
+        val unresolvedInterfaceList = new HashMap<DexClassType, BaseClassDefinition>();
+        
         for (val classDefPair : new ArrayList<ClassVariants>(definedClasses.values())) {
             val clsData = classDefPair.getClassData();
             val baseCls = clsData.classDef;
@@ -167,8 +170,9 @@ public class HierarchyBuilder implements Serializable {
                 if (sclsVariants == null) {
                     sclsVariants = createUnresolvedClass(sclsType);
                     System.err.println("Class " + baseCls.getType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
-                } else
-                    baseCls.setSuperclassLink(sclsVariants.getClassData().classDef);
+                    unresolvedClassList.put(sclsType, sclsVariants.getClassData().classDef);
+                }
+                baseCls.setSuperclassLink(sclsVariants.getClassData().classDef);
             }
 
             // connect to interfaces
@@ -179,10 +183,11 @@ public class HierarchyBuilder implements Serializable {
                     if (ifaceInfo_Pair == null) {
                         ifaceInfo_Pair = createUnresolvedInterface(ifaceType);
                         System.err.println("Create dummy interface entry: " + ifaceType.getPrettyName());
-                    } else if (!(ifaceInfo_Pair.getClassData().classDef instanceof InterfaceDefinition))
+                        unresolvedInterfaceList.put(ifaceType, ifaceInfo_Pair.getClassData().classDef);
+                    }
+                    if (!(ifaceInfo_Pair.getClassData().classDef instanceof InterfaceDefinition))
                         throw new HierarchyException("Class " + baseCls.getType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
-                    else
-                        baseCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getClassData().classDef);
+                    baseCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getClassData().classDef);
                 }
             }
 
@@ -192,7 +197,7 @@ public class HierarchyBuilder implements Serializable {
         if (root == null)
             throw new HierarchyException("Hierarchy is missing a root");
 
-        return new RuntimeHierarchy(classList, root, typeCache);
+        return new RuntimeHierarchy(classList, unresolvedClassList, unresolvedInterfaceList, root, typeCache);
     }
 
     public void removeInternalClasses() {
@@ -353,7 +358,12 @@ public class HierarchyBuilder implements Serializable {
     private ClassVariants createUnresolvedClass(DexClassType classType) {
         val clsData = new ClassData();
         clsData.classDef =  new UnresolvedClassDefinition(classType);
-        clsData.superclass = DexClassType.parse("Ljava/lang/Object;", typeCache);
+
+        //DexClassType root = DexClassType.parse("Ljava/lang/Object;", typeCache);
+        //clsData.classDef.setSuperclassLink(definedClasses.get(root).getClassData().classDef);
+        assert root != null;
+        clsData.classDef.setSuperclassLink(root);
+        
         ClassVariants clsVariants = new ClassVariants();
         definedClasses.put(classType, clsVariants);
         clsVariants.setVariant(clsData, false);
