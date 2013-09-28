@@ -21,6 +21,8 @@ public class ClassDefinition extends BaseClassDefinition {
 
         this._instanceFields = new ArrayList<InstanceFieldDefinition>();
         this.instanceFields = Collections.unmodifiableList(this._instanceFields);
+        
+        assert(!this.isInterface());
     }
 
     public void addDeclaredInstanceField(InstanceFieldDefinition field) {

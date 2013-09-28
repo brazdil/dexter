@@ -6,7 +6,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
-import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
 
 public class UnresolvedClassDefinition extends ClassDefinition {
 
@@ -38,5 +37,14 @@ public class UnresolvedClassDefinition extends ClassDefinition {
     
     public CallDestinationType getMethodDestinationType(DexMethodId methodId, Opcode_Invoke opcode) {
         return CallDestinationType.External;
-    }    
+    }
+
+	@Override
+	public void checkUsedAs(BaseClassDefinition refType) {
+		try {
+			super.checkUsedAs(refType);
+		} catch (Throwable t) {
+			refineSuperclassLink(refType);
+		}
+	}    
 }

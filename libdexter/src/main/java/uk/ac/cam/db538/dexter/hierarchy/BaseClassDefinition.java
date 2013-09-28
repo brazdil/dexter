@@ -64,6 +64,13 @@ public abstract class BaseClassDefinition implements Serializable {
         this.superclass = superclass;
         this.superclass._children.add(this);
     }
+    
+    protected void refineSuperclassLink(BaseClassDefinition newSuperclass) {
+    	if (!newSuperclass.equals(superclass)) {
+    		assert newSuperclass.isChildOf(superclass);
+    		setSuperclassLink(newSuperclass);
+    	}
+    }
 
     public void addDeclaredMethod(MethodDefinition method) {
         assert method.getParentClass() == this;
@@ -125,6 +132,11 @@ public abstract class BaseClassDefinition implements Serializable {
             else
                 inspected = inspected.getSuperclass();
         }
+    }
+    
+    public void checkUsedAs(BaseClassDefinition refType) {
+    	if (!this.isChildOf(refType))
+    		throw new RuntimeException("Class " + this + " cannot be used " + refType);
     }
 
     public boolean implementsInterface(InterfaceDefinition iface) {
