@@ -19,8 +19,13 @@ public class DexCatch extends DexCodeElement {
         val throwableType = DexClassType.parse("Ljava/lang/Throwable;", hierarchy.getTypeCache());
         val throwableDef = hierarchy.getClassDefinition(throwableType);
         val classDef = hierarchy.getClassDefinition(this.exceptionType);
-        if (!(classDef instanceof UnresolvedClassDefinition) && !classDef.isChildOf(throwableDef))
-            throw new IllegalArgumentException("Given class does not extend Throwable");
+        if (!classDef.isChildOf(throwableDef)) {
+			if (classDef instanceof UnresolvedClassDefinition) {
+			    classDef.setSuperclassLink(throwableDef);
+			} else {
+			    throw new IllegalArgumentException("Given class does not extend Throwable");
+			}
+        }
     }
 
     @Override
