@@ -35,6 +35,8 @@ import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.UnresolvedClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.UnresolvedInterfaceDefinition;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class HierarchyBuilder implements Serializable {
@@ -154,29 +156,38 @@ public class HierarchyBuilder implements Serializable {
 
     public RuntimeHierarchy build() {
         val classList = new HashMap<DexClassType, BaseClassDefinition>();
-        for (val classDefPair : definedClasses.values()) {
+        val unresolvedClassList = new HashMap<DexClassType, BaseClassDefinition>();
+        val unresolvedInterfaceList = new HashMap<DexClassType, BaseClassDefinition>();
+        
+        for (val classDefPair : new ArrayList<ClassVariants>(definedClasses.values())) {
             val clsData = classDefPair.getClassData();
             val baseCls = clsData.classDef;
 
             // connect to parent and vice versa
             val sclsType = (baseCls instanceof ClassDefinition) ? clsData.superclass : root.getType();
             if (sclsType != null) {
-                val sclsVariants = definedClasses.get(sclsType);
-                if (sclsVariants == null)
-                    throw new HierarchyException("Class " + baseCls.getType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
-                else
-                    baseCls.setSuperclassLink(sclsVariants.getClassData().classDef);
+                ClassVariants sclsVariants = definedClasses.get(sclsType);
+                if (sclsVariants == null) {
+                    sclsVariants = createUnresolvedClass(sclsType);
+                    System.err.println("Class " + baseCls.getType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
+                    unresolvedClassList.put(sclsType, sclsVariants.getClassData().classDef);
+                }
+                baseCls.setSuperclassLink(sclsVariants.getClassData().classDef);
             }
 
             // connect to interfaces
             val ifaces = clsData.interfaces;
             if (ifaces != null) {
                 for (val ifaceType : ifaces) {
-                    val ifaceInfo_Pair = definedClasses.get(ifaceType);
-                    if (ifaceInfo_Pair == null || !(ifaceInfo_Pair.getClassData().classDef instanceof InterfaceDefinition))
+                    ClassVariants ifaceInfo_Pair = definedClasses.get(ifaceType);
+                    if (ifaceInfo_Pair == null) {
+                        ifaceInfo_Pair = createUnresolvedInterface(ifaceType);
+                        System.err.println("Create dummy interface entry: " + ifaceType.getPrettyName());
+                        unresolvedInterfaceList.put(ifaceType, ifaceInfo_Pair.getClassData().classDef);
+                    }
+                    if (!(ifaceInfo_Pair.getClassData().classDef instanceof InterfaceDefinition))
                         throw new HierarchyException("Class " + baseCls.getType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
-                    else
-                        baseCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getClassData().classDef);
+                    baseCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getClassData().classDef);
                 }
             }
 
@@ -186,7 +197,7 @@ public class HierarchyBuilder implements Serializable {
         if (root == null)
             throw new HierarchyException("Hierarchy is missing a root");
 
-        return new RuntimeHierarchy(classList, root, typeCache);
+        return new RuntimeHierarchy(classList, unresolvedClassList, unresolvedInterfaceList, root, typeCache);
     }
 
     public void removeInternalClasses() {
@@ -333,5 +344,29 @@ public class HierarchyBuilder implements Serializable {
         } finally {
             removeInternalClasses();
         }
+    }
+    
+    private ClassVariants createUnresolvedInterface(DexClassType classType) {
+        val clsData = new ClassData();
+        clsData.classDef =  new UnresolvedInterfaceDefinition(classType);
+        ClassVariants clsVariants = new ClassVariants();
+        definedClasses.put(classType, clsVariants);
+        clsVariants.setVariant(clsData, false);
+        return clsVariants;
+    }
+    
+    private ClassVariants createUnresolvedClass(DexClassType classType) {
+        val clsData = new ClassData();
+        clsData.classDef =  new UnresolvedClassDefinition(classType);
+
+        //DexClassType root = DexClassType.parse("Ljava/lang/Object;", typeCache);
+        //clsData.classDef.setSuperclassLink(definedClasses.get(root).getClassData().classDef);
+        assert root != null;
+        clsData.classDef.setSuperclassLink(root);
+        
+        ClassVariants clsVariants = new ClassVariants();
+        definedClasses.put(classType, clsVariants);
+        clsVariants.setVariant(clsData, false);
+        return clsVariants;
     }
 }

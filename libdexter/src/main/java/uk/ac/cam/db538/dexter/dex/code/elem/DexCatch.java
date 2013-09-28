@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.UnresolvedClassDefinition;
 
 public class DexCatch extends DexCodeElement {
 
@@ -18,8 +19,13 @@ public class DexCatch extends DexCodeElement {
         val throwableType = DexClassType.parse("Ljava/lang/Throwable;", hierarchy.getTypeCache());
         val throwableDef = hierarchy.getClassDefinition(throwableType);
         val classDef = hierarchy.getClassDefinition(this.exceptionType);
-        if (!classDef.isChildOf(throwableDef))
-            throw new IllegalArgumentException("Given class does not extend Throwable");
+        if (!classDef.isChildOf(throwableDef)) {
+			if (classDef instanceof UnresolvedClassDefinition) {
+			    classDef.setSuperclassLink(throwableDef);
+			} else {
+			    throw new IllegalArgumentException("Given class does not extend Throwable");
+			}
+        }
     }
 
     @Override

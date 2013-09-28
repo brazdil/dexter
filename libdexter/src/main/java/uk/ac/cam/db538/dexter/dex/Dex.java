@@ -146,7 +146,8 @@ public class Dex {
         for (val cls : classes) {
             
             //Apply transform
-            transform.doClass(cls);
+            if (transform != null)
+                transform.doClass(cls);
             
             cls.writeToFile(outFile, asmCache);
             progressUpdate(++i, count);
@@ -224,7 +225,7 @@ public class Dex {
     	codeGen.processMethod(method.getMethodBody());
     }
     
-    private DexMethod findMethodByDefStr(String methodStr, DexClass clazz) {
+    public DexMethod findMethodByDefStr(String methodStr, DexClass clazz) {
     	for (DexMethod method : clazz.getMethods())
     		if (method.getMethodDef().toString().equals(methodStr))
     			return method;

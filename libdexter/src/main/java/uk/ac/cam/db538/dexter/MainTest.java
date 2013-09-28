@@ -10,12 +10,18 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.DexFileFromMemory;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
+import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
+import uk.ac.cam.db538.dexter.transform.taint.TaintTransform;
 import uk.ac.cam.db538.dexter.transform.taint.TestingTaintTransform;
 
+import com.android.dx.ssa.Optimizer;
 import com.rx201.dx.translator.DexCodeGeneration;
 
 
@@ -36,28 +42,35 @@ public class MainTest {
         }
     }
 
-//  private static void writeToJar(Dex dex, File targetFile) {
-//     final byte[] newDex = dex.writeToFile();
+//    private static void writeToJar(Dex dex, File targetFile) {
+//        final ByteArrayInputStream newDex = new ByteArrayInputStream(
+//                dex.writeToFile());
+//        byte[] buffer = new byte[16 * 1024];
 //
-//     System.out.println("Creating JAR");
-//     try {
-//	     targetFile.delete();
-//	     ZipFile jarFile = new ZipFile(targetFile);
-//
-//	     ZipParameters parameters = new ZipParameters();
-//	     parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
-//	     parameters.setFileNameInZip("classes.dex");
-//	     parameters.setSourceExternalStream(true);
-//
-//	     jarFile.addStream(new ByteArrayInputStream(newDex), parameters);
-//     } catch (ZipException e) {
-//     }
-//  }
+//        System.out.println("Creating JAR");
+//        try {
+//            targetFile.delete();
+//            ZipOutputStream jarStream = new ZipOutputStream(
+//                    new FileOutputStream(targetFile));
+//            ZipEntry entry = new ZipEntry("classes.dex");
+//            jarStream.putNextEntry(entry);
+//            int len;
+//            while ((len = newDex.read(buffer)) > 0) {
+//                jarStream.write(buffer, 0, len);
+//            }
+//            jarStream.closeEntry();
+//            jarStream.close();
+//        } catch (ZipException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public static void main(String[] args) throws IOException {
         long epoch = System.currentTimeMillis();
         if (args.length != 2 && args.length != 3) {
-            System.err.println("usage: dexter <framework-dir> <apk-file> [<destination-apk]>");
+            System.err.println("usage: dexter <framework-dir> <apk-file> [<destination-apk> [method ID]]>");
             System.exit(1);
         }
 
@@ -67,15 +80,17 @@ public class MainTest {
             System.exit(1);
         }
 
-        File apkFile_new;
-        if (args.length == 3)
+        String methodId = null;
+        File apkFile_new = new File(apkFile.getAbsolutePath() + "_new.apk");
+        
+        if (args.length >= 3) {
             apkFile_new = new File(args[2]);
-        else
-            apkFile_new = new File(apkFile.getAbsolutePath() + "_new.apk");
+        }
+        if (args.length >= 4) {
+            methodId = args[3];
+        }
 
         // dumpAnnotation(apkFile);
-
-        // val apkFile_new = new File(apkFile.getAbsolutePath() + "_new.apk");
 
         val frameworkDir = new File(args[0]);
         if (!frameworkDir.isDirectory()) {
@@ -83,11 +98,21 @@ public class MainTest {
             System.exit(1);
         }
 
-        // build runtime class hierarchy
-        val hierarchyBuilder = new HierarchyBuilder();
+        File frameworkCache = new File(frameworkDir, "hierarchy.cache");
 
-        System.out.println("Scanning framework");
-        hierarchyBuilder.importFrameworkFolder(frameworkDir);
+        HierarchyBuilder hierarchyBuilder = null;
+        try {
+            if (frameworkCache.exists()) {
+                System.out.println("Loading framework from cache.");
+                hierarchyBuilder = HierarchyBuilder.deserialize(frameworkCache);
+            }
+        } catch (Exception e) {}
+        if (hierarchyBuilder == null) {
+            System.out.println("Scanning framework");
+            hierarchyBuilder = new HierarchyBuilder();
+            hierarchyBuilder.importFrameworkFolder(frameworkDir);
+            hierarchyBuilder.serialize(frameworkCache);
+        }
         long hierarchyTime = System.currentTimeMillis() - epoch;
 
         System.out.println("Scanning application");
@@ -103,17 +128,29 @@ public class MainTest {
         AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux);
         Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
 
-        Transform transform = new TestingTaintTransform();
-        if (args.length == 3) {
-            DexCodeGeneration.DEBUG = false;
-//            System.out.println("Instrumenting application");
-//            transform.apply(dexApp);
+        DexCodeGeneration.DEBUG = false;
+        Optimizer.DEBUG_SSA_DUMP = false;
+        Transform transform = new TaintTransform();
+        if (args.length >= 3) {
+            System.out.println("Instrumenting application");
+            dexApp.setTransform(transform);
         } else {
-//            transform.apply(dexApp);
+//            dexApp.setTransform(transform);
         }
 
-//    writeToJar(dexApp, apkFile_new);
-//    Apk.produceAPK(apkFile, apkFile_new, "ApplicationClass", dexApp.writeToFile());
+        if (methodId != null) {
+            int arrowIndex = methodId.indexOf("->");
+            assert (arrowIndex > 0);
+            
+            String className = methodId.substring(0, arrowIndex);
+            BaseClassDefinition clazzDef = hierarchy.getClassDefinition(DexClassType.parse(className, dexApp.getTypeCache()));
+            DexClass clazz = dexApp.getClass(clazzDef);
+            DexCodeGeneration.debugMethod = dexApp.findMethodByDefStr(methodId, clazz);
+            DexCodeGeneration.INFO = DexCodeGeneration.DEBUG = false;
+        }
+ 
+//        writeToJar(dexApp, apkFile_new);
+        Apk.produceAPK(apkFile, apkFile_new, null, dexApp.writeToFile());
 
         long analysisTime = DexCodeGeneration.totalAnalysisTime;
         long translationTime = DexCodeGeneration.totalCGTime;
