@@ -7,7 +7,6 @@ import java.io.IOException;
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
-import org.jf.dexlib.DexFileFromMemory;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import uk.ac.cam.db538.dexter.apk.Apk;
@@ -19,7 +18,6 @@ import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.transform.taint.TaintTransform;
-import uk.ac.cam.db538.dexter.transform.taint.TestingTaintTransform;
 
 import com.android.dx.ssa.Optimizer;
 import com.rx201.dx.translator.DexCodeGeneration;
@@ -126,7 +124,7 @@ public class MainTest {
 
         System.out.println("Parsing application");
         AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux);
-        Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
+        Dex dexApp = new Dex(fileApp, hierarchy, dexAux, null);
 
         DexCodeGeneration.DEBUG = false;
         Optimizer.DEBUG_SSA_DUMP = false;

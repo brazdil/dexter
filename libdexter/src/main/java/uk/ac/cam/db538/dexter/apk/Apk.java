@@ -13,7 +13,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import uk.ac.cam.db538.dexter.manifest.BinXmlUtil;
+import uk.ac.cam.db538.dexter.manifest.Manifest;
 
 import com.rx201.jarsigner.JarSigner;
 import com.rx201.jarsigner.KeyGenerator;
@@ -23,14 +23,7 @@ public class Apk {
     private static final String ClassesDex = "classes.dex";
     private static final String MetaInfo = "META-INF";
 
-    /**
-     * Read application class in the APK's manifest file
-     * @param apkFile Input APK file
-     * @return The fully qualified application class name if exists, null otherwise
-     * @throws IOException
-     */
-    public static String getApplicationClass(File apkFile)
-    throws IOException {
+    public static Manifest getManifest(File apkFile) throws IOException {
         ZipFile apk = null;
         try {
             apk = new ZipFile(apkFile);
@@ -39,9 +32,8 @@ public class Apk {
             while (entries.hasMoreElements()) {
 
                 ZipEntry entry = (ZipEntry) entries.nextElement();
-                if (entry.getName().equals(ManifestFile)) {
-                    return BinXmlUtil.getApplicationClass(apk.getInputStream(entry));
-                }
+                if (entry.getName().equals(ManifestFile))
+                    return new Manifest(apk.getInputStream(entry));
             }
         } catch (ZipException e) {
             throw new IOException(e);
@@ -52,10 +44,10 @@ public class Apk {
 
         return null;
     }
-
+    
     private static KeyGenerator keyGenerator = new KeyGenerator();
 
-    public static void produceAPK(File originalFile, File destinationFile, String newApplicationClass, byte[] dexData) throws IOException {
+    public static void produceAPK(File originalFile, File destinationFile, Manifest newManifest, byte[] dexData) throws IOException {
 
         // originalFile ---(replacing content)--->  workingFile --(signing)--> destinationFile
         File workingFile = File.createTempFile("dexter-", ".apk");
@@ -77,8 +69,8 @@ public class Apk {
 
                 ZipEntry newEntry = new ZipEntry(name);
                 InputStream data = null;
-                if (name.equals(ManifestFile) && newApplicationClass != null) {
-                    data = modifyManifest(originalAPK.getInputStream(entry), newApplicationClass);
+                if (name.equals(ManifestFile) && newManifest != null) {
+                    data = newManifest.getDataStream();
 
                 } else if (name.equals(ClassesDex) && dexData != null) {
                     data = new ByteArrayInputStream(dexData);
@@ -118,10 +110,5 @@ public class Apk {
                 workingAPK.close();
         }
 
-    }
-
-    private static InputStream modifyManifest(InputStream inputStream, String newApplicationClass) throws IOException {
-        byte[] modified = BinXmlUtil.setApplicationClass(inputStream, newApplicationClass);
-        return new ByteArrayInputStream(modified);
     }
 }

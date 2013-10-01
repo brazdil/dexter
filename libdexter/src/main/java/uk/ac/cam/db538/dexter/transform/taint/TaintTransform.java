@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.transform.taint;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -69,12 +70,14 @@ import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
@@ -85,6 +88,7 @@ import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy.TypeClassification;
 import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
+import uk.ac.cam.db538.dexter.manifest.Manifest;
 import uk.ac.cam.db538.dexter.transform.FilledArray;
 import uk.ac.cam.db538.dexter.transform.InvokeClassifier;
 import uk.ac.cam.db538.dexter.transform.MethodCall;
@@ -103,8 +107,7 @@ import com.rx201.dx.translator.TypeSolver;
 
 public class TaintTransform extends Transform {
 
-    public TaintTransform() { }
-
+	protected Dex dex;
     protected CodeGenerator codeGen;
     protected AuxiliaryDex dexAux;
     protected RuntimeHierarchy hierarchy;
@@ -119,7 +122,8 @@ public class TaintTransform extends Transform {
     @Override
     public void prepare(Dex dex) {
         super.prepare(dex);
-
+        
+        this.dex = dex;
         dexAux = dex.getAuxiliaryDex();
         codeGen = new CodeGenerator(dexAux);
         hierarchy = dexAux.getHierarchy();
@@ -147,6 +151,54 @@ public class TaintTransform extends Transform {
     private TemplateBuilder builder;
 
     @Override
+	public void doFirst(Manifest manifest) {
+    	if (manifest == null)
+    		return;
+    	
+    	String descAppClass = getAppClass(manifest);
+    	
+    	DexClass replacementAppClass = dexAux.getType_DexterApplication();
+    	BaseClassDefinition defReplacementAppClass = replacementAppClass.getClassDef();
+    	setAppClass(replacementAppClass, manifest);
+
+    	if (descAppClass != null) {
+    		DexClassType typeOriginalAppClass = DexClassType.parse(descAppClass, typeCache);
+    		BaseClassDefinition defOriginalAppClass = hierarchy.getClassDefinition(typeOriginalAppClass);
+    		BaseClassDefinition defAndroidAppClass = defReplacementAppClass.getSuperclass();
+    		
+    		assert defOriginalAppClass.isChildOf(defAndroidAppClass);
+    		
+    		/*
+    		 * defOriginalAppClass could not be a DIRECT descendant of Application,
+    		 * and so we might need to climb up the hierarchy tree
+    		 */
+    		while (!defOriginalAppClass.getSuperclass().equals(defAndroidAppClass))
+    			defOriginalAppClass = defOriginalAppClass.getSuperclass();
+    		
+    		assert defOriginalAppClass.isInternal();
+    		
+    		// insert DexterApplication into the parent chain of the app class
+    		defOriginalAppClass.setSuperclass(defReplacementAppClass);
+    	}
+	}
+    
+    private String getAppClass(Manifest manifest) {
+    	try {
+    		return DexType.jvm2dalvik(manifest.getApplicationClass());
+    	} catch (IOException ex) {
+    		throw new RuntimeException(ex);
+    	}
+    }
+    
+    private void setAppClass(DexClass clazz, Manifest manifest) {
+    	try {
+    		manifest.setApplicationClass(clazz);    	
+    	} catch (IOException ex) {
+    		throw new RuntimeException(ex);
+    	}
+    }
+
+	@Override
     public DexCode doFirst(DexCode code, DexMethod method) {
         code = super.doFirst(code, method);
 

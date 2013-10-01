@@ -33,13 +33,17 @@ task copy_dexter_aux (dependsOn: [ ':libdexter:dexter_aux:dex' ]) {
 task aggregate_libs (dependsOn: ':libdexter:compileJava') {
     doLast {
         copy {
-		    from configurations.runtime
-		    into "$buildDir/libs"
-		}
+            from configurations.compile
+		        into "$buildDir/libs"
+        }
         copy {
-		    from configurations.testRuntime
-		    into "$buildDir/libs"
-		}
+            from configurations.runtime
+		        into "$buildDir/libs"
+        }
+        copy {
+		        from configurations.testRuntime
+		        into "$buildDir/libs"
+		    }
     }
 }
 

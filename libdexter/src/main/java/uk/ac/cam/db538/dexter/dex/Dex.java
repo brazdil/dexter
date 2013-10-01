@@ -13,11 +13,6 @@ import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import com.android.dx.ssa.Optimizer;
-import com.android.dx.ssa.SsaConverter;
-import com.android.dx.ssa.SsaRenamer;
-import com.rx201.dx.translator.DexCodeGeneration;
-
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
@@ -25,29 +20,31 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.manifest.Manifest;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
-import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
 import uk.ac.cam.db538.dexter.utils.Utils;
+
+import com.android.dx.ssa.Optimizer;
+import com.rx201.dx.translator.DexCodeGeneration;
 
 public class Dex {
 
     @Getter final RuntimeHierarchy hierarchy;
     @Getter final AuxiliaryDex auxiliaryDex;
+    @Getter final Manifest manifest;
     @Getter private List<DexClass> classes;
 
     private final ProgressCallback progressCallback;
     private Transform transform;
 
-//  @Getter private DexClass externalStaticFieldTaint_Class;
-//  @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
-
     /*
      * Creates an empty Dex
      */
-    public Dex(RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, ProgressCallback progressCallback) {
+    public Dex(RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, ProgressCallback progressCallback) {
         this.hierarchy = hierarchy;
         this.auxiliaryDex = dexAux;
+        this.manifest = manifest;
         this.progressCallback = progressCallback;
         this.classes = Collections.emptyList();
     }
@@ -55,8 +52,8 @@ public class Dex {
     /*
      * Creates a new Dex and parses all classes inside the given DexFile
      */
-    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, ProgressCallback progressCallback) {
-        this(hierarchy, dexAux, progressCallback);
+    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, ProgressCallback progressCallback) {
+        this(hierarchy, dexAux, manifest, progressCallback);
 
         val dexClsInfos = dex.ClassDefsSection.getItems();
         int clsCount = dexClsInfos.size();
@@ -94,20 +91,20 @@ public class Dex {
 		});
     }
 
-    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux) {
-        this(dex, hierarchy, dexAux, (ProgressCallback) null);
+    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest) {
+        this(dex, hierarchy, dexAux, manifest, (ProgressCallback) null);
     }
 
     /*
      * This constructor applies a descriptor renamer on the classes parsed from given DexFile
      */
-    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, ClassRenamer renamer, ProgressCallback progressCallback) {
-        this(dex, setRenamer(hierarchy, renamer), dexAux, progressCallback);
+    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, ClassRenamer renamer, ProgressCallback progressCallback) {
+        this(dex, setRenamer(hierarchy, renamer), dexAux, manifest, progressCallback);
         unsetRenamer(hierarchy);
     }
 
-    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, ClassRenamer renamer) {
-        this(dex, hierarchy, dexAux, renamer, null);
+    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, ClassRenamer renamer) {
+        this(dex, hierarchy, dexAux, manifest, renamer, null);
     }
 
     private static RuntimeHierarchy setRenamer(RuntimeHierarchy hierarchy, ClassRenamer renamer) {
@@ -136,6 +133,9 @@ public class Dex {
     }
 
     public byte[] writeToFile() {
+        if (transform != null)
+        	transform.doFirst(this.manifest);
+
         val outFile = new DexFile();
         val out = new ByteArrayAnnotatedOutput();
 
@@ -156,7 +156,10 @@ public class Dex {
             cls.replaceMethods(Collections.<DexMethod> emptyList());
             
         }
-
+        
+        if (transform != null)
+        	transform.doLast(this.manifest);
+        
         // Apply jumbo-instruction fix requires ReferencedItem being
         // placed first, after which the code needs to be placed again
         // because jumbo instruction is wider.

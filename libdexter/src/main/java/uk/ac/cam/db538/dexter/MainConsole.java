@@ -11,6 +11,8 @@ import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.manifest.BinXmlUtil;
+import uk.ac.cam.db538.dexter.manifest.Manifest;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.transform.taint.TaintTransform;
@@ -36,7 +38,7 @@ public class MainConsole {
             System.err.println("<apk-file> is not a file");
             System.exit(1);
         }
-
+        
         val frameworkDir = new File(args[0]);
         if (!frameworkDir.isDirectory()) {
             System.err.println("<framework-dir> is not a directory");
@@ -53,7 +55,7 @@ public class MainConsole {
         HierarchyBuilder hierarchyBuilder = null;
 		try {
 			if (frameworkCache.exists()) {
-				System.out.println("Loading framework from cache.");
+				System.out.println("Loading framework from cache");
 				hierarchyBuilder = HierarchyBuilder.deserialize(frameworkCache);
 			}
 		} catch (Exception e) {}
@@ -67,6 +69,7 @@ public class MainConsole {
         System.out.println("Scanning application");
         val fileApp = new DexFile(apkFile);
         val fileAux = new DexFile("dexter_aux/build/libs/dexter_aux.dex");
+        Manifest manifest = Apk.getManifest(apkFile);
 
         System.out.println("Importing aux");
         hierarchyBuilder.importDex(fileAux, false);
@@ -78,7 +81,7 @@ public class MainConsole {
 
         System.out.println("Parsing application");
         AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux);
-        Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
+        Dex dexApp = new Dex(fileApp, hierarchy, dexAux, manifest);
 
         Transform transform;
         if (apkFile.getName().equals("test.apk"))
@@ -86,14 +89,14 @@ public class MainConsole {
         else
         	transform = new TaintTransform();
         dexApp.setTransform(transform);
-
+        
         if (methodId == null) {
         
         	System.out.println("Recompiling application");
         	val newDex = dexApp.writeToFile();
 
         	System.out.println("Generating new apk");
-        	Apk.produceAPK(apkFile, new File(apkFile.getAbsolutePath() + "_new.apk"), null, newDex);
+        	Apk.produceAPK(apkFile, new File(apkFile.getAbsolutePath() + "_new.apk"), manifest, newDex);
         	
         } else
        	

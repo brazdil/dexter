@@ -59,8 +59,9 @@ public abstract class BaseClassDefinition implements Serializable {
         this.interfaces = Collections.unmodifiableList(this._interfaces);
     }
 
-    // only to be called by HierarchyBuilder
-    public void setSuperclassLink(BaseClassDefinition superclass) {
+    public void setSuperclass(BaseClassDefinition superclass) {
+    	if (this.superclass != null)
+    		this.superclass._children.remove(this);
         this.superclass = superclass;
         this.superclass._children.add(this);
     }
@@ -68,7 +69,7 @@ public abstract class BaseClassDefinition implements Serializable {
     protected void refineSuperclassLink(BaseClassDefinition newSuperclass) {
     	if (!newSuperclass.equals(superclass)) {
     		assert newSuperclass.isChildOf(superclass);
-    		setSuperclassLink(newSuperclass);
+    		setSuperclass(newSuperclass);
     	}
     }
 

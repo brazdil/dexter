@@ -172,7 +172,7 @@ public class HierarchyBuilder implements Serializable {
                     System.err.println("Class " + baseCls.getType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
                     unresolvedClassList.put(sclsType, sclsVariants.getClassData().classDef);
                 }
-                baseCls.setSuperclassLink(sclsVariants.getClassData().classDef);
+                baseCls.setSuperclass(sclsVariants.getClassData().classDef);
             }
 
             // connect to interfaces
@@ -362,7 +362,7 @@ public class HierarchyBuilder implements Serializable {
         //DexClassType root = DexClassType.parse("Ljava/lang/Object;", typeCache);
         //clsData.classDef.setSuperclassLink(definedClasses.get(root).getClassData().classDef);
         assert root != null;
-        clsData.classDef.setSuperclassLink(root);
+        clsData.classDef.setSuperclass(root);
         
         ClassVariants clsVariants = new ClassVariants();
         definedClasses.put(classType, clsVariants);

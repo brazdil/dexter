@@ -5,6 +5,7 @@ import lombok.val;
 
 import org.jf.dexlib.DexFile;
 
+import uk.ac.cam.db538.dexter.aux.DexterApplication;
 import uk.ac.cam.db538.dexter.aux.InvokeTaintStore;
 import uk.ac.cam.db538.dexter.aux.StaticTaintFields;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
@@ -40,6 +41,8 @@ import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 
 public class AuxiliaryDex extends Dex {
 
+	@Getter private final DexClass type_DexterApplication;
+	
 	@Getter private final DexMethod method_TaintConstants_QueryTaint;
 	@Getter private final DexMethod method_TaintConstants_ServiceTaint;
 	@Getter private final DexMethod method_TaintConstants_IsSourceTaint;
@@ -98,8 +101,10 @@ public class AuxiliaryDex extends Dex {
     @Getter private final DexMethod method_Assigner_LookupArrayReference;
 
     public AuxiliaryDex(DexFile dexAux, RuntimeHierarchy hierarchy, ClassRenamer renamer) {
-        super(dexAux, hierarchy, null, renamer);
+        super(dexAux, hierarchy, null, null, renamer);
 
+        this.type_DexterApplication = getDexClass(DexterApplication.class, hierarchy, renamer);
+        
         // InvokeTaintStore class
         val clsTaintConstants = getDexClass(TaintConstants.class, hierarchy, renamer);
         this.method_TaintConstants_QueryTaint = findStaticMethodByName(clsTaintConstants, "queryTaint");

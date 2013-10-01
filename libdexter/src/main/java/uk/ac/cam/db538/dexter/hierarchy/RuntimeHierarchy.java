@@ -33,13 +33,13 @@ public class RuntimeHierarchy {
 
     private UnresolvedClassDefinition createUnresolvedClass(DexClassType clsType) {
         UnresolvedClassDefinition result = new UnresolvedClassDefinition(clsType);
-        result.setSuperclassLink(root);
+        result.setSuperclass(root);
         return result;
     }
     
     private UnresolvedInterfaceDefinition createUnresolvedInterface(DexClassType clsType) {
         UnresolvedInterfaceDefinition result = new UnresolvedInterfaceDefinition(clsType);
-        result.setSuperclassLink(root);
+        result.setSuperclass(root);
         return result;
     }
     

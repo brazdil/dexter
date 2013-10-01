@@ -3,22 +3,15 @@ package uk.ac.cam.db538.dexter.transform;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jf.dexlib.Util.AccessFlags;
-
-import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
-import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexEmpty;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
-import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
-import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
-import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
-import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
+import uk.ac.cam.db538.dexter.manifest.Manifest;
 
 public abstract class Transform {
 
@@ -48,12 +41,15 @@ public abstract class Transform {
         }
 
     }
+    
+    public void doFirst(Manifest manifest) { }
+    public void doLast(Manifest manifest) { }
 
     public boolean exclude(DexClass clazz) {
         return false;
     }
 
-    public List<DexMethod> apply(List<DexMethod> oldMethods) {
+    public final List<DexMethod> apply(List<DexMethod> oldMethods) {
         List<DexMethod> newMethods = new ArrayList<DexMethod>(oldMethods.size());
         for (DexMethod newMethod : oldMethods) {
             newMethod = doFirst(newMethod);
