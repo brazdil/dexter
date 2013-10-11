@@ -15,6 +15,7 @@ import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.apk.Manifest;
+import uk.ac.cam.db538.dexter.apk.SignatureFile;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -33,6 +34,7 @@ public class Dex {
     @Getter final RuntimeHierarchy hierarchy;
     @Getter final AuxiliaryDex auxiliaryDex;
     @Getter final Manifest manifest;
+    @Getter final SignatureFile signatureFile;
     @Getter private List<DexClass> classes;
 
     private final ProgressCallback progressCallback;
@@ -41,10 +43,11 @@ public class Dex {
     /*
      * Creates an empty Dex
      */
-    public Dex(RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, ProgressCallback progressCallback) {
+    public Dex(RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, SignatureFile sigfile, ProgressCallback progressCallback) {
         this.hierarchy = hierarchy;
         this.auxiliaryDex = dexAux;
         this.manifest = manifest;
+        this.signatureFile = sigfile;
         this.progressCallback = progressCallback;
         this.classes = Collections.emptyList();
     }
@@ -52,8 +55,8 @@ public class Dex {
     /*
      * Creates a new Dex and parses all classes inside the given DexFile
      */
-    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, ProgressCallback progressCallback) {
-        this(hierarchy, dexAux, manifest, progressCallback);
+    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, SignatureFile sigfile, ProgressCallback progressCallback) {
+        this(hierarchy, dexAux, manifest, sigfile, progressCallback);
 
         val dexClsInfos = dex.ClassDefsSection.getItems();
         int clsCount = dexClsInfos.size();
@@ -91,20 +94,20 @@ public class Dex {
 		});
     }
 
-    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest) {
-        this(dex, hierarchy, dexAux, manifest, (ProgressCallback) null);
+    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, SignatureFile sigfile) {
+        this(dex, hierarchy, dexAux, manifest, sigfile, (ProgressCallback) null);
     }
 
     /*
      * This constructor applies a descriptor renamer on the classes parsed from given DexFile
      */
-    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, ClassRenamer renamer, ProgressCallback progressCallback) {
-        this(dex, setRenamer(hierarchy, renamer), dexAux, manifest, progressCallback);
+    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, SignatureFile sigfile, ClassRenamer renamer, ProgressCallback progressCallback) {
+        this(dex, setRenamer(hierarchy, renamer), dexAux, manifest, sigfile, progressCallback);
         unsetRenamer(hierarchy);
     }
 
-    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, ClassRenamer renamer) {
-        this(dex, hierarchy, dexAux, manifest, renamer, null);
+    public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, Manifest manifest, SignatureFile sigfile, ClassRenamer renamer) {
+        this(dex, hierarchy, dexAux, manifest, sigfile, renamer, null);
     }
 
     private static RuntimeHierarchy setRenamer(RuntimeHierarchy hierarchy, ClassRenamer renamer) {
@@ -133,9 +136,6 @@ public class Dex {
     }
 
     public byte[] writeToFile() {
-        if (transform != null)
-        	transform.doFirst(this.manifest);
-
         val outFile = new DexFile();
         val out = new ByteArrayAnnotatedOutput();
 
@@ -156,9 +156,6 @@ public class Dex {
             cls.replaceMethods(Collections.<DexMethod> emptyList());
             
         }
-        
-        if (transform != null)
-        	transform.doLast(this.manifest);
         
         // Apply jumbo-instruction fix requires ReferencedItem being
         // placed first, after which the code needs to be placed again

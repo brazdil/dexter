@@ -6,6 +6,7 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 
 import uk.ac.cam.db538.dexter.aux.DexterApplication;
+import uk.ac.cam.db538.dexter.aux.FakeSignature;
 import uk.ac.cam.db538.dexter.aux.InvokeTaintStore;
 import uk.ac.cam.db538.dexter.aux.StaticTaintFields;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
@@ -99,9 +100,15 @@ public class AuxiliaryDex extends Dex {
     @Getter private final DexMethod method_Assigner_LookupUndecidable;
     @Getter private final DexMethod method_Assigner_LookupArrayPrimitive;
     @Getter private final DexMethod method_Assigner_LookupArrayReference;
+    
+    @Getter private final DexClass type_FakeSignature;
+    @Getter private final DexMethod method_FakeSignature_Clinit;
+    @Getter private final DexStaticField field_FakeSignature_PackageName;
+    @Getter private final DexStaticField field_FakeSignature_Signatures;
+
 
     public AuxiliaryDex(DexFile dexAux, RuntimeHierarchy hierarchy, ClassRenamer renamer) {
-        super(dexAux, hierarchy, null, null, renamer);
+        super(dexAux, hierarchy, null, null, null, renamer);
 
         this.type_DexterApplication = getDexClass(DexterApplication.class, hierarchy, renamer);
         
@@ -171,6 +178,11 @@ public class AuxiliaryDex extends Dex {
         this.method_Assigner_LookupUndecidable = findStaticMethodByName(clsAssigner, "lookupUndecidable");
         this.method_Assigner_LookupArrayPrimitive = findStaticMethodByName(clsAssigner, "lookupArrayPrimitive");
         this.method_Assigner_LookupArrayReference = findStaticMethodByName(clsAssigner, "lookupArrayReference");
+        
+        this.type_FakeSignature = getDexClass(FakeSignature.class, hierarchy, renamer);
+        this.method_FakeSignature_Clinit = findStaticMethodByName(type_FakeSignature, "<clinit>");
+        this.field_FakeSignature_PackageName = findStaticFieldByName(type_FakeSignature, "PACKAGE_NAME");
+        this.field_FakeSignature_Signatures = findStaticFieldByName(type_FakeSignature, "SIGNATURES");
     }
 
     /*

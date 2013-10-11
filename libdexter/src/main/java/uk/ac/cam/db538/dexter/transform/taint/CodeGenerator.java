@@ -86,9 +86,13 @@ public final class CodeGenerator {
     private final DexClassType typeLog;
     private final DexClassType typeUri;
     private final DexArrayType typeIntArray;
+    private final DexArrayType typeByteArray;
     private final DexArrayType typeStackTraceElementArray;
+    private final DexClassType typeSignature;
+    private final DexArrayType typeSignatureArray;
 
     private final ClassDefinition defThrowable;
+    private final ClassDefinition defSignature;
 
     private final MethodDefinition method_Object_getClass;
     private final MethodDefinition method_ThreadLocal_Get;
@@ -106,7 +110,8 @@ public final class CodeGenerator {
     private final MethodDefinition method_Class_getSuperclass;
     private final MethodDefinition method_Method_getAnnotation;
     private final MethodDefinition method_Log_d;
-    private final MethodDefinition method_Uri_toString;;
+    private final MethodDefinition method_Uri_toString;
+    private final MethodDefinition method_Signature_constructor;
 
     private int regAuxId;
     private int labelId;
@@ -133,8 +138,12 @@ public final class CodeGenerator {
         this.typeStackTraceElementArray = DexArrayType.parse("[Ljava/lang/StackTraceElement;", cache);
         this.typeLog = DexClassType.parse("Landroid/util/Log;", cache);
         this.typeUri = DexClassType.parse("Landroid/net/Uri;", cache);
+        this.typeByteArray = DexArrayType.parse("[B", cache);
+        this.typeSignatureArray = DexArrayType.parse("[Landroid/content/pm/Signature;", cache);
+        this.typeSignature = (DexClassType) typeSignatureArray.getElementType();
 
         this.defThrowable = hierarchy.getClassDefinition(typeThrowable);
+        this.defSignature = hierarchy.getClassDefinition(typeSignature);
 
         DexPrototype prototype_void_to_void = DexPrototype.parse(cache.getCachedType_Void(), null, cache);
         DexPrototype prototype_void_to_Object = DexPrototype.parse(typeObject, null, cache);
@@ -148,6 +157,7 @@ public final class CodeGenerator {
         DexPrototype prototype_Class_to_Annotation = DexPrototype.parse(typeAnnotation, Arrays.asList(typeClass), cache);
         DexPrototype prototype_String_ClassArray_to_Method = DexPrototype.parse(typeMethod, Arrays.asList(typeString, typeClassArray), cache);
         DexPrototype prototype_String_String_to_int = DexPrototype.parse(cache.getCachedType_Integer(), Arrays.asList(typeString, typeString), cache);
+        DexPrototype prototype_byteArray_to_void = DexPrototype.parse(cache.getCachedType_Void(), Arrays.asList(typeByteArray), cache);
 
         DexMethodId methodId_getClass_void_to_Class = DexMethodId.parseMethodId("getClass", prototype_void_to_Class, cache);
         DexMethodId methodId_getSuperclass_void_to_Class = DexMethodId.parseMethodId("getSuperclass", prototype_void_to_Class, cache);
@@ -165,6 +175,7 @@ public final class CodeGenerator {
         DexMethodId methodId_getDeclaredMethod_String_ClassArray_to_Method = DexMethodId.parseMethodId("getDeclaredMethod", prototype_String_ClassArray_to_Method, cache);
         DexMethodId methodId_d_String_String_to_int = DexMethodId.parseMethodId("d", prototype_String_String_to_int, cache);
         DexMethodId methodId_toString_void_to_String = DexMethodId.parseMethodId("toString", prototype_void_to_String, cache);
+        DexMethodId methodId_constructor_byteArray_to_void = DexMethodId.parseMethodId("<init>", prototype_byteArray_to_void, cache);
 
         this.method_Object_getClass = lookupMethod(typeObject, methodId_getClass_void_to_Class);
         this.method_ThreadLocal_Get = lookupMethod(typeThreadLocal, methodId_get_void_to_Object);
@@ -183,6 +194,7 @@ public final class CodeGenerator {
         this.method_Method_getAnnotation = lookupMethod(typeMethod, methodId_getAnnotation_Class_to_Annotation);
         this.method_Log_d = lookupMethod(typeLog, methodId_d_String_String_to_int);
         this.method_Uri_toString = lookupMethod(typeUri, methodId_toString_void_to_String);
+        this.method_Signature_constructor = lookupMethod(typeSignature, methodId_constructor_byteArray_to_void);
     }
 
     private MethodDefinition lookupMethod(DexReferenceType classType, DexMethodId methodId) {
@@ -1045,6 +1057,16 @@ public final class CodeGenerator {
     public DexCodeElement newInst(DexSingleRegister regTo, BaseClassDefinition def) {
     	return new DexInstruction_NewInstance(regTo, def, hierarchy);
     }
+    
+    public DexCodeElement newSignature(DexSingleRegister regTo, DexSingleRegister regData) {
+    	return new DexMacro(
+    			newInst(regTo, defSignature),
+    			invoke(method_Signature_constructor, regTo, regData));
+    }
+
+    public DexCodeElement newSignatureArray(DexSingleRegister regTo, DexSingleRegister regLength) {
+    	return new DexInstruction_NewArray(regTo, regLength, typeSignatureArray, hierarchy);
+    }
 
     public DexCodeElement jump(DexLabel target) {
         return new DexInstruction_Goto(target, hierarchy);
@@ -1112,6 +1134,14 @@ public final class CodeGenerator {
 
     public DexCodeElement return_prim(DexSingleRegister regTotalTaint) {
         return new DexInstruction_Return(regTotalTaint, false, hierarchy);
+    }
+
+    public DexCodeElement aput(DexRegister from, DexSingleRegister array, DexSingleRegister index, Opcode_GetPut opcode) {
+        return new DexInstruction_ArrayPut(from, array, index, opcode, hierarchy);
+    }
+
+    public DexCodeElement aget(DexRegister to, DexSingleRegister array, DexSingleRegister index, Opcode_GetPut opcode) {
+        return new DexInstruction_ArrayGet(to, array, index, opcode, hierarchy);
     }
 
     public DexCodeElement iput(DexRegister from, DexSingleRegister obj, InstanceFieldDefinition fieldDef) {

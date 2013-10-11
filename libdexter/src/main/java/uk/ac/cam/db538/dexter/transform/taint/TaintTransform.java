@@ -1,6 +1,8 @@
 package uk.ac.cam.db538.dexter.transform.taint;
 
 import java.io.IOException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +19,7 @@ import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.apk.Manifest;
+import uk.ac.cam.db538.dexter.apk.SignatureFile;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -71,6 +74,7 @@ import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
@@ -112,6 +116,7 @@ public class TaintTransform extends Transform {
     protected AuxiliaryDex dexAux;
     protected RuntimeHierarchy hierarchy;
     private DexTypeCache typeCache;
+    private boolean hasSignatureFile;
 
     private Map<DexInstanceField, DexInstanceField> taintInstanceFields;
     private Map<StaticFieldDefinition, DexStaticField> taintStaticFields;
@@ -128,12 +133,15 @@ public class TaintTransform extends Transform {
         codeGen = new CodeGenerator(dexAux);
         hierarchy = dexAux.getHierarchy();
         typeCache = hierarchy.getTypeCache();
+        hasSignatureFile = dex.getSignatureFile() != null;
 
         taintInstanceFields = new HashMap<DexInstanceField, DexInstanceField>();
         taintStaticFields = new HashMap<StaticFieldDefinition, DexStaticField>();
         
         createTaintFields();
         mergeAuxDex();
+        doManifest();
+        doSignatureFile();
     }
     
     private boolean isStaticTaintFieldsClass(DexClass clazz) {
@@ -150,8 +158,8 @@ public class TaintTransform extends Transform {
     private Set<DexCodeElement> noninstrumentableElements;
     private TemplateBuilder builder;
 
-    @Override
-	public void doFirst(Manifest manifest) {
+	private void doManifest() {
+		Manifest manifest = dex.getManifest();
     	if (manifest == null)
     		return;
     	
@@ -182,22 +190,74 @@ public class TaintTransform extends Transform {
     	}
 	}
     
-    private String getAppClass(Manifest manifest) {
-    	try {
-    		return DexType.jvm2dalvik(manifest.getApplicationClass());
-    	} catch (IOException ex) {
-    		throw new RuntimeException(ex);
+	public void doSignatureFile() {
+    	SignatureFile signatureFile = dex.getSignatureFile();
+    	if (signatureFile == null)
+    		return;
+    	
+    	Certificate[] certs = signatureFile.getSignatures();
+    	List<DexCodeElement> insns = new ArrayList<DexCodeElement>();
+    	
+    	// set package name
+    	DexSingleRegister auxPackageName = codeGen.auxReg();
+    	insns.add(codeGen.constant(auxPackageName, dex.getManifest().getPackageName()));
+    	insns.add(codeGen.sput(auxPackageName, dexAux.getField_FakeSignature_PackageName().getFieldDef()));
+
+    	// create signatures array
+    	DexSingleRegister auxSignatureArray = codeGen.auxReg();
+    	DexSingleRegister auxSignatureArrayLength = codeGen.auxReg();
+    	insns.add(codeGen.constant(auxSignatureArrayLength, certs.length));
+    	insns.add(codeGen.newSignatureArray(auxSignatureArray, auxSignatureArrayLength));
+    	insns.add(codeGen.sput(auxSignatureArray, dexAux.getField_FakeSignature_Signatures().getFieldDef()));
+    	
+    	// set signatures
+    	DexSingleRegister auxSignatureData = codeGen.auxReg();
+    	DexSingleRegister auxSignatureLength = codeGen.auxReg();
+    	DexSingleRegister auxSignatureObject = codeGen.auxReg();
+    	DexSingleRegister auxSignatureIndex = codeGen.auxReg();
+    	for (int i = 0; i < certs.length; ++i) {
+    		byte[] certData;
+			try {
+				certData = certs[i].getEncoded();
+			} catch (CertificateEncodingException e) {
+				throw new RuntimeException("Problem reading a signature", e); 
+			}
+			
+			// convert data to a list
+			List<byte[]> convData = new ArrayList<byte[]>(certData.length);
+			for (byte b : certData)
+				convData.add(new byte[] { b });
+    		
+			// create byte[] with data
+    		insns.add(codeGen.constant(auxSignatureLength, convData.size()));
+	    	insns.add(new DexInstruction_NewArray(auxSignatureData, auxSignatureLength, DexArrayType.parse("[B", typeCache), hierarchy));
+	    	insns.add(new DexInstruction_FillArrayData(auxSignatureData, convData, hierarchy));
+	    	
+	    	// create Signature
+	    	insns.add(codeGen.newSignature(auxSignatureObject, auxSignatureData));
+	    	
+	    	// store it in the array
+	    	insns.add(codeGen.constant(auxSignatureIndex, i));
+	    	insns.add(codeGen.aput(auxSignatureObject, auxSignatureArray, auxSignatureIndex, Opcode_GetPut.Object));
     	}
+    	
+    	insns.add(codeGen.retrn());
+    	
+    	// replace the method
+    	DexMethod oldMethod = dexAux.getMethod_FakeSignature_Clinit();
+    	DexCode code = new DexCode(oldMethod.getMethodBody(), new InstructionList(insns));
+    	DexMethod newMethod = new DexMethod(oldMethod, code);
+    	dexAux.getType_FakeSignature().replaceMethod(oldMethod, newMethod);
+    }
+    
+    private String getAppClass(Manifest manifest) {
+		return DexType.jvm2dalvik(manifest.getApplicationClass());
     }
     
     private void setAppClass(DexClass clazz, Manifest manifest) {
-    	try {
-    		manifest.setApplicationClass(clazz);    	
-    	} catch (IOException ex) {
-    		throw new RuntimeException(ex);
-    	}
+		manifest.setApplicationClass(clazz);    	
     }
-
+    
 	@Override
     public DexCode doFirst(DexCode code, DexMethod method) {
         code = super.doFirst(code, method);

@@ -5,6 +5,7 @@ import java.util.List;
 
 import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.apk.Manifest;
+import uk.ac.cam.db538.dexter.apk.SignatureFile;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -42,9 +43,6 @@ public abstract class Transform {
         }
 
     }
-    
-    public void doFirst(Manifest manifest) { }
-    public void doLast(Manifest manifest) { }
     
     public boolean exclude(DexClass clazz) {
         return false;

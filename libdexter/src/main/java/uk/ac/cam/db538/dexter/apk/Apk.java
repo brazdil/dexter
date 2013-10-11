@@ -2,12 +2,15 @@ package uk.ac.cam.db538.dexter.apk;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -18,31 +21,38 @@ import com.rx201.jarsigner.KeyGenerator;
 
 public class Apk {
     private static final String ManifestFile = "AndroidManifest.xml";
+    private static final String SignatureFile = "resources.arsc";
     private static final String ClassesDex = "classes.dex";
     private static final String MetaInfo = "META-INF";
 
     public static Manifest getManifest(File apkFile) throws IOException {
-        ZipFile apk = null;
+        JarFile apk = null;
         try {
-            apk = new ZipFile(apkFile);
-            Enumeration<? extends ZipEntry> entries = apk.entries();
-
-            while (entries.hasMoreElements()) {
-
-                ZipEntry entry = (ZipEntry) entries.nextElement();
-                if (entry.getName().equals(ManifestFile))
-                    return new Manifest(apk.getInputStream(entry));
-            }
-        } catch (ZipException e) {
-            throw new IOException(e);
+            apk = new JarFile(apkFile);
+            JarEntry entry = (JarEntry) apk.getEntry(ManifestFile);
+            if (entry == null)
+            	throw new FileNotFoundException("Manifest file not found inside APK");
+            return new Manifest(apk.getInputStream(entry));
         } finally {
             if (apk != null)
                 apk.close();
         }
-
-        return null;
     }
     
+    public static SignatureFile getSignatureFile(File apkFile) throws IOException {
+        JarFile apk = null;
+        try {
+            apk = new JarFile(apkFile);
+            JarEntry entry = (JarEntry) apk.getEntry(SignatureFile);
+            if (entry == null)
+            	throw new FileNotFoundException("Signature file not found inside APK");
+            return new SignatureFile(entry, apk);
+        } finally {
+            if (apk != null)
+                apk.close();
+        }
+    }
+
     private static KeyGenerator keyGenerator = new KeyGenerator();
 
     public static void produceAPK(File originalFile, File destinationFile, Manifest newManifest, byte[] dexData) throws IOException {

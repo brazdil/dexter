@@ -10,6 +10,7 @@ import org.jf.dexlib.DexFile;
 import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.apk.BinXmlUtil;
 import uk.ac.cam.db538.dexter.apk.Manifest;
+import uk.ac.cam.db538.dexter.apk.SignatureFile;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
@@ -70,6 +71,7 @@ public class MainConsole {
         val fileApp = new DexFile(apkFile);
         val fileAux = new DexFile("dexter_aux/build/libs/dexter_aux.dex");
         Manifest manifest = Apk.getManifest(apkFile);
+        SignatureFile sigfile = Apk.getSignatureFile(apkFile);
 
         System.out.println("Importing aux");
         hierarchyBuilder.importDex(fileAux, false);
@@ -81,7 +83,7 @@ public class MainConsole {
 
         System.out.println("Parsing application");
         AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux);
-        Dex dexApp = new Dex(fileApp, hierarchy, dexAux, manifest);
+        Dex dexApp = new Dex(fileApp, hierarchy, dexAux, manifest, sigfile);
 
         Transform transform;
         if (apkFile.getName().equals("test.apk"))

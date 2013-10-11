@@ -124,7 +124,7 @@ public class MainTest {
 
         System.out.println("Parsing application");
         AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux);
-        Dex dexApp = new Dex(fileApp, hierarchy, dexAux, null);
+        Dex dexApp = new Dex(fileApp, hierarchy, dexAux, null, null);
 
         DexCodeGeneration.DEBUG = false;
         Optimizer.DEBUG_SSA_DUMP = false;

@@ -22,15 +22,33 @@ public class Manifest {
 		this(IOUtils.toByteArray(dataStream));
 	}
 	
-	public String getApplicationClass() throws IOException {
-		return BinXmlUtil.getApplicationClass(getDataStream());
+	public String getApplicationClass() {
+		try {
+			return BinXmlUtil.getApplicationClass(getDataStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
-	public void setApplicationClass(String className) throws IOException {
-		this.dataArray = BinXmlUtil.setApplicationClass(getDataStream(), className);
+	public void setApplicationClass(String className) {
+		try {
+			this.dataArray = BinXmlUtil.setApplicationClass(getDataStream(), className);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	public void setApplicationClass(DexClass clazz) throws IOException {
+	public String getPackageName() {
+		try {
+			return BinXmlUtil.getPackage(getDataStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public void setApplicationClass(DexClass clazz) {
 		setApplicationClass(clazz.getClassDef().getType().getJavaDescriptor());
 	}
 	
