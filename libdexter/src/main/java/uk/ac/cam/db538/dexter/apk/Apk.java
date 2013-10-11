@@ -13,8 +13,6 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import uk.ac.cam.db538.dexter.manifest.Manifest;
-
 import com.rx201.jarsigner.JarSigner;
 import com.rx201.jarsigner.KeyGenerator;
 

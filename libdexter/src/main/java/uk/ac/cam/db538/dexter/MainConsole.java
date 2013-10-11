@@ -8,11 +8,11 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 
 import uk.ac.cam.db538.dexter.apk.Apk;
+import uk.ac.cam.db538.dexter.apk.BinXmlUtil;
+import uk.ac.cam.db538.dexter.apk.Manifest;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
-import uk.ac.cam.db538.dexter.manifest.BinXmlUtil;
-import uk.ac.cam.db538.dexter.manifest.Manifest;
 import uk.ac.cam.db538.dexter.transform.Transform;
 import uk.ac.cam.db538.dexter.transform.taint.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.transform.taint.TaintTransform;

@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.manifest;
+package uk.ac.cam.db538.dexter.apk;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

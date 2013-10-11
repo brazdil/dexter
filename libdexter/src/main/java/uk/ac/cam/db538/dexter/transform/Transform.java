@@ -3,6 +3,8 @@ package uk.ac.cam.db538.dexter.transform;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.cam.db538.dexter.apk.Apk;
+import uk.ac.cam.db538.dexter.apk.Manifest;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -11,7 +13,6 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexEmpty;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
-import uk.ac.cam.db538.dexter.manifest.Manifest;
 
 public abstract class Transform {
 
@@ -44,7 +45,7 @@ public abstract class Transform {
     
     public void doFirst(Manifest manifest) { }
     public void doLast(Manifest manifest) { }
-
+    
     public boolean exclude(DexClass clazz) {
         return false;
     }

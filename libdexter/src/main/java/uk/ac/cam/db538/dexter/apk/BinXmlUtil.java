@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.ac.cam.db538.dexter.manifest;
+package uk.ac.cam.db538.dexter.apk;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
