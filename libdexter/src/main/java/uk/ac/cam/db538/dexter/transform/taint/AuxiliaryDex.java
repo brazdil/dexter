@@ -43,6 +43,7 @@ import uk.ac.cam.db538.dexter.utils.Utils.NameAcceptor;
 public class AuxiliaryDex extends Dex {
 
 	@Getter private final DexClass type_DexterApplication;
+	@Getter private final DexMethod method_DexterApplication_constructor;
 	
 	@Getter private final DexMethod method_TaintConstants_QueryTaint;
 	@Getter private final DexMethod method_TaintConstants_ServiceTaint;
@@ -111,6 +112,7 @@ public class AuxiliaryDex extends Dex {
         super(dexAux, hierarchy, null, null, null, renamer);
 
         this.type_DexterApplication = getDexClass(DexterApplication.class, hierarchy, renamer);
+        this.method_DexterApplication_constructor = findInstanceMethodByName(type_DexterApplication, "<init>");
         
         // InvokeTaintStore class
         val clsTaintConstants = getDexClass(TaintConstants.class, hierarchy, renamer);

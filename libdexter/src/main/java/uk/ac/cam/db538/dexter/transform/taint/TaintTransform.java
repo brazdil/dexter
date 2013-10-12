@@ -184,7 +184,45 @@ public class TaintTransform extends Transform {
     		
     		assert defOriginalAppClass.isInternal();
     		
+    		// replace super() calls inside constructor(s)
+    		DexClass classOrig = dex.getClass(defOriginalAppClass);
+    		Collection<DexMethod> oldMethods = classOrig.getMethods();
+    		for (DexMethod oldMethod : oldMethods) {
+    			// only want <init> methods
+    			if (!oldMethod.getMethodDef().isConstructor() || oldMethod.getMethodDef().isStatic())
+    				continue;
+    			
+    			DexCode oldCode = oldMethod.getMethodBody();
+    			List<DexCodeElement> newInsns = new ArrayList<DexCodeElement>(oldCode.getInstructionList().size());
+    			
+    			// need analysis of the code inside isCallToSuperclassConstructor
+    			codeAnalysis = new DexCodeAnalyzer(oldCode);
+    			codeAnalysis.analyze();
+    			
+    			// iterate through instructions and replace the super() calls
+    			for (DexCodeElement oldInsn : oldCode.getInstructionList()) {
+    				if ((oldInsn instanceof DexInstruction_Invoke) && 
+    					isCallToSuperclassConstructor((DexInstruction_Invoke) oldInsn, oldCode, oldMethod)) {
+    					
+    					DexInstruction_Invoke oldCall = (DexInstruction_Invoke) oldInsn;
+    					assert oldCall.getClassType().equals(defAndroidAppClass.getType()); // calls Application.<init>, right?
+    					assert oldCall.getArgumentRegisters().size() == 1; // Application class has only the default constructor
+
+    					newInsns.add(codeGen.invoke(dexAux.getMethod_DexterApplication_constructor(), oldCall.getArgumentRegisters().get(0)));
+    					
+    				} else
+    					newInsns.add(oldInsn);
+    			}
+    			
+    			// replace the method
+    			DexMethod newMethod = new DexMethod(oldMethod, new DexCode(oldCode, new InstructionList(newInsns)));
+    			classOrig.replaceMethod(oldMethod, newMethod);
+    		}
+
     		// insert DexterApplication into the parent chain of the app class
+    		// note: must be done AFTER overwriting the constructors code, 
+    		//       otherwise isCallToSuperclassConstructor won't recognize 
+    		//       the correct instruction to replace
     		defOriginalAppClass.setSuperclass(defReplacementAppClass);
     	}
 	}
