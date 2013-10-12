@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.Getter;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -90,11 +91,13 @@ public final class CodeGenerator {
     private final DexArrayType typeStackTraceElementArray;
     private final DexClassType typeSignature;
     private final DexArrayType typeSignatureArray;
+    @Getter private final DexClassType typePackageInfo;
 
     private final ClassDefinition defThrowable;
     private final ClassDefinition defSignature;
 
     private final MethodDefinition method_Object_getClass;
+    private final MethodDefinition method_Object_equals;
     private final MethodDefinition method_ThreadLocal_Get;
     private final MethodDefinition method_ThreadLocal_Set;
     private final MethodDefinition method_Integer_intValue;
@@ -141,6 +144,7 @@ public final class CodeGenerator {
         this.typeByteArray = DexArrayType.parse("[B", cache);
         this.typeSignatureArray = DexArrayType.parse("[Landroid/content/pm/Signature;", cache);
         this.typeSignature = (DexClassType) typeSignatureArray.getElementType();
+        this.typePackageInfo = DexClassType.parse("Landroid/content/pm/PackageInfo;", cache);
 
         this.defThrowable = hierarchy.getClassDefinition(typeThrowable);
         this.defSignature = hierarchy.getClassDefinition(typeSignature);
@@ -151,6 +155,7 @@ public final class CodeGenerator {
         DexPrototype prototype_void_to_String = DexPrototype.parse(typeString, null, cache);
         DexPrototype prototype_void_to_TraceElemArray = DexPrototype.parse(typeStackTraceElementArray, null, cache);
         DexPrototype prototype_Object_to_void = DexPrototype.parse(cache.getCachedType_Void(), Arrays.asList(typeObject), cache);
+        DexPrototype prototype_Object_to_boolean = DexPrototype.parse(cache.getCachedType_Boolean(), Arrays.asList(typeObject), cache);
         DexPrototype prototype_void_to_int = DexPrototype.parse(cache.getCachedType_Integer(), null, cache);
         DexPrototype prototype_int_to_Integer = DexPrototype.parse(typeInteger, Arrays.asList(cache.getCachedType_Integer()), cache);
         DexPrototype prototype_String_to_Class = DexPrototype.parse(typeClass, Arrays.asList(typeString), cache);
@@ -160,6 +165,7 @@ public final class CodeGenerator {
         DexPrototype prototype_byteArray_to_void = DexPrototype.parse(cache.getCachedType_Void(), Arrays.asList(typeByteArray), cache);
 
         DexMethodId methodId_getClass_void_to_Class = DexMethodId.parseMethodId("getClass", prototype_void_to_Class, cache);
+        DexMethodId methodId_equals_Object_to_boolean = DexMethodId.parseMethodId("equals", prototype_Object_to_boolean, cache);
         DexMethodId methodId_getSuperclass_void_to_Class = DexMethodId.parseMethodId("getSuperclass", prototype_void_to_Class, cache);
         DexMethodId methodId_get_void_to_Object = DexMethodId.parseMethodId("get", prototype_void_to_Object, cache);
         DexMethodId methodId_set_Object_to_void = DexMethodId.parseMethodId("set", prototype_Object_to_void, cache);
@@ -178,6 +184,7 @@ public final class CodeGenerator {
         DexMethodId methodId_constructor_byteArray_to_void = DexMethodId.parseMethodId("<init>", prototype_byteArray_to_void, cache);
 
         this.method_Object_getClass = lookupMethod(typeObject, methodId_getClass_void_to_Class);
+        this.method_Object_equals = lookupMethod(typeObject, methodId_equals_Object_to_boolean);
         this.method_ThreadLocal_Get = lookupMethod(typeThreadLocal, methodId_get_void_to_Object);
         this.method_ThreadLocal_Set = lookupMethod(typeThreadLocal, methodId_set_Object_to_void);
         this.method_Integer_intValue = lookupMethod(typeInteger, methodId_intValue_void_to_int);
@@ -599,6 +606,10 @@ public final class CodeGenerator {
         return invoke_result_obj(regTo, method_Object_getClass, regObject);
     }
     
+    public DexCodeElement equals(DexSingleRegister regTo, DexSingleRegister regObject1, DexSingleRegister regObject2) {
+        return invoke_result_obj(regTo, method_Object_equals, regObject1, regObject2);
+    }
+
     public DexCodeElement getMethodObject(DexSingleRegister regTo, DexSingleRegister regObject, MethodCall methodCall) {
         DexInstruction_Invoke insnInvoke = methodCall.getInvoke();
         DexMethodId mid = insnInvoke.getMethodId();

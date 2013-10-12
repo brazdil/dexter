@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.transform.taint;
 
-import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
@@ -995,6 +994,8 @@ public class TaintTransform extends Transform {
         	regObjectBackup = codeGen.auxReg();
         else
         	regObjectBackup = regObject;
+
+        DexCodeElement replaceResult = replaceSignature(insnIget);
         
         DexRegisterType resultType = insnIget.getFieldDef().getFieldId().getType();
         boolean isPrimitive = resultType instanceof DexPrimitiveType;
@@ -1015,7 +1016,7 @@ public class TaintTransform extends Transform {
     					   codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insnIget, regTo)));
 
         } else {
-
+        	
             if (isPrimitive)
             	tainting = codeGen.getTaintExternal(regToTaint, regObjectTaint);
 
@@ -1028,10 +1029,41 @@ public class TaintTransform extends Transform {
             }
         }
         
-        return new DexMacro(backup, builder.create(insnIget, tainting));
+        return new DexMacro(backup, builder.create(insnIget, new DexMacro(replaceResult, tainting)));
     }
 
-    private DexCodeElement instrument_StaticPut(DexInstruction_StaticPut insnSput) {
+    /*
+     * Generate instrumentation that for IGET on PackageInfo.signatures 
+     * checks whether the queried package is the application itself
+     * and replaces the result if it is.
+     */
+    private DexCodeElement replaceSignature(DexInstruction_InstanceGet insnIget) {
+    	InstanceFieldDefinition fieldDef_Signatures = hierarchy.getClassDefinition(codeGen.getTypePackageInfo()).getInstanceField("signatures");
+    	InstanceFieldDefinition fieldDef_PackageName = hierarchy.getClassDefinition(codeGen.getTypePackageInfo()).getInstanceField("packageName");
+    	
+    	if (insnIget.getFieldDef().equals(fieldDef_Signatures)) {
+    		
+    		assert(insnIget.getOpcode() == Opcode_GetPut.Object);
+    		
+    		DexSingleRegister auxStoredPackageName = codeGen.auxReg();
+    		DexSingleRegister auxRequestedPackageName = codeGen.auxReg();
+    		DexSingleRegister auxPackageEquals = codeGen.auxReg();
+    		DexLabel lAfter = codeGen.label();
+    		
+    		return new DexMacro(
+    				codeGen.sget(auxStoredPackageName, dexAux.getField_FakeSignature_PackageName().getFieldDef()),
+    				codeGen.iget(auxRequestedPackageName, insnIget.getRegObject(), fieldDef_PackageName),
+    				codeGen.equals(auxPackageEquals, auxStoredPackageName, auxRequestedPackageName),
+    				codeGen.ifZero(auxPackageEquals, lAfter),
+    				codeGen.log("Replacing result of signature query..."),
+    				codeGen.sget((DexSingleRegister) insnIget.getRegTo(), dexAux.getField_FakeSignature_Signatures().getFieldDef()),
+    				lAfter);
+    		
+    	} else
+    		return codeGen.empty();
+	}
+
+	private DexCodeElement instrument_StaticPut(DexInstruction_StaticPut insnSput) {
         /*
          * The getTaintField() method automatically creates a storage field.
          * If the parent class is internal, it creates it in the same class,
