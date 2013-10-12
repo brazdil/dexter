@@ -139,8 +139,8 @@ public class TaintTransform extends Transform {
         
         createTaintFields();
         mergeAuxDex();
-        doManifest();
-        doSignatureFile();
+        replaceAppClass();
+        prepareSignatureFaking();
     }
     
     private boolean isStaticTaintFieldsClass(DexClass clazz) {
@@ -157,7 +157,7 @@ public class TaintTransform extends Transform {
     private Set<DexCodeElement> noninstrumentableElements;
     private TemplateBuilder builder;
 
-	private void doManifest() {
+	private void replaceAppClass() {
 		Manifest manifest = dex.getManifest();
     	if (manifest == null)
     		return;
@@ -227,7 +227,7 @@ public class TaintTransform extends Transform {
     	}
 	}
     
-	public void doSignatureFile() {
+	public void prepareSignatureFaking() {
     	SignatureFile signatureFile = dex.getSignatureFile();
     	if (signatureFile == null)
     		return;
