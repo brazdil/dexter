@@ -329,7 +329,7 @@ public class HierarchyBuilder implements Serializable {
         val classRenamer = new ClassRenamer(dexAux, this);
 
         typeCache.setClassRenamer(classRenamer);
-        importDex(dexAux, true);
+        importDex(dexAux, false);
         typeCache.setClassRenamer(null);
 
         return classRenamer;
