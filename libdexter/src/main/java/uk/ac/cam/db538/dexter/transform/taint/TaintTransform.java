@@ -251,7 +251,11 @@ public class TaintTransform extends Transform {
     }
     
     private String getAppClass(Manifest manifest) {
-		return DexType.jvm2dalvik(manifest.getApplicationClass());
+    	String appClass = manifest.getApplicationClass();
+    	if (appClass == null)
+    		return null;
+    	else
+    		return DexType.jvm2dalvik(appClass);
     }
     
     private void setAppClass(DexClass clazz, Manifest manifest) {
