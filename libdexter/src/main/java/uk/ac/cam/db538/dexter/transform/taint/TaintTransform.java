@@ -166,9 +166,23 @@ public class TaintTransform extends Transform {
     	
     	DexClass replacementAppClass = dexAux.getType_DexterApplication();
     	BaseClassDefinition defReplacementAppClass = replacementAppClass.getClassDef();
-    	setAppClass(replacementAppClass, manifest);
+    	
+    	if (descAppClass == null) {
+    		
+    		/*
+    		 *  Manifest does not specify an application class
+    		 *  => set our own
+    		 */
+    		
+    		setAppClass(replacementAppClass, manifest);
 
-    	if (descAppClass != null) {
+    	} else {
+    		
+    		/*
+    		 * Manifest specifies an application class
+    		 * => keep manifest, modify class
+    		 */
+    		
     		DexClassType typeOriginalAppClass = DexClassType.parse(descAppClass, typeCache);
     		BaseClassDefinition defOriginalAppClass = hierarchy.getClassDefinition(typeOriginalAppClass);
     		BaseClassDefinition defAndroidAppClass = defReplacementAppClass.getSuperclass();
