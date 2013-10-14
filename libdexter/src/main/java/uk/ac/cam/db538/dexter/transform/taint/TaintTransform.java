@@ -115,7 +115,6 @@ public class TaintTransform extends Transform {
     protected AuxiliaryDex dexAux;
     protected RuntimeHierarchy hierarchy;
     private DexTypeCache typeCache;
-    private boolean hasSignatureFile;
 
     private Map<DexInstanceField, DexInstanceField> taintInstanceFields;
     private Map<StaticFieldDefinition, DexStaticField> taintStaticFields;
@@ -132,7 +131,6 @@ public class TaintTransform extends Transform {
         codeGen = new CodeGenerator(dexAux);
         hierarchy = dexAux.getHierarchy();
         typeCache = hierarchy.getTypeCache();
-        hasSignatureFile = dex.getSignatureFile() != null;
 
         taintInstanceFields = new HashMap<DexInstanceField, DexInstanceField>();
         taintStaticFields = new HashMap<StaticFieldDefinition, DexStaticField>();
