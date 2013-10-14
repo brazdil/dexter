@@ -127,13 +127,17 @@ public enum TaintConstants {
 	}
 	
 	public static final void logLeakage(int taint, String sinkType) {
+		String taintStr = taint2str(taint);
+		
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 		System.err.println("==========   DEXTER DATA LEAK REPORT   ==========");
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 		System.err.println("Sink type: " + sinkType);
-		System.err.println("Taint: " + taint2str(taint));
+		System.err.println("Taint: " + taintStr);
 		System.err.println("Stack trace:");
 		(new Throwable()).printStackTrace();		
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+		
+		LeakageNotification.notify(taint, taintStr, sinkType);
 	}
 }
