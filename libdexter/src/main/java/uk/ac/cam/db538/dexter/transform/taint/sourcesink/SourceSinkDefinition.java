@@ -49,6 +49,7 @@ public abstract class SourceSinkDefinition {
 		addDef(list, new Source_Query(methodCall));
 		addDef(list, new Source_SystemService(methodCall));
 		addDef(list, new Source_Browser(methodCall));
+		addDef(list, new Source_GMaps_MyLocationOverlay(methodCall));
 		addDef(list, new Sink_Log(methodCall, leakageAlert));
 		addDef(list, new Sink_HttpClient(methodCall, leakageAlert));
 		
@@ -67,6 +68,15 @@ public abstract class SourceSinkDefinition {
 	
 	protected boolean isStaticCall() {
 		return methodCall.getInvoke().isStaticCall();
+	}
+	
+	protected boolean isDirectCall() {
+		return methodCall.getInvoke().getCallType() == Opcode_Invoke.Direct;
+	}
+
+	protected boolean classIs(String desc) {
+		DexReferenceType calledOn = methodCall.getInvoke().getClassType();
+		return calledOn.getDescriptor().equals(desc);
 	}
 	
 	protected boolean classIsChildOf(String desc) {

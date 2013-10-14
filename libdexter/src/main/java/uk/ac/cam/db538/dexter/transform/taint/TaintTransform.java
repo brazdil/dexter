@@ -131,7 +131,7 @@ public class TaintTransform extends Transform {
         codeGen = new CodeGenerator(dexAux);
         hierarchy = dexAux.getHierarchy();
         typeCache = hierarchy.getTypeCache();
-
+        
         taintInstanceFields = new HashMap<DexInstanceField, DexInstanceField>();
         taintStaticFields = new HashMap<StaticFieldDefinition, DexStaticField>();
         
