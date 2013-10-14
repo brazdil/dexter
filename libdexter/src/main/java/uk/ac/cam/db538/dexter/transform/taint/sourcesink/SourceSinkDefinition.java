@@ -52,6 +52,7 @@ public abstract class SourceSinkDefinition {
 		addDef(list, new Source_GMaps_MyLocationOverlay(methodCall));
 		addDef(list, new Sink_Log(methodCall, leakageAlert));
 		addDef(list, new Sink_HttpClient(methodCall, leakageAlert));
+		addDef(list, new Sink_Intent(methodCall, leakageAlert));
 		
 		if (list.isEmpty())
 			return null;
