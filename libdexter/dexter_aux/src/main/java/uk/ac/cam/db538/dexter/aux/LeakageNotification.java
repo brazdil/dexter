@@ -6,6 +6,7 @@ import android.R;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.widget.Toast;
 
 public final class LeakageNotification {
 
@@ -20,8 +21,10 @@ public final class LeakageNotification {
 	public static void notify(int taint, String taintStr, String sinkType) {
 		Context context = DexterApplication.DexterContext;
 		
+		Toast.makeText(context, "Dexter: LEAKAGE DETECTED!!!", Toast.LENGTH_LONG).show();
+		
 		Notification notification = new Notification.Builder(context)
-			.setContentTitle("Dexter: Leakage identified")
+			.setContentTitle("Dexter: Leakage detected")
 			.setContentText(sinkType + ": " + taintStr)
 			.setSmallIcon(R.drawable.ic_delete)
 			.build();
@@ -31,5 +34,4 @@ public final class LeakageNotification {
 		
 		manager.notify(NOTIFICATION_ID, notification);
 	}
-	
 }
