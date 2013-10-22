@@ -21,6 +21,8 @@ import java.io.IOException;
 
 import uk.ac.cam.db538.dexter.ProgressCallback;
 import uk.ac.cam.db538.dexter.apk.Apk;
+import uk.ac.cam.db538.dexter.apk.Manifest;
+import uk.ac.cam.db538.dexter.apk.SignatureFile;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -107,6 +109,8 @@ public class InstrumentService extends IntentService {
             FileUtils.copyFile(packageFile, localFileTemp);
             DexFile fileApp = new DexFile(localFileTemp);
             DexFile fileAux = new DexFileFromMemory(thisApp.getAssets().open("dexter_aux.dex"));
+            Manifest manifest = Apk.getManifest(localFileTemp);
+            SignatureFile sigfile = Apk.getSignatureFile(localFileTemp);
 
             Pair<RuntimeHierarchy, ClassRenamer> buildData = thisApp.getRuntimeHierarchy(fileApp, fileAux);
             RuntimeHierarchy hierarchy = buildData.getValA();
@@ -117,6 +121,8 @@ public class InstrumentService extends IntentService {
                     fileApp,
                     hierarchy,
                     new AuxiliaryDex(fileAux, hierarchy, renamerAux),
+                    manifest,
+                    sigfile,
                     callbackProgressUpdate);
 
             buildData = null;
@@ -132,7 +138,7 @@ public class InstrumentService extends IntentService {
 
             broadcastStatus("Signing...");
             setWaiting();
-            Apk.produceAPK(localFileTemp, localFileFinal, null, fileApp_New);
+            Apk.produceAPK(localFileTemp, localFileFinal, manifest, fileApp_New);
             localFileFinal.setReadable(true, false);
 //                setStatus("Uninstalling...");
 //                setWaiting();

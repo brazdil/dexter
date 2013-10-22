@@ -257,7 +257,8 @@ public class UnitTestActivity extends Activity {
                     Dex dexTestApp = new Dex(
                             fileTestApp,
                             hierarchy,
-                            new AuxiliaryDex(fileAux, hierarchy, renamerAux));
+                            new AuxiliaryDex(fileAux, hierarchy, renamerAux),
+                            null, null);
 
                     if (flagInstrument) {
                         setMessage("Instrumenting...");
