@@ -102,6 +102,7 @@ public final class CodeGenerator {
     private final MethodDefinition method_ThreadLocal_Set;
     private final MethodDefinition method_Integer_intValue;
     private final MethodDefinition method_Integer_valueOf;
+    private final MethodDefinition method_String_valueOf;
     private final MethodDefinition method_Throwable_constructor;
     private final MethodDefinition method_Throwable_getStackTrace;
     private final MethodDefinition method_Throwable_printStackTrace;
@@ -156,6 +157,7 @@ public final class CodeGenerator {
         DexPrototype prototype_void_to_TraceElemArray = DexPrototype.parse(typeStackTraceElementArray, null, cache);
         DexPrototype prototype_Object_to_void = DexPrototype.parse(cache.getCachedType_Void(), Arrays.asList(typeObject), cache);
         DexPrototype prototype_Object_to_boolean = DexPrototype.parse(cache.getCachedType_Boolean(), Arrays.asList(typeObject), cache);
+        DexPrototype prototype_Object_to_String = DexPrototype.parse(typeString, Arrays.asList(typeObject), cache);
         DexPrototype prototype_void_to_int = DexPrototype.parse(cache.getCachedType_Integer(), null, cache);
         DexPrototype prototype_int_to_Integer = DexPrototype.parse(typeInteger, Arrays.asList(cache.getCachedType_Integer()), cache);
         DexPrototype prototype_String_to_Class = DexPrototype.parse(typeClass, Arrays.asList(typeString), cache);
@@ -171,6 +173,7 @@ public final class CodeGenerator {
         DexMethodId methodId_set_Object_to_void = DexMethodId.parseMethodId("set", prototype_Object_to_void, cache);
         DexMethodId methodId_intValue_void_to_int = DexMethodId.parseMethodId("intValue", prototype_void_to_int, cache);
         DexMethodId methodId_valueOf_int_to_Integer = DexMethodId.parseMethodId("valueOf", prototype_int_to_Integer, cache);
+        DexMethodId methodId_valueOf_Object_to_String = DexMethodId.parseMethodId("valueOf", prototype_Object_to_String, cache);
         DexMethodId methodId_constructor_void_to_void = DexMethodId.parseMethodId("<init>", prototype_void_to_void, cache);
         DexMethodId methodId_getStackTrace_void_to_TraceElemArray = DexMethodId.parseMethodId("getStackTrace", prototype_void_to_TraceElemArray, cache);
         DexMethodId methodId_printStackTrace_void_to_void = DexMethodId.parseMethodId("printStackTrace", prototype_void_to_void, cache);
@@ -189,6 +192,7 @@ public final class CodeGenerator {
         this.method_ThreadLocal_Set = lookupMethod(typeThreadLocal, methodId_set_Object_to_void);
         this.method_Integer_intValue = lookupMethod(typeInteger, methodId_intValue_void_to_int);
         this.method_Integer_valueOf = lookupMethod(typeInteger, methodId_valueOf_int_to_Integer);
+        this.method_String_valueOf = lookupMethod(typeString, methodId_valueOf_Object_to_String);
         this.method_Throwable_constructor = lookupMethod(typeThrowable, methodId_constructor_void_to_void);
         this.method_Throwable_getStackTrace = lookupMethod(typeThrowable, methodId_getStackTrace_void_to_TraceElemArray);
         this.method_Throwable_printStackTrace = lookupMethod(typeThrowable, methodId_printStackTrace_void_to_void);
@@ -1078,6 +1082,10 @@ public final class CodeGenerator {
     public DexCodeElement newSignatureArray(DexSingleRegister regTo, DexSingleRegister regLength) {
     	return new DexInstruction_NewArray(regTo, regLength, typeSignatureArray, hierarchy);
     }
+    
+    public DexCodeElement toString(DexSingleRegister regTo, DexSingleRegister regObject) {
+    	return invoke_result_obj(regTo, method_String_valueOf, regObject);
+    }
 
     public DexCodeElement jump(DexLabel target) {
         return new DexInstruction_Goto(target, hierarchy);
@@ -1204,12 +1212,17 @@ public final class CodeGenerator {
     }
 
     public DexCodeElement log(String str) {
-        DexSingleRegister regAppName = auxReg();
         DexSingleRegister regString = auxReg();
         return new DexMacro(
-                   new DexInstruction_ConstString(regAppName, "DEXTER_DEBUG", hierarchy),
                    new DexInstruction_ConstString(regString, str, hierarchy),
-                   new DexInstruction_Invoke(method_Log_d, Arrays.asList(regAppName, regString), hierarchy));
+                   log(regString));
+    }
+
+    public DexCodeElement log(DexSingleRegister regString) {
+        DexSingleRegister regAppName = auxReg();
+        return new DexMacro(
+                   new DexInstruction_ConstString(regAppName, "DEXTER_DEBUG", hierarchy),
+                   invoke(method_Log_d, regAppName, regString));
     }
 
     /*

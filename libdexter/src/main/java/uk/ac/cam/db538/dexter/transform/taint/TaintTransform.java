@@ -917,7 +917,7 @@ public class TaintTransform extends Transform {
 	            regIndexBackup = codeGen.auxReg();
 	        else
 	            regIndexBackup = regIndex;
-	
+	        
 	        if (insn.getOpcode() == Opcode_GetPut.Object)
 	            return new DexMacro(
 	                       codeGen.move_prim(regIndexBackup, regIndex),
