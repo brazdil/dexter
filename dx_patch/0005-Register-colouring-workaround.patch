@@ -1,0 +1,26 @@
+From 039d3b2b9583f5b8ae80b9c4eec154d9ca29e0f7 Mon Sep 17 00:00:00 2001
+From: David Brazdil <david.brazdil@gmail.com>
+Date: Tue, 29 Oct 2013 11:59:36 +0000
+Subject: [PATCH] Register colouring workaround
+
+---
+ dx/src/com/android/dx/ssa/SsaConverter.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dx/src/com/android/dx/ssa/SsaConverter.java b/dx/src/com/android/dx/ssa/SsaConverter.java
+index b372ae7..fb2506d 100644
+--- a/dx/src/com/android/dx/ssa/SsaConverter.java
++++ b/dx/src/com/android/dx/ssa/SsaConverter.java
+@@ -134,8 +134,8 @@ public class SsaConverter {
+      * @param result method to process
+      */
+     private static void edgeSplit(SsaMethod result) {
+-        edgeSplitPredecessors(result);
+         edgeSplitMoveExceptionsAndResults(result);
++        edgeSplitPredecessors(result);
+         edgeSplitSuccessors(result);
+     }
+ 
+-- 
+1.8.4.2
+
