@@ -15,8 +15,8 @@
 	<classpathentry kind="lib" path="build/libs/junit-4.11.jar"/>
 	<classpathentry kind="lib" path="build/libs/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="lib" path="build/libs/lombok-0.12.0.jar"/>
-	<classpathentry kind="lib" path="build/libs/android-4.1.1.4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="build/libs/jsr305-1.3.9.jar"/>
+	<classpathentry kind="lib" path="build/libs/android-4.1.1.4.jar"/>
 	<classpathentry kind="output" path="smali/dexlib/build/classes/main"/>
 </classpath>

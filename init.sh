@@ -30,10 +30,15 @@ echo "cloning \"$DALVIK_REPO\"..."
 git clone -q "$DALVIK_REPO" "$DALVIK_DIR" || exit
 
 ROOT=$(pwd)
+PATCH_DIR="$ROOT/dx_patch"
 cd "$DALVIK_DIR"
-git am --ignore-whitespace --ignore-space-change $ROOT/0001-SsaBasicBlock-memory-usage.patch
-git am --ignore-whitespace --ignore-space-change $ROOT/0002-SparseRegisterSpecSet.patch
-git am --ignore-whitespace --ignore-space-change $ROOT/0003-SSA-form-dump.patch
+for PATCH in "$PATCH_DIR"/*.patch
+do
+	echo "applying patch: $PATCH"
+	git am --ignore-whitespace --ignore-space-change --quiet "$PATCH" || exit
+done
+#git am --ignore-whitespace --ignore-space-change $ROOT/0002-SparseRegisterSpecSet.patch
+#git am --ignore-whitespace --ignore-space-change $ROOT/0003-SSA-form-dump.patch
 #git am --ignore-whitespace --ignore-space-change $ROOT/0004-Additional-debugging-information-and-SSA-dump-in-gra.patch
 cd $ROOT
 
