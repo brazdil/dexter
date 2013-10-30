@@ -25,3 +25,11 @@
     return-void
     
 .end method
+
+.method public equals(Ljava/lang/Object;)Z
+    .registers 2
+
+    const/4 v0, 1
+    return v0
+
+.end method

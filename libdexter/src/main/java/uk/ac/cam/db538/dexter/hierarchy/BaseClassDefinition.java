@@ -235,7 +235,7 @@ public abstract class BaseClassDefinition implements Serializable {
                 (methodDef.isPrivate() || methodDef.isConstructor()))
             return Arrays.asList(methodDef);
         else
-            throw new HierarchyException("Invalid method call (direct call destination not found)");
+            throw new HierarchyException("Invalid method call (direct call destination not found): " + type + "->" + methodId);
     }
 
     private List<MethodDefinition> callableMethodImplementations_Static(final DexMethodId methodId) {
@@ -247,7 +247,7 @@ public abstract class BaseClassDefinition implements Serializable {
         if (methodDef != null)
             return Arrays.asList(methodDef);
         else
-            throw new HierarchyException("Invalid method call (static call destination not found)");
+            throw new HierarchyException("Invalid method call (static call destination not found): " + type + "->" + methodId);
     }
 
     private List<MethodDefinition> callableMethodImplementations_Super(final DexMethodId methodId) {
@@ -259,7 +259,7 @@ public abstract class BaseClassDefinition implements Serializable {
         if (methodDef != null)
             return Arrays.asList(methodDef);
         else
-            throw new HierarchyException("Invalid method call (super call destination not found)");
+            throw new HierarchyException("Invalid method call (super call destination not found): " + type + "->" + methodId);
     }
 
     private List<MethodDefinition> callableMethodImplementations_VirtualInterface(DexMethodId methodId) {
