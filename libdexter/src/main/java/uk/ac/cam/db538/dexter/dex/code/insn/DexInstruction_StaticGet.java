@@ -65,8 +65,13 @@ public class DexInstruction_StaticGet extends DexInstruction {
                                              .getBaseClassDefinition(classType)
                                              .getAccessedStaticField(fieldId);
 
-            if (fieldDef == null)
-                throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
+            if (fieldDef == null) {
+                // This is weird, the code is accessing a non-existent method in an existing class
+                // Is it actually reasonable to fake the field or not?
+                // The reality is that 10% of the top 177 apps do contain such invalid code.
+               fieldDef = new StaticFieldDefinition(hierarchy.getClassDefinition(classType), fieldId, 0);
+//                throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
+			}
 
             return new DexInstruction_StaticGet(regTo, fieldDef, hierarchy);
 
