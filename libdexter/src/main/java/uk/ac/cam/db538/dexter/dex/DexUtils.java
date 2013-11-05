@@ -5,7 +5,11 @@ import java.util.Collection;
 
 import lombok.val;
 
+import org.jf.dexlib.DexFile;
+import org.jf.dexlib.MethodIdItem;
+import org.jf.dexlib.ProtoIdItem;
 import org.jf.dexlib.StringIdItem;
+import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.EncodedValue.AnnotationEncodedValue;
 import org.jf.dexlib.EncodedValue.ArrayEncodedSubValue;
 import org.jf.dexlib.EncodedValue.ArrayEncodedValue;
@@ -82,7 +86,7 @@ public class DexUtils {
         return classDef.getMethod(methodId);
     }
 
-    public static EncodedValue cloneEncodedValue(EncodedValue value, DexAssemblingCache asmCache) {
+    public static EncodedValue cloneEncodedValue(DexFile outFile, EncodedValue value, DexAssemblingCache asmCache) {
         val hierarchy = asmCache.getHierarchy();
         val typeCache = hierarchy.getTypeCache();
 
@@ -94,7 +98,7 @@ public class DexUtils {
             int innerValuesCount = arrayValue.values.length;
             val innerValues = new EncodedValue[innerValuesCount];
             for (int i = 0; i < innerValuesCount; ++i)
-                innerValues[i] = cloneEncodedValue(arrayValue.values[i], asmCache);
+                innerValues[i] = cloneEncodedValue(outFile, arrayValue.values[i], asmCache);
 
             if (isSubValue)
                 return new ArrayEncodedSubValue(innerValues);
@@ -132,12 +136,19 @@ public class DexUtils {
 
         case VALUE_METHOD:
             val methodValue = (MethodEncodedValue) value;
-            return new MethodEncodedValue(
-                       asmCache.getMethod(findStaticMethod(
-                                              DexClassType.parse(methodValue.value.getContainingClass().getTypeDescriptor(), typeCache),
-                                              DexPrototype.parse(methodValue.value.getPrototype(), typeCache),
-                                              methodValue.value.getMethodName().getStringValue(),
-                                              hierarchy)));
+            val methodDef = findStaticMethod(
+                    DexClassType.parse(methodValue.value.getContainingClass().getTypeDescriptor(), typeCache),
+                    DexPrototype.parse(methodValue.value.getPrototype(), typeCache),
+                    methodValue.value.getMethodName().getStringValue(),
+                    hierarchy);
+            if (methodDef != null) {
+                return new MethodEncodedValue(asmCache.getMethod(methodDef));
+            } else {
+                return new MethodEncodedValue(MethodIdItem.internMethodIdItem(outFile,
+                        asmCache.getType(DexClassType.parse(methodValue.value.getContainingClass().getTypeDescriptor(), typeCache)),
+                        asmCache.getPrototype(DexPrototype.parse(methodValue.value.getPrototype(), typeCache)),
+                        StringIdItem.internStringIdItem(outFile, methodValue.value.getMethodName().getStringValue())));
+            }
 
         case VALUE_STRING:
             val stringValue = (StringEncodedValue) value;
@@ -156,7 +167,7 @@ public class DexUtils {
 
             val newEncodedValues = new EncodedValue[annotationValue.values.length];
             for (int i = 0; i < annotationValue.values.length; ++i)
-                newEncodedValues[i] = cloneEncodedValue(annotationValue.values[i], asmCache);
+                newEncodedValues[i] = cloneEncodedValue(outFile, annotationValue.values[i], asmCache);
 
             return new AnnotationEncodedValue(
                        asmCache.getType(DexType.parse(annotationValue.annotationType.getTypeDescriptor(), typeCache)),

@@ -223,7 +223,7 @@ public class DexClass {
 
             EncodedValue initialValue = field.getInitialValue();
             if (initialValue != null)
-                initialValue = DexUtils.cloneEncodedValue(initialValue, cache);
+                initialValue = DexUtils.cloneEncodedValue(outFile, initialValue, cache);
             staticFieldInitializers.add(new StaticFieldInitializer(initialValue, outField));
         }
 
@@ -283,5 +283,17 @@ public class DexClass {
 
     public void replaceAnnotations(List<? extends DexAnnotation> newAnnotations) {
         this.annotations = Utils.finalList(newAnnotations);
+    }
+    
+    public void addInstanceField(DexInstanceField instanceField) {
+        ArrayList<DexInstanceField> newFields = new ArrayList<DexInstanceField>(this.instanceFields);
+        newFields.add(instanceField);
+        replaceInstanceFields(newFields);
+    }
+
+    public void addStaticField(DexStaticField staticField) {
+        ArrayList<DexStaticField> newFields = new ArrayList<DexStaticField>(this.staticFields);
+        newFields.add(staticField);
+        replaceStaticFields(newFields);
     }
 }

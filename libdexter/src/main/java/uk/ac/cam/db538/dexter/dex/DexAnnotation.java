@@ -93,7 +93,7 @@ public class DexAnnotation {
         val paramValues = new EncodedValue[paramCount];
         for (int i = 0; i < paramCount; i++) {
             paramNames[paramIndex] = cache.getStringConstant(this.paramNames.get(i));
-            paramValues[paramIndex] = DexUtils.cloneEncodedValue(this.paramValues.get(i), cache);
+            paramValues[paramIndex] = DexUtils.cloneEncodedValue(outFile, this.paramValues.get(i), cache);
             paramIndex++;
         }
 
