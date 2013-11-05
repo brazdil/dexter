@@ -70,8 +70,16 @@ public class MainConsole {
         System.out.println("Scanning application");
         val fileApp = new DexFile(apkFile);
         val fileAux = new DexFile("dexter_aux/build/libs/dexter_aux.dex");
-        Manifest manifest = Apk.getManifest(apkFile);
-        SignatureFile sigfile = Apk.getSignatureFile(apkFile);
+        
+        Manifest manifest;
+        SignatureFile sigfile;
+        if (apkFile.getName().equals("test.apk")) {
+        	manifest = null;
+        	sigfile = null;
+        } else {
+        	manifest = Apk.getManifest(apkFile);
+        	sigfile = Apk.getSignatureFile(apkFile);
+        }
 
         System.out.println("Importing aux");
         hierarchyBuilder.importDex(fileAux, false);
