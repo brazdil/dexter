@@ -702,6 +702,7 @@ public class TaintTransform extends Transform {
                        // At this point, the object reference is valid
                        // Need to generate new TaintInternal object with it
 
+            		   codeGen.updateTaintStructures(regCombinedTaint, insnInvoke, codeAnalysis),
                        sourcesinkJustAfter,
                        codeGen.taintLookup_NoExtraTaint(null, regThis, TypeClassification.REF_INTERNAL),
                        sourcesinkAfter);
@@ -711,14 +712,16 @@ public class TaintTransform extends Transform {
             		   null);
 
         } else {
-
+        	
             // Standard external call
+        	
         	completeCall_BeforeResult = new DexMacro(
             		   sourcesinkBefore,
                        codeGen.prepareExternalCall(regCombinedTaint, insnInvoke),
                        sourcesinkJustBefore);
                        
             completeCall_AfterResult = new DexMacro(
+            		   codeGen.updateTaintStructures(regCombinedTaint, insnInvoke, codeAnalysis),
                        sourcesinkJustAfter,
                        codeGen.finishExternalCall(regCombinedTaint, insnInvoke, insnMoveResult),
                        sourcesinkAfter);

@@ -71,6 +71,7 @@ public class AuxiliaryDex extends Dex {
     @Getter private final DexMethod method_Taint_Set;
     @Getter private final DexMethod method_Taint_GetExternal;
     @Getter private final DexMethod method_Taint_SetExternal;
+    @Getter private final DexMethod method_Taint_BelongsTo;
     @Getter private final DexArrayType arraytype_Taint;
 
     @Getter private final DexClass type_TaintExternal;
@@ -85,6 +86,7 @@ public class AuxiliaryDex extends Dex {
 
     @Getter private final DexClass type_TaintArrayReference;
     @Getter private final DexInstanceField field_TaintArrayReference_TArray;
+    @Getter private final DexMethod method_TaintArrayReference_Update;
 
     @Getter private final DexMethod method_Assigner_SetConstructedSuperTaint;
     @Getter private final DexMethod method_Assigner_EraseConstructedSuperTaint;
@@ -148,6 +150,7 @@ public class AuxiliaryDex extends Dex {
         this.method_Taint_Set = findInstanceMethodByName(type_Taint, "set");
         this.method_Taint_GetExternal = findInstanceMethodByName(type_Taint, "getExternal");
         this.method_Taint_SetExternal = findInstanceMethodByName(type_Taint, "setExternal");
+        this.method_Taint_BelongsTo = findInstanceMethodByName(type_Taint, "belongsTo");
 
         this.type_TaintExternal = getDexClass(TaintExternal.class, hierarchy, renamer);
 
@@ -162,6 +165,7 @@ public class AuxiliaryDex extends Dex {
 
         this.type_TaintArrayReference = getDexClass(TaintArrayReference.class, hierarchy, renamer);
         this.field_TaintArrayReference_TArray = findInstanceFieldByName(type_TaintArrayReference, "t_array");
+        this.method_TaintArrayReference_Update = findInstanceMethodByName(type_TaintArrayReference, "update");
 
         // Assigner
         val clsAssigner = getDexClass(Assigner.class, hierarchy, renamer);

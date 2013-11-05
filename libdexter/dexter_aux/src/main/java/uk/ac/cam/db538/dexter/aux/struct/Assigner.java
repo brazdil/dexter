@@ -35,19 +35,19 @@ public final class Assigner {
 	
 	public static final void defineExternal(Object obj, TaintExternal tobj, int taint) {
 		taint = TaintConstants.sinkTaint(obj, taint);
-		tobj.define(taint);
+		tobj.define(obj, taint);
 		Cache.insert(obj, tobj);
 	}
 	
 	public static final TaintArrayPrimitive newArrayPrimitive(Object obj, int length, int lengthTaint) {
-		TaintArrayPrimitive tobj = new TaintArrayPrimitive(length, lengthTaint);
+		TaintArrayPrimitive tobj = new TaintArrayPrimitive(obj, length, lengthTaint);
 		if (obj != null)
 			Cache.insert(obj, tobj);
 		return tobj;
 	}
 	
 	public static final TaintArrayReference newArrayReference(Object obj, int length, int lengthTaint) {
-		TaintArrayReference tobj = new TaintArrayReference(length, lengthTaint);
+		TaintArrayReference tobj = new TaintArrayReference((Object[]) obj, lengthTaint);
 		if (obj != null)
 			Cache.insert(obj, tobj);
 		return tobj;
@@ -112,7 +112,7 @@ public final class Assigner {
 	
 	public static final TaintArrayPrimitive lookupArrayPrimitive(Object obj, int taint) {
 		if (obj == null)
-			return new TaintArrayPrimitive(0, taint);
+			return new TaintArrayPrimitive(obj, 0, taint);
 		
 		TaintArrayPrimitive tobj = (TaintArrayPrimitive) Cache.get(obj);
 		if (tobj == null) {
@@ -148,7 +148,7 @@ public final class Assigner {
 	
 	public static final TaintArrayReference lookupArrayReference(Object obj, int taint) {
 		if (obj == null)
-			return new TaintArrayReference(0, taint);
+			return new TaintArrayReference(null, taint);
 		
 		TaintArrayReference tobj = (TaintArrayReference) Cache.get(obj);
 		if (tobj == null) {

@@ -49,6 +49,7 @@
 
     # call list.toArray(array)
     invoke-virtual {v0, v1}, Ljava/util/ArrayList;->toArray([Ljava/lang/Object;)[Ljava/lang/Object;
+    move-result-object v1
 
     # retrieve the object from the array
     const/4 v0, 0x0
@@ -59,7 +60,9 @@
     invoke-virtual {v0, v1}, Ljava/lang/Object;->equals(Ljava/lang/Object;)Z
 
     # retrieve the value from it and return
-    iget v0, v0, Landroid/graphics/Point;->x:I
+    check-cast v0, LMyClass_Point;
+    invoke-virtual {v0}, LMyClass_Point;->getX()I
+    move-result v0
 
     return v0
     

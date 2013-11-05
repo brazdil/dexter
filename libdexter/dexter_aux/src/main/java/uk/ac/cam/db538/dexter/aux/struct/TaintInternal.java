@@ -61,7 +61,11 @@ public class TaintInternal implements Taint {
 		if (this.t_super != null)
 			this.t_super.set(taint);
 	}
-
+	
+	public boolean belongsTo(Object other) {
+		return obj == other;
+	}
+	
 	// THREAD-LOCAL SET OF VISITED NODES
 	// prevents infinite looping
 	

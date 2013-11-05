@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.rx201.dx.translator.AnalyzedDexInstruction;
+import com.rx201.dx.translator.DexCodeAnalyzer;
+import com.rx201.dx.translator.RopType;
+import com.rx201.dx.translator.RopType.Category;
+
 import lombok.Getter;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -27,6 +32,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
@@ -606,6 +612,62 @@ public final class CodeGenerator {
         }
     }
     
+    public DexCodeElement updateTaintStructures(DexSingleRegister regCombinedTaint, DexInstruction_Invoke insnInvoke, DexCodeAnalyzer codeAnalysis) {
+    	List<DexCodeElement> insn = new ArrayList<DexCodeElement>();
+    	
+    	if (insnInvoke.getMethodId().getName().equals("equals"))
+    		insnInvoke.hashCode();    		
+    	
+    	int argCount = insnInvoke.getArgumentRegisters().size();
+    	boolean isStatic = insnInvoke.isStaticCall();
+
+    	for (int argIndex = 0; argIndex < argCount; ++argIndex) {
+    		DexRegister rArg = insnInvoke.getArgumentRegisters().get(argIndex);
+    		DexTaintRegister tArg = rArg.getTaintRegister();
+
+			RopType argRop = codeAnalysis.reverseLookup(insnInvoke).getUsedRegisterType(rArg);
+			if (argRop.category == Category.Reference) {
+				
+				/*
+				 *  TODO: could modify the TypeSolver to actually tell us if it could
+				 *  be a reference array, rather than say that all Objects could 
+				 *  (i.e. Integer x String = Object, but cannot be Object[])
+				 */
+				//
+				
+	    		DexRegisterType argType = argRop.type; 
+
+	    		boolean isArgRef = 
+	    			(argType instanceof DexArrayType) &&
+	    			((DexArrayType) argType).getElementType() instanceof DexReferenceType;
+	    		boolean isObject = argType.equals(hierarchy.getRoot().getType());
+	    		
+	    		boolean instrument = isArgRef || isObject;
+	    		boolean checkType = isObject;
+	    		
+	    		if (instrument) {
+	        		if (checkType) {
+	        			
+	        			DexLabel lAfter =  label();
+	        			DexSingleRegister auxTaint = auxReg();
+	        			DexReferenceType typeTaintArrayReference = dexAux.getType_TaintArrayReference().getClassDef().getType();
+	        			
+	        			insn.add(ifNotInstanceOf(tArg, typeTaintArrayReference, lAfter));
+	    				insn.add(move_obj(auxTaint, tArg));
+	        			insn.add(checkCast(auxTaint, typeTaintArrayReference));
+		    			insn.add(taintArrayReference_Update(auxTaint, regCombinedTaint));
+	    				insn.add(lAfter);
+	    				
+	        		} else
+	        			
+	        			insn.add(taintArrayReference_Update(tArg, regCombinedTaint));
+	    		}
+			}
+    	}
+    	
+    	return new DexMacro(insn);
+    }
+    
     public DexCodeElement getClassObject(DexSingleRegister regTo, DexSingleRegister regObject) {
         return invoke_result_obj(regTo, method_Object_getClass, regObject);
     }
@@ -900,6 +962,14 @@ public final class CodeGenerator {
         return invoke(dexAux.getMethod_Taint_Set(), taint(regTaint), regFrom);
     }
 
+    public DexCodeElement taint_BelongsTo(DexSingleRegister regResult, DexSingleRegister regTaint, DexSingleRegister regObject) {
+        return invoke_result_obj(regResult, dexAux.getMethod_Taint_BelongsTo(), taint(regTaint), regObject);
+    }
+
+    public DexCodeElement taintArrayReference_Update(DexSingleRegister regTaint, DexSingleRegister regMissedTaint) {
+        return invoke(dexAux.getMethod_TaintArrayReference_Update(), taint(regTaint), regMissedTaint);
+    }
+
     public DexCodeElement setTaintExternal(DexSingleRegister regFrom, DexSingleRegister regTaint) {
         return invoke(dexAux.getMethod_Taint_SetExternal(), taint(regTaint), regFrom);
     }
@@ -1114,6 +1184,10 @@ public final class CodeGenerator {
     public DexCodeElement constant(DexSingleRegister reg, String str) {
         return new DexInstruction_ConstString(reg, str, hierarchy);
     }
+    
+    public DexCodeElement checkCast(DexSingleRegister reg, DexReferenceType type) {
+        return new DexInstruction_CheckCast(reg, type, hierarchy);
+    }
 
     public DexCodeElement ifZero(DexSingleRegister reg, DexLabel target) {
         return new DexInstruction_IfTestZero(reg, target, Opcode_IfTestZero.eqz, hierarchy);
@@ -1121,6 +1195,13 @@ public final class CodeGenerator {
 
     public DexCodeElement ifNotZero(DexSingleRegister reg, DexLabel target) {
         return new DexInstruction_IfTestZero(reg, target, Opcode_IfTestZero.nez, hierarchy);
+    }
+
+    public DexCodeElement ifNotInstanceOf(DexSingleRegister reg, DexReferenceType type, DexLabel target) {
+    	DexSingleRegister auxInstOf = auxReg();
+    	return new DexMacro(
+    			new DexInstruction_InstanceOf(auxInstOf, reg, type, hierarchy),
+    			ifZero(auxInstOf, target));
     }
 
     public DexCodeElement move_obj(DexSingleRegister to, DexSingleRegister from) {

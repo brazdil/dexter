@@ -13,4 +13,6 @@ public interface Taint {
 	
 	public int getExternal();
 	public void setExternal(int taint);
+	
+	public boolean belongsTo(Object obj);
 }

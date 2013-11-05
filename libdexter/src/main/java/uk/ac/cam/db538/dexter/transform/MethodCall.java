@@ -9,6 +9,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
@@ -88,7 +89,16 @@ public class MethodCall extends DexCodeElement {
         else
             return insnInvoke;
     }
-
+    
+    public MethodCall replaceResultRegister(DexSingleRegister reg) {
+    	assert movesResult();
+    	assert insnResult.getRegTo() instanceof DexSingleRegister;
+    	
+    	return new MethodCall(
+    			insnInvoke,
+    			new DexInstruction_MoveResult(reg, insnResult.getType() == RegisterType.REFERENCE, insnResult.getHierarchy()));
+    }
+    
     public DexCodeElement expand() {
     	return expand_ReplaceInternals(expand_JustInternals());
     }

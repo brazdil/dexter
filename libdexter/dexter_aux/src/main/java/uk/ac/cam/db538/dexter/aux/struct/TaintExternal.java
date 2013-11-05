@@ -5,12 +5,15 @@ import uk.ac.cam.db538.dexter.aux.TaintConstants;
 public class TaintExternal implements Taint {
 
 	private int taint;
+	private Object object;
 	
 	TaintExternal() {
+		this.object = null;
 		this.taint = TaintConstants.EMPTY.value;
 	}
 	
 	TaintExternal(int taint) {
+		this.object = null;
 		this.taint = taint;
 	}
 	
@@ -30,7 +33,15 @@ public class TaintExternal implements Taint {
 		this.taint |= taint;
 	}
 	
-	void define(int taint) {
+	void define(Object object, int taint) {
+		assert(this.object == null);
+		assert(object != null);
+		
+		this.object = object;
 		this.taint |= taint;
+	}
+	
+	public boolean belongsTo(Object other) {
+		return object == other;
 	}
 }
