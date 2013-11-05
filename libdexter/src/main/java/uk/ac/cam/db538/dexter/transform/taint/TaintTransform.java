@@ -1010,6 +1010,10 @@ public class TaintTransform extends Transform {
 
             DexClass parentClass = dex.getClass(classDef);
             DexInstanceField field = parentClass.getInstanceField(fieldDef);
+            if (field == null) {
+                field = new DexInstanceField(parentClass, fieldDef);
+                parentClass.addInstanceField(field);
+            }
             DexInstanceField taintField = getTaintField(field);
 
             return builder.create(
@@ -1060,6 +1064,10 @@ public class TaintTransform extends Transform {
 
             DexClass parentClass = dex.getClass(classDef);
             DexInstanceField field = parentClass.getInstanceField(fieldDef);
+            if (field == null) {
+                field = new DexInstanceField(parentClass, fieldDef);
+                parentClass.addInstanceField(field);
+            }
             DexInstanceField taintField = getTaintField(field);
             
             tainting = new DexMacro(

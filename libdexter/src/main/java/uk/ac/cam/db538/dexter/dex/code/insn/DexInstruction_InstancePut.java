@@ -9,9 +9,11 @@ import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -69,8 +71,11 @@ public class DexInstruction_InstancePut extends DexInstruction {
                                                .getClassDefinition(classType)
                                                .getAccessedInstanceField(fieldId);
 
-            if (fieldDef == null)
-                throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
+            if (fieldDef == null) {
+                fieldDef = new InstanceFieldDefinition(hierarchy.getClassDefinition(classType), fieldId, 0);
+                hierarchy.getClassDefinition(classType).addDeclaredInstanceField(fieldDef);
+//                throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
+            }
 
             return new DexInstruction_InstancePut(regFrom, regObj, fieldDef, hierarchy);
 

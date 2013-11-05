@@ -8,9 +8,13 @@ import lombok.val;
 import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction21c;
+import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
+import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -69,7 +73,8 @@ public class DexInstruction_StaticGet extends DexInstruction {
                 // This is weird, the code is accessing a non-existent method in an existing class
                 // Is it actually reasonable to fake the field or not?
                 // The reality is that 10% of the top 177 apps do contain such invalid code.
-               fieldDef = new StaticFieldDefinition(hierarchy.getClassDefinition(classType), fieldId, 0);
+               fieldDef = new StaticFieldDefinition(hierarchy.getClassDefinition(classType), fieldId, AccessFlags.STATIC.getValue());
+               hierarchy.getClassDefinition(classType).addDeclaredStaticField(fieldDef);
 //                throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
 			}
 

@@ -8,12 +8,16 @@ import lombok.val;
 import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction21c;
+import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 
@@ -65,8 +69,11 @@ public class DexInstruction_StaticPut extends DexInstruction {
                                              .getBaseClassDefinition(classType)
                                              .getAccessedStaticField(fieldId);
 
-            if (fieldDef == null)
-                throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
+            if (fieldDef == null) {
+                fieldDef = new StaticFieldDefinition(hierarchy.getClassDefinition(classType), fieldId, AccessFlags.STATIC.getValue());
+                hierarchy.getClassDefinition(classType).addDeclaredStaticField(fieldDef);
+//                throw new InstructionParseError("Instruction references a non-existent field " + classType.getDescriptor() + "->" + fieldId);
+            }
 
             return new DexInstruction_StaticPut(regFrom, fieldDef, hierarchy);
 
