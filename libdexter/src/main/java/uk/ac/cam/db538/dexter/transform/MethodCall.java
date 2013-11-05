@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.transform;
 import java.util.Set;
 
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
@@ -104,10 +105,18 @@ public class MethodCall extends DexCodeElement {
     }
 
     public MethodCall clone() {
+    	DexTryStart newTryBlock;
+    	if (ownTryBlock == null)
+    		newTryBlock = null;
+    	else {
+    		DexTryEnd newEnd = new DexTryEnd(ownTryBlock.getEndMarker().getId());
+    		newTryBlock = new DexTryStart(ownTryBlock, newEnd);
+    	}
+    	
         return new MethodCall(
                    new DexInstruction_Invoke(insnInvoke),
                    insnResult == null ? null : new DexInstruction_MoveResult(insnResult),
-                   ownTryBlock);
+                   newTryBlock);
     }
 
 	@Override
