@@ -317,15 +317,15 @@ public class TaintTransform extends Transform {
 
         codeGen.resetAsmIds(); // purely for esthetic reasons (each method will start with a0)
 
-        codeAnalysis = new DexCodeAnalyzer(code);
-        codeAnalysis.analyze();
-        
         code = InvokeClassifier.collapseCalls(code);
-        val classification = InvokeClassifier.classifyMethodCalls(code, codeAnalysis, codeGen);
+        val classification = InvokeClassifier.classifyMethodCalls(code, codeGen);
         
         code = classification.getValA();
         invokeClassification = classification.getValB();
         noninstrumentableElements = classification.getValC();
+        
+        codeAnalysis = new DexCodeAnalyzer(InvokeClassifier.expandCalls(code));
+        codeAnalysis.analyze();
         
         builder = new TemplateBuilder(code, codeAnalysis, codeGen);
 

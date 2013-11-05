@@ -34,7 +34,10 @@ public class InvokeClassifier {
 
     private InvokeClassifier() { }
 
-    public static Triple<DexCode, ? extends Map<MethodCall, CallDestinationType>, ? extends Set<DexCodeElement>> classifyMethodCalls(DexCode code, DexCodeAnalyzer codeAnalysis, CodeGenerator codeGen) {
+    public static Triple<DexCode, ? extends Map<MethodCall, CallDestinationType>, ? extends Set<DexCodeElement>> classifyMethodCalls(DexCode code, CodeGenerator codeGen) {
+    	DexCodeAnalyzer codeAnalysis = new DexCodeAnalyzer(expandCalls(code));
+    	codeAnalysis.analyze();
+    	
         Map<MethodCall, CallDestinationType> classification = new HashMap<MethodCall, CallDestinationType>();
         Set<DexCodeElement> extraInstructions = new HashSet<DexCodeElement>();
 
