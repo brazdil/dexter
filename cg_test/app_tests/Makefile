@@ -12,7 +12,7 @@ else
     PROJECT_ROOT := $(shell realpath  $(TOP)/../libdexter/)
 endif
 
-DEXTER := $(JAVA) -ea -classpath '$(PROJECT_ROOT)/build/classes/:$(PROJECT_ROOT)/build/libs/*' uk.ac.cam.db538.dexter.MainTest $(PROJECT_ROOT)/framework
+DEXTER := $(JAVA) -ea -classpath './libs/*' uk.ac.cam.db538.dexter.MainTest $(PROJECT_ROOT)/framework
 
 APP_FILES := $(notdir $(wildcard $(CORPUS_DIR)/*.apk))
 OUT_FILES := $(APP_FILES:.apk=.out)
@@ -20,7 +20,7 @@ OUT_FILES := $(APP_FILES:.apk=.out)
 all: $(OUT_FILES)
 
 %.out:
-	-timeout 10m $(DEXTER) $(CORPUS_DIR)/$(@:.out=.apk) $(@:.out=.apk) 2>$(@:.out=.err) | tee $@ 
+	-timeout 30m $(DEXTER) $(CORPUS_DIR)/$(@:.out=.apk) $(@:.out=.apk) 2>$(@:.out=.err) | tee $@ 
 	-[ ! -s $(@:.out=.err) ] && rm -rf $(@:.out=.err)
 	-cat $(@:.out=.err)
 clean: 
