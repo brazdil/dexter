@@ -73,7 +73,7 @@ public final class Assigner {
 		if (obj == null)
 			RuntimeUtils.die("Cannot lookup internal taint of NULL");
 		else if (!(obj instanceof InternalDataStructure))
-			RuntimeUtils.die("Given object is not internal");
+			RuntimeUtils.die("Given object is not internal (" + obj.getClass().getName() + ")");
 
 		taint = TaintConstants.sinkTaint(obj, taint);
 		
@@ -82,7 +82,7 @@ public final class Assigner {
 			
 			UndefinedObject undef = getConstructedSuperTaint();
 			if (undef == null)
-				RuntimeUtils.die("Internal object is not initialized");
+				RuntimeUtils.die("Internal object of type " + obj.getClass().getName() + " is not initialized");
 			
 			// define the object
 			tobj = undef.t_obj;
