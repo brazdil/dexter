@@ -138,7 +138,7 @@ public final class Assigner {
 				/* will never get executed */ length = 0;
 			}
 
-			tobj = new TaintArrayPrimitive(length, taint, taint);
+			tobj = new TaintArrayPrimitive(obj, length, taint, taint);
 			Cache.insert(obj, tobj);
 		} else
 			tobj.set(taint);
