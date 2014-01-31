@@ -668,6 +668,7 @@ public class TaintTransform extends Transform {
         if (sourceSinkDef != null) {
         	System.out.println("Applying " + sourceSinkDef.getClass().getSimpleName() + " instrumentation");
         	
+        	sourceSinkDef.doBefore();
         	sourcesinkBefore = sourceSinkDef.insertBefore(codeGen);
         	sourcesinkAfter = sourceSinkDef.insertAfter(codeGen);
         	sourcesinkJustBefore = sourceSinkDef.insertJustBefore(regCombinedTaint, codeGen);
