@@ -47,7 +47,6 @@ public abstract class SourceSinkDefinition {
 		List<SourceSinkDefinition> list = new ArrayList<SourceSinkDefinition>();
 		
 		// Add new source/sink definitions here
-		addDef(list, new Error_Proxy(methodCall));
 		addDef(list, new Source_Query(methodCall));
 		addDef(list, new Source_SystemService(methodCall));
 		addDef(list, new Source_Browser(methodCall));
