@@ -119,9 +119,13 @@ public class RuntimeHierarchy {
         else {
             val classDef = getBaseClassDefinition((DexReferenceType) type);
             
-            if (classDef.isInternal() && !classDef.isAnnotation())
-                return TypeClassification.REF_INTERNAL;
-            else if (classDef.hasInternalNonAbstractChildren())
+            if (classDef.isInternal() && !classDef.isAnnotation()) {
+            	// interfaces can be implemented by dynamic code using java.lang.reflect.Proxy
+            	if (classDef.isInterface())
+                	return TypeClassification.REF_UNDECIDABLE;
+            	else
+            		return TypeClassification.REF_INTERNAL;
+            } else if (classDef.hasInternalNonAbstractChildren())
                 return TypeClassification.REF_UNDECIDABLE;
             else
                 return TypeClassification.REF_EXTERNAL;
