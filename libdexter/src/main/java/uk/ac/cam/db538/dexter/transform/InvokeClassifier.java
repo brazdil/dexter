@@ -69,7 +69,10 @@ public class InvokeClassifier {
                 val calledClassDef = code.getHierarchy().getBaseClassDefinition(calledClassType);
                 val destType = calledClassDef.getMethodDestinationType(invokeInsn.getMethodId(), calledOpcode);
 
-                if (destType == CallDestinationType.Undecidable) {
+                if (destType == CallDestinationType.Undecidable ||
+                    /* interface methods can be dynamically implemented by java.lang.reflect.Proxy */
+                    (destType == CallDestinationType.Internal && calledClassDef.isInterface()) ) {
+
                     // check the destination type dynamically
                     // and add the invoke in each branch as external/internal
 
