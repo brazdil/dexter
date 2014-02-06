@@ -1,6 +1,8 @@
 package uk.ac.cam.db538.dexter.aux.struct;
 
-public abstract class TaintArray implements Taint {
+import java.io.Serializable;
+
+public abstract class TaintArray implements Taint, Serializable {
 
 	public final int t_length;
 	protected final Object array; 

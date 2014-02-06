@@ -1,10 +1,11 @@
 package uk.ac.cam.db538.dexter.aux.struct;
 
+import java.io.Serializable;
 import java.util.HashSet;
 
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
 
-public class TaintInternal implements Taint {
+public class TaintInternal implements Taint, Serializable {
 
 	private InternalDataStructure obj;
 	private TaintExternal t_super; 

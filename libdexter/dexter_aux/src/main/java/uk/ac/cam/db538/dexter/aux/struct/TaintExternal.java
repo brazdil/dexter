@@ -1,8 +1,9 @@
 package uk.ac.cam.db538.dexter.aux.struct;
 
+import java.io.Serializable;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
 
-public class TaintExternal implements Taint {
+public class TaintExternal implements Taint, Serializable {
 
 	private int taint;
 	private Object object;
