@@ -187,8 +187,8 @@ public abstract class BaseClassDefinition implements Serializable {
         boolean foundInternal = false;
 
         try {
-            for (val callableImplementation : getCallableMethodImplementations(methodId, opcode))
-                if (callableImplementation.getParentClass().isInternal())
+            for (MethodDefinition callableImplementation : getCallableMethodImplementations(methodId, opcode))
+                if (callableImplementation.getParentClass().isInternal() && !callableImplementation.isNative())
                     foundInternal = true;
                 else
                     foundExternal = true;
