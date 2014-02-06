@@ -1462,7 +1462,7 @@ public class TaintTransform extends Transform {
         // Generate the new taint field
 
         DexFieldId fieldId = DexFieldId.parseFieldId(newName, codeGen.taintFieldType(field.getFieldDef().getFieldId().getType()), typeCache);
-        int fieldAccessFlags = DexUtils.assembleAccessFlags(removeFinalFlag(field.getFieldDef().getAccessFlags()));
+        int fieldAccessFlags = DexUtils.assembleAccessFlags(removeUnwantedFlags(field.getFieldDef().getAccessFlags()));
         InstanceFieldDefinition fieldDef = new InstanceFieldDefinition(classDef, fieldId, fieldAccessFlags);
         classDef.addDeclaredInstanceField(fieldDef);
 
@@ -1514,11 +1514,11 @@ public class TaintTransform extends Transform {
                 return classDefFinal.getStaticField(name) == null;
             }
         });
-
+        
         // Generate the new taint field
 
         DexFieldId taintFieldId = DexFieldId.parseFieldId(newName, codeGen.taintFieldType(fieldDef.getFieldId().getType()), typeCache);
-        int fieldAccessFlags = DexUtils.assembleAccessFlags(addPublicFlag(removeFinalFlag(fieldDef.getAccessFlags())));
+        int fieldAccessFlags = DexUtils.assembleAccessFlags(addPublicFlag(removeUnwantedFlags(fieldDef.getAccessFlags())));
         StaticFieldDefinition taintFieldDef = new StaticFieldDefinition(classDef, taintFieldId, fieldAccessFlags);
         classDef.addDeclaredStaticField(taintFieldDef);
 
@@ -1534,17 +1534,18 @@ public class TaintTransform extends Transform {
         return taintField;
     }
     
-    private Collection<AccessFlags> removeFinalFlag(Collection<AccessFlags> flags) {
+    private Collection<AccessFlags> removeUnwantedFlags(Collection<AccessFlags> flags) {
     	Set<AccessFlags> newFlags = new HashSet<AccessFlags>(flags);
-    	flags.remove(AccessFlags.FINAL);
+    	newFlags.remove(AccessFlags.ENUM);
+    	newFlags.remove(AccessFlags.FINAL);
     	return newFlags;
     }
     
     private Collection<AccessFlags> addPublicFlag(Collection<AccessFlags> flags) {
     	Set<AccessFlags> newFlags = new HashSet<AccessFlags>(flags);
-    	flags.add(AccessFlags.PUBLIC);
-    	flags.remove(AccessFlags.PROTECTED);
-    	flags.remove(AccessFlags.PRIVATE);
+    	newFlags.add(AccessFlags.PUBLIC);
+    	newFlags.remove(AccessFlags.PROTECTED);
+    	newFlags.remove(AccessFlags.PRIVATE);
     	return newFlags;
     }
 
