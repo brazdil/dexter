@@ -151,10 +151,6 @@ public class Dex {
             
             cls.writeToFile(outFile, asmCache);
             progressUpdate(++i, count);
-            
-            //Free method code memory, assuming they will never be used again.
-            cls.replaceMethods(Collections.<DexMethod> emptyList());
-            
         }
         
         // Apply jumbo-instruction fix requires ReferencedItem being
