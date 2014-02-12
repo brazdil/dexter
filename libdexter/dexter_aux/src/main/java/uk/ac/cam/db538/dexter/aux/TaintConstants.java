@@ -138,6 +138,6 @@ public enum TaintConstants {
 		(new Throwable()).printStackTrace();		
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 		
-		LeakageNotification.notify(taint, taintStr, sinkType);
+//		LeakageNotification.notify(taint, taintStr, sinkType);
 	}
 }
