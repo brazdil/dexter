@@ -47,17 +47,25 @@ public class TemplateBuilder {
 	 *                   Must never actually throw!
 	 */
 	public DexMacro create(DexInstruction insn, DexCodeElement tainting) {
-		return create(insn, insn, tainting);
+		return create(insn, tainting, false);
+	}
+	
+	public DexMacro create(DexInstruction insn, DexCodeElement tainting, boolean forceCannotThrow) {
+		return create(insn, insn, tainting, forceCannotThrow);
 	}
 	
 	public DexMacro create(DexInstruction insn, DexCodeElement replacementInsn, DexCodeElement tainting) {
+		return create(insn, replacementInsn, tainting, false);
+	}
+	
+	public DexMacro create(DexInstruction insn, DexCodeElement replacementInsn, DexCodeElement tainting, boolean forceCannotThrow) {
 		return new DexMacro(
-			generateThrowingPath(insn, replacementInsn),
+			generateThrowingPath(insn, replacementInsn, forceCannotThrow),
 			nonthrowingTaintDefinition(insn, tainting));
 	}
 
-    private DexCodeElement generateThrowingPath(DexInstruction insn, DexCodeElement inside) {
-    	if (!insn.canThrow() || insn.lvaReferencedRegisters().isEmpty())
+    private DexCodeElement generateThrowingPath(DexInstruction insn, DexCodeElement inside, boolean forceCannotThrow) {
+    	if (forceCannotThrow || !insn.canThrow() || insn.lvaReferencedRegisters().isEmpty())
     		return insn;
     	
     	DexSingleRegister auxCombinedTaint = codeGen.auxReg();

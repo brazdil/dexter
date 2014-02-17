@@ -411,10 +411,10 @@ public class TaintTransform extends Transform {
             return instrument_ArrayGet((DexInstruction_ArrayGet) element, code);
 
         if (element instanceof DexInstruction_InstancePut)
-            return instrument_InstancePut((DexInstruction_InstancePut) element, code);
+            return instrument_InstancePut((DexInstruction_InstancePut) element, code, method);
 
         if (element instanceof DexInstruction_InstanceGet)
-            return instrument_InstanceGet((DexInstruction_InstanceGet) element, code);
+            return instrument_InstanceGet((DexInstruction_InstanceGet) element, code, method);
 
         if (element instanceof DexInstruction_StaticPut)
             return instrument_StaticPut((DexInstruction_StaticPut) element);
@@ -992,8 +992,8 @@ public class TaintTransform extends Transform {
 						codeGen.taintCreate_ArrayReference(regArray, auxLength, auxLengthTaint),
     			codeGen.setTaint(auxCombinedTaint, regArray.getTaintRegister()));
     }
-
-    private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput, DexCode code) {
+    
+    private DexCodeElement instrument_InstancePut(DexInstruction_InstancePut insnIput, DexCode code, DexMethod method) {
         InstanceFieldDefinition fieldDef = insnIput.getFieldDef();
         ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
 
@@ -1007,6 +1007,13 @@ public class TaintTransform extends Transform {
         DexTaintRegister regFromTaint = regFrom.getTaintRegister();
         DexSingleRegister regObject = insnIput.getRegObject();
 
+        /*
+         * OPTIMIZATION!
+         * If called on *this*, it cannot throw NullPointerException.
+         * Hence it is pointless to instrument it.
+         */
+        boolean calledOnThisObject = isThisValue(regObject, insnIput, method);
+
         if (classDef.isInternal()) {
 
             DexClass parentClass = dex.getClass(classDef);
@@ -1019,26 +1026,29 @@ public class TaintTransform extends Transform {
 
             return builder.create(
                        insnIput,
-                       codeGen.iput(regFromTaint, regObject, taintField.getFieldDef()));
+                       codeGen.iput(regFromTaint, regObject, taintField.getFieldDef()),
+                       calledOnThisObject);
 
         } else {
 
             if (fieldDef.getFieldId().getType() instanceof DexPrimitiveType)
             	return builder.create(
                            insnIput,
-                           codeGen.setTaintExternal(regFromTaint, regObject));
+                           codeGen.setTaintExternal(regFromTaint, regObject),
+                           calledOnThisObject);
             else {
                 DexSingleAuxiliaryRegister regAux = codeGen.auxReg();
                 return builder.create(
                        insnIput,
                        new DexMacro(
                     		   codeGen.getTaint(regAux, (DexSingleRegister) regFrom),
-                    		   codeGen.setTaintExternal(regAux, regObject)));
+                    		   codeGen.setTaintExternal(regAux, regObject)),
+            		   calledOnThisObject);
             }
         }
     }
 
-    private DexCodeElement instrument_InstanceGet(DexInstruction_InstanceGet insnIget, DexCode code) {
+    private DexCodeElement instrument_InstanceGet(DexInstruction_InstanceGet insnIget, DexCode code, DexMethod method) {
         InstanceFieldDefinition fieldDef = insnIget.getFieldDef();
         ClassDefinition classDef = (ClassDefinition) fieldDef.getParentClass();
 
@@ -1057,6 +1067,13 @@ public class TaintTransform extends Transform {
         
         DexRegisterType resultType = insnIget.getFieldDef().getFieldId().getType();
         boolean isPrimitive = resultType instanceof DexPrimitiveType;
+        
+        /*
+         * OPTIMIZATION!
+         * If called on *this*, it cannot throw NullPointerException.
+         * Hence it is pointless to instrument it.
+         */
+        boolean calledOnThisObject = isThisValue(regObject, insnIget, method);
 
         DexCodeElement backup = codeGen.move_obj(regObjectBackup, regObject);
         DexCodeElement tainting;
@@ -1091,7 +1108,7 @@ public class TaintTransform extends Transform {
             }
         }
         
-        return new DexMacro(backup, builder.create(insnIget, new DexMacro(replaceResult, tainting)));
+        return new DexMacro(backup, builder.create(insnIget, new DexMacro(replaceResult, tainting), calledOnThisObject));
     }
 
     /*
@@ -1405,20 +1422,24 @@ public class TaintTransform extends Transform {
         	!method.getMethodDef().isStatic() &&
             insnInvoke.getMethodId().isConstructor() &&
             insnInvoke.getClassType().equals(method.getParentClass().getClassDef().getSuperclass().getType()) &&
-            isThisValue(insnInvoke, code);
+            isThisValue(insnInvoke, method);
     }
     
-    private boolean isThisValue(DexInstruction_Invoke insnInvoke, DexCode code) {
+    private boolean isThisValue(DexInstruction_Invoke insnInvoke, DexMethod method) {
     	return  !insnInvoke.getArgumentRegisters().isEmpty() &&
-    			isThisValue(insnInvoke.getArgumentRegisters().get(0), insnInvoke, code);
+    			isThisValue(insnInvoke.getArgumentRegisters().get(0), insnInvoke, method);
     }
     
-    private boolean isThisValue(DexRegister firstInsnParam, DexCodeElement refPoint, DexCode code) {
+    private boolean isThisValue(DexRegister firstInsnParam, DexCodeElement refPoint, DexMethod method) {
     	if (!(firstInsnParam instanceof DexSingleRegister))
     		return false;
     	
-        // First check that the register is the same as this param of the method
-    	assert !code.getParameters().isEmpty();
+        // Find the first parameter of the method
+    	if (method.getMethodDef().isStatic())
+    		return false;
+    	DexCode code = method.getMethodBody();
+    	if (code.getParameters().isEmpty())
+    		return false;
         DexRegister firstMethodParam = code.getParameters().get(0).getRegister();
 
         // Then check that they are unified, i.e. reg inherits the value
