@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.transform;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
 import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.apk.Manifest;
 import uk.ac.cam.db538.dexter.apk.SignatureFile;
@@ -20,7 +21,7 @@ public abstract class Transform {
     public Transform() {
     }
 
-    protected Dex dex;
+    @Getter protected Dex dex;
 
     public final void apply(Dex dex) {
         this.dex = dex;
@@ -47,36 +48,43 @@ public abstract class Transform {
     public boolean exclude(DexClass clazz) {
         return false;
     }
+    
+    public boolean shouldInstrument(DexMethod method) {
+    	return true;
+    }
 
     public final List<DexMethod> apply(List<DexMethod> oldMethods) {
         List<DexMethod> newMethods = new ArrayList<DexMethod>(oldMethods.size());
         for (DexMethod newMethod : oldMethods) {
-            newMethod = doFirst(newMethod);
-
-            DexCode oldMethodBody = newMethod.getMethodBody();
-            DexCode newMethodBody = oldMethodBody;
-            if (newMethodBody != null) {
-                newMethodBody = doFirst(newMethodBody, newMethod);
-
-                boolean instructionsChanged = false;
-                InstructionList oldInstructions = newMethodBody.getInstructionList();
-                List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>(oldInstructions.size());
-                int line = 0;
-                for (DexCodeElement oldInsn : oldInstructions) {
-                    DexCodeElement newInsn = doLast(doFirst(oldInsn, newMethodBody, newMethod), newMethodBody, newMethod);
-                    newInstructions.add(new DexMacro(new DexEmpty(line++), newInsn));
-                    instructionsChanged |= (newInsn != oldInsn);
-                }
-                if (instructionsChanged)
-                    newMethodBody = new DexCode(newMethodBody, new InstructionList(newInstructions));
-
-                newMethodBody = doLast(newMethodBody, newMethod);
-            }
-            if (oldMethodBody != newMethodBody)
-                newMethod = new DexMethod(newMethod, newMethodBody);
-
-            newMethod = doLast(newMethod);
-
+        	if (shouldInstrument(newMethod)) {
+	            newMethod = doFirst(newMethod);
+	
+	            DexCode oldMethodBody = newMethod.getMethodBody();
+	            DexCode newMethodBody = oldMethodBody;
+	            if (newMethodBody != null) {
+	                newMethodBody = doFirst(newMethodBody, newMethod);
+	
+	                boolean instructionsChanged = false;
+	                InstructionList oldInstructions = newMethodBody.getInstructionList();
+	                List<DexCodeElement> newInstructions = new ArrayList<DexCodeElement>(oldInstructions.size());
+	                int line = 0;
+	                for (DexCodeElement oldInsn : oldInstructions) {
+	                    DexCodeElement newInsn = doLast(doFirst(oldInsn, newMethodBody, newMethod), newMethodBody, newMethod);
+	                    newInstructions.add(new DexMacro(new DexEmpty(line++), newInsn));
+	                    instructionsChanged |= (newInsn != oldInsn);
+	                }
+	                if (instructionsChanged)
+	                    newMethodBody = new DexCode(newMethodBody, new InstructionList(newInstructions));
+	
+	                newMethodBody = doLast(newMethodBody, newMethod);
+	            }
+	            if (oldMethodBody != newMethodBody)
+	                newMethod = new DexMethod(newMethod, newMethodBody);
+	
+	            newMethod = doLast(newMethod);
+        	} else
+        		System.err.println("WARNING: skipped instrumentation of " + newMethod.getMethodDef());
+        	
             newMethods.add(newMethod);
         }
         return newMethods;

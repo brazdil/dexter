@@ -149,6 +149,24 @@ public class TaintTransform extends Transform {
 	public boolean handleLast(DexClass cls) {
 		return isStaticTaintFieldsClass(cls);
 	}
+    
+	@Override
+	public boolean shouldInstrument(DexMethod method) {
+		DexPrototype methodProto = method.getMethodDef().getMethodId().getPrototype();
+		BaseClassDefinition classDef = method.getParentClass().getClassDef();
+		
+		if (!method.getMethodDef().isStatic() && 
+				method.getOriginalSize() > 7000 &&
+				methodProto.getParameterType(0, true, null).getDescriptor().equals("[B") && 
+				methodProto.getParameterType(1, true, null).getDescriptor().equals("[B") &&
+				classDef.getType().getDescriptor().startsWith("Lcom/google/ads/")) {
+			return false;
+		}
+		
+		return true;
+	}
+
+
 
 	private DexCodeAnalyzer codeAnalysis;
     private Map<MethodCall, CallDestinationType> invokeClassification;
@@ -318,7 +336,7 @@ public class TaintTransform extends Transform {
         codeGen.resetAsmIds(); // purely for esthetic reasons (each method will start with a0)
 
         code = InvokeClassifier.collapseCalls(code);
-        val classification = InvokeClassifier.classifyMethodCalls(code, codeGen);
+        val classification = InvokeClassifier.classifyMethodCalls(code, codeGen, this);
         
         code = classification.getValA();
         invokeClassification = classification.getValB();

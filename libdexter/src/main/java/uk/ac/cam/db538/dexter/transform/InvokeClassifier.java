@@ -22,7 +22,11 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.InstrumentationTeller;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
 import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
 import uk.ac.cam.db538.dexter.utils.Triple;
@@ -34,7 +38,7 @@ public class InvokeClassifier {
 
     private InvokeClassifier() { }
 
-    public static Triple<DexCode, ? extends Map<MethodCall, CallDestinationType>, ? extends Set<DexCodeElement>> classifyMethodCalls(DexCode code, CodeGenerator codeGen) {
+    public static Triple<DexCode, ? extends Map<MethodCall, CallDestinationType>, ? extends Set<DexCodeElement>> classifyMethodCalls(DexCode code, CodeGenerator codeGen, final Transform transform) {
     	DexCodeAnalyzer codeAnalysis = new DexCodeAnalyzer(expandCalls(code));
     	codeAnalysis.analyze();
     	
@@ -67,7 +71,20 @@ public class InvokeClassifier {
                 }
 
                 val calledClassDef = code.getHierarchy().getBaseClassDefinition(calledClassType);
-                val destType = calledClassDef.getMethodDestinationType(invokeInsn.getMethodId(), calledOpcode);
+                CallDestinationType destType = calledClassDef.getMethodDestinationType(invokeInsn.getMethodId(), calledOpcode, new InstrumentationTeller() {
+					@Override
+					public boolean isInstrumented(MethodDefinition methodDef) {
+						BaseClassDefinition classDef = methodDef.getParentClass();
+						assert (classDef.isInternal());
+						DexMethod method = transform.getDex().getClass(classDef).getMethod(methodDef);
+						boolean instrumented = transform.shouldInstrument(method);
+						
+						if (!instrumented)
+			        		System.err.println("WARNING: assuming uninstrumented: " + methodDef);
+						
+						return instrumented;
+					}
+				});
 
                 if (destType == CallDestinationType.Undecidable ||
                     /* interface methods can be dynamically implemented by java.lang.reflect.Proxy */

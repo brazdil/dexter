@@ -181,14 +181,20 @@ public abstract class BaseClassDefinition implements Serializable {
         External,
         Undecidable
     }
+    
+    public static interface InstrumentationTeller {
+    	boolean isInstrumented(MethodDefinition methodDef);
+    }
 
-    public CallDestinationType getMethodDestinationType(DexMethodId methodId, Opcode_Invoke opcode) {
+    public CallDestinationType getMethodDestinationType(DexMethodId methodId, Opcode_Invoke opcode, InstrumentationTeller instr) {
         boolean foundExternal = false;
         boolean foundInternal = false;
 
         try {
             for (MethodDefinition callableImplementation : getCallableMethodImplementations(methodId, opcode))
-                if (callableImplementation.getParentClass().isInternal() && !callableImplementation.isNative())
+                if (callableImplementation.getParentClass().isInternal() && 
+                		!callableImplementation.isNative() && 
+                		instr.isInstrumented(callableImplementation))
                     foundInternal = true;
                 else
                     foundExternal = true;
