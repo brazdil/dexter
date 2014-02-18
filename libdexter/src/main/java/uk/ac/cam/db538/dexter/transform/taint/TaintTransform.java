@@ -532,7 +532,8 @@ public class TaintTransform extends Transform {
     	clazz.addMethod(new DexMethod(
 			clazz,
 			methodDef,
-			methodBody));
+			methodBody,
+			methodBody.getInstructionList().size()));
     	
     	assert getClinit(clazz) != null;
     }
@@ -1407,7 +1408,7 @@ public class TaintTransform extends Transform {
 
         // generate method
 
-        DexMethod method = new DexMethod(clazz, methodDef, methodBody);
+        DexMethod method = new DexMethod(clazz, methodDef, methodBody, methodBody.getInstructionList().size());
 
         // add it to the class
 

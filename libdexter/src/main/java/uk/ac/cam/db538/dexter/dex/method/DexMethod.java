@@ -39,38 +39,45 @@ public class DexMethod {
     @Getter private final DexClass parentClass;
     @Getter private final MethodDefinition methodDef;
     @Getter private final DexCode methodBody;
+    @Getter private final long originalSize;
 
     private final List<DexAnnotation> annotations;
     private final List<List<DexAnnotation>> paramAnnotations;
 
-    public DexMethod(DexClass parent, MethodDefinition methodDef, DexCode methodBody, List<? extends DexAnnotation> annotations, List<List<DexAnnotation>> paramAnnotations) {
+    public DexMethod(DexClass parent, MethodDefinition methodDef, DexCode methodBody, List<? extends DexAnnotation> annotations, List<List<DexAnnotation>> paramAnnotations, long originalSize) {
         this.parentClass = parent;
         this.methodDef = methodDef;
         this.methodBody = methodBody;
+        this.originalSize = originalSize;
 
         this.annotations = Utils.finalList(annotations);
         this.paramAnnotations = Utils.finalList(paramAnnotations);
     }
 
-    public DexMethod(DexClass parent, MethodDefinition methodDef, DexCode methodBody) {
-        this(parent, methodDef, methodBody, null, null);
+    public DexMethod(DexClass parent, MethodDefinition methodDef, DexCode methodBody, long originalSize) {
+        this(parent, methodDef, methodBody, null, null, originalSize);
     }
 
     public DexMethod(DexClass parentClass, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
         this.parentClass = parentClass;
         this.methodDef = init_FindMethodDefinition(parentClass, methodInfo);
         this.methodBody = init_ParseMethodBody(parentClass, this.methodDef, methodInfo);
+        
+        if (this.methodBody == null)
+        	this.originalSize = -1;
+        else
+        	this.originalSize = this.methodBody.getInstructionList().size();
 
         this.annotations = Utils.finalList(init_ParseAnnotations(getParentFile(), methodInfo, annoDir));
         this.paramAnnotations = Utils.finalList(init_ParseParamAnnotations(getParentFile(), methodInfo, annoDir));
     }
 
     public DexMethod(DexMethod toClone, DexCode newMethodBody) {
-        this(toClone.parentClass, toClone.methodDef, newMethodBody);
+        this(toClone.parentClass, toClone.methodDef, newMethodBody, toClone.originalSize);
     }
 
     public DexMethod(DexMethod toClone, MethodDefinition newDef) {
-        this(toClone.parentClass, newDef, toClone.methodBody);
+        this(toClone.parentClass, newDef, toClone.methodBody, toClone.originalSize);
     }
 
     public DexMethod(DexMethod toClone, DexAnnotation addAnnotation) {
@@ -78,7 +85,8 @@ public class DexMethod {
              toClone.methodDef,
              toClone.methodBody,
              Utils.concat(toClone.annotations, addAnnotation),
-             toClone.paramAnnotations);
+             toClone.paramAnnotations,
+             toClone.originalSize);
     }
 
     private static MethodDefinition init_FindMethodDefinition(DexClass parentClass, EncodedMethod methodItem) {
