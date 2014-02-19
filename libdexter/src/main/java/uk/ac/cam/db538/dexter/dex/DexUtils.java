@@ -77,7 +77,7 @@ public class DexUtils {
     private static FieldDefinition findStaticField(DexClassType clsType, DexRegisterType fieldType, String name, RuntimeHierarchy hierarchy) {
         val fieldId = DexFieldId.parseFieldId(name, fieldType, hierarchy.getTypeCache());
         val classDef = hierarchy.getBaseClassDefinition(clsType);
-        return classDef.getStaticField(fieldId);
+        return classDef.getAccessedStaticField(fieldId);
     }
 
     private static MethodDefinition findStaticMethod(DexClassType clsType, DexPrototype prototype, String name, RuntimeHierarchy hierarchy) {
