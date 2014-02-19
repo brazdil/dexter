@@ -76,26 +76,21 @@ public class Apk {
                 String name = entry.getName();
 
                 ZipEntry newEntry;
-                if (entry.getMethod() == ZipEntry.STORED) {
+                
+                InputStream data = null;
+                if (name.equals(ManifestFile) && newManifest != null) {
+                    newEntry = new ZipEntry(name);
+                    data = newManifest.getDataStream();
+                } else if (name.equals(ClassesDex) && dexData != null) {
+                    newEntry = new ZipEntry(name);
+                    data = new ByteArrayInputStream(dexData);
+                } else if (name.startsWith(MetaInfo)) {
+                    newEntry = null;
+                } else {
                     // Maintain original APK's compression method used.
                     // Need to set a few other fields accordingly as well.
                     // So just use the copy constructor.
                     newEntry = new ZipEntry(entry);
-                } else {
-                    newEntry = new ZipEntry(name);
-                }
-                
-                InputStream data = null;
-                if (name.equals(ManifestFile) && newManifest != null) {
-                    data = newManifest.getDataStream();
-
-                } else if (name.equals(ClassesDex) && dexData != null) {
-                    data = new ByteArrayInputStream(dexData);
-
-                } else if (name.startsWith(MetaInfo)) {
-                    newEntry = null;
-
-                } else {
                     data = originalAPK.getInputStream(entry);
                 }
 
