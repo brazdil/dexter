@@ -88,7 +88,7 @@ public class Apk {
                     // If original entry is not compressed, we need to maintain this.
                     // New entry needs  a few other fields accordingly as well.
                     // So just use the copy constructor.
-                    if (entry.getMethod() == ZipEntry.DEFLATED)
+                    if (entry.getMethod() == ZipEntry.STORED)
                         newEntry = new ZipEntry(entry);
                     
                     data = originalAPK.getInputStream(entry);
