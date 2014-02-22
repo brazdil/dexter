@@ -49,6 +49,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -829,22 +830,68 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
     }
 
 
-    private void doAget(DexRegister to, DexRegister array, DexRegister index) {
-        doThrowingInsn(Rops.opAget(getDestRegSpec(to)), array, index);
+    private void doAget(Opcode_GetPut opcode, DexRegister to, DexRegister array, DexRegister index) {
+        switch (opcode) {
+        // In case type analysis in imprecise (Constant 0 for example),
+        // Let's fall back to use original opcode.
+        case Boolean:
+            doThrowingInsn(Rops.AGET_BOOLEAN, array, index);
+            break;
+        case Byte:
+            doThrowingInsn(Rops.AGET_BYTE, array, index);
+            break;
+        case Char:
+            doThrowingInsn(Rops.AGET_CHAR, array, index);
+            break;
+        case Object:
+            doThrowingInsn(Rops.AGET_OBJECT, array, index);
+            break;
+        case Short:
+            doThrowingInsn(Rops.AGET_SHORT, array, index);
+            break;
+        case Wide:
+        case IntFloat:
+        default:
+            doThrowingInsn(Rops.opAget(getDestRegSpec(to)), array, index);
+            break;
+        }
         doPseudoMoveResult(to);
     }
     @Override
     public void visit(DexInstruction_ArrayGet instruction) {
-        doAget(instruction.getRegTo(), instruction.getRegArray(), instruction.getRegIndex());
+        doAget(instruction.getOpcode(), instruction.getRegTo(), instruction.getRegArray(), instruction.getRegIndex());
     }
 
 
-    private void doAput(DexRegister src, DexRegister array, DexRegister index) {
-        doThrowingInsn(Rops.opAput(getSourceRegSpec(src)), src, array, index);
+    private void doAput(Opcode_GetPut opcode, DexRegister src, DexRegister array, DexRegister index) {
+        switch (opcode) {
+        // In case type analysis in imprecise (Constant 0 for example),
+        // Let's fall back to use original opcode.
+        case Boolean:
+            doThrowingInsn(Rops.APUT_BOOLEAN, src, array, index);
+            break;
+        case Byte:
+            doThrowingInsn(Rops.APUT_BYTE, src, array, index);
+            break;
+        case Char:
+            doThrowingInsn(Rops.APUT_CHAR, src, array, index);
+            break;
+        case Object:
+            doThrowingInsn(Rops.APUT_OBJECT, src, array, index);
+            break;
+        case Short:
+            doThrowingInsn(Rops.APUT_SHORT, src, array, index);
+            break;
+        case Wide:
+        case IntFloat:
+        default:
+            doThrowingInsn(Rops.opAput(getSourceRegSpec(src)), src, array, index);
+            break;
+        }
     }
     @Override
     public void visit(DexInstruction_ArrayPut instruction) {
-        doAput(instruction.getRegFrom(), instruction.getRegArray(), instruction.getRegIndex());
+        doAput(instruction.getOpcode(), instruction.getRegFrom(), instruction.getRegArray(), instruction.getRegIndex());
     }
 
 
