@@ -10,6 +10,8 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import uk.ac.cam.db538.dexter.apk.Apk;
+import uk.ac.cam.db538.dexter.apk.Manifest;
+import uk.ac.cam.db538.dexter.apk.SignatureFile;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -67,7 +69,7 @@ public class MainTest {
 
     public static void main(String[] args) throws IOException {
         long epoch = System.currentTimeMillis();
-        if (args.length != 2 && args.length != 3) {
+        if (args.length != 2 && args.length != 3 && args.length != 4) {
             System.err.println("usage: dexter <framework-dir> <apk-file> [<destination-apk> [method ID]]>");
             System.exit(1);
         }
@@ -114,6 +116,8 @@ public class MainTest {
         long hierarchyTime = System.currentTimeMillis() - epoch;
 
         System.out.println("Scanning application");
+        Manifest manifest = Apk.getManifest(apkFile);
+        SignatureFile sigfile = Apk.getSignatureFile(apkFile);
         val fileApp = new DexFile(apkFile);
         val fileAux = new DexFile("dexter_aux/build/libs/dexter_aux.dex");
 
@@ -124,7 +128,7 @@ public class MainTest {
 
         System.out.println("Parsing application");
         AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux);
-        Dex dexApp = new Dex(fileApp, hierarchy, dexAux, null, null);
+        Dex dexApp = new Dex(fileApp, hierarchy, dexAux, manifest, sigfile);
 
         DexCodeGeneration.DEBUG = false;
         Optimizer.DEBUG_SSA_DUMP = false;
@@ -148,7 +152,7 @@ public class MainTest {
         }
  
 //        writeToJar(dexApp, apkFile_new);
-        Apk.produceAPK(apkFile, apkFile_new, null, dexApp.writeToFile());
+        Apk.produceAPK(apkFile, apkFile_new, manifest, dexApp.writeToFile());
 
         long analysisTime = DexCodeGeneration.totalAnalysisTime;
         long translationTime = DexCodeGeneration.totalCGTime;
