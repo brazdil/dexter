@@ -1139,26 +1139,34 @@ public class TaintTransform extends Transform {
     	InstanceFieldDefinition fieldDef_Signatures = hierarchy.getClassDefinition(codeGen.getTypePackageInfo()).getInstanceField("signatures");
     	InstanceFieldDefinition fieldDef_PackageName = hierarchy.getClassDefinition(codeGen.getTypePackageInfo()).getInstanceField("packageName");
     	
-    	if (insnIget.getFieldDef().equals(fieldDef_Signatures)) {
-    		
-    		assert(insnIget.getOpcode() == Opcode_GetPut.Object);
-    		
-    		DexSingleRegister auxStoredPackageName = codeGen.auxReg();
-    		DexSingleRegister auxRequestedPackageName = codeGen.auxReg();
-    		DexSingleRegister auxPackageEquals = codeGen.auxReg();
-    		DexLabel lAfter = codeGen.label();
-    		
-    		return new DexMacro(
-    				codeGen.sget(auxStoredPackageName, dexAux.getField_FakeSignature_PackageName().getFieldDef()),
-    				codeGen.iget(auxRequestedPackageName, insnIget.getRegObject(), fieldDef_PackageName),
-    				codeGen.equals(auxPackageEquals, auxStoredPackageName, auxRequestedPackageName),
-    				codeGen.ifZero(auxPackageEquals, lAfter),
-    				codeGen.log("Replacing result of signature query..."),
-    				codeGen.sget((DexSingleRegister) insnIget.getRegTo(), dexAux.getField_FakeSignature_Signatures().getFieldDef()),
-    				lAfter);
-    		
-    	} else
-    		return codeGen.empty();
+    	/*
+    	 * Disabled because it fails for 
+    	 * IGET v0, v0, ....
+    	 * (uses insnIget.getRegObject() which is overwritten by then)
+    	 */
+    	
+//    	if (insnIget.getFieldDef().equals(fieldDef_Signatures)) {
+//    		
+//    		assert(insnIget.getOpcode() == Opcode_GetPut.Object);
+//    		
+//    		DexSingleRegister auxStoredPackageName = codeGen.auxReg();
+//    		DexSingleRegister auxRequestedPackageName = codeGen.auxReg();
+//    		DexSingleRegister auxPackageEquals = codeGen.auxReg();
+//    		DexLabel lAfter = codeGen.label();
+//    		
+//    		return new DexMacro(
+//    				codeGen.sget(auxStoredPackageName, dexAux.getField_FakeSignature_PackageName().getFieldDef()),
+//    				codeGen.iget(auxRequestedPackageName, insnIget.getRegObject(), fieldDef_PackageName),
+//    				codeGen.equals(auxPackageEquals, auxStoredPackageName, auxRequestedPackageName),
+//    				codeGen.ifZero(auxPackageEquals, lAfter),
+//    				codeGen.log("Replacing result of signature query..."),
+//    				codeGen.sget((DexSingleRegister) insnIget.getRegTo(), dexAux.getField_FakeSignature_Signatures().getFieldDef()),
+//    				lAfter);
+//    		
+//    	} else
+//    		return codeGen.empty();
+    	
+    	return codeGen.empty();
 	}
 
 	private DexCodeElement instrument_StaticPut(DexInstruction_StaticPut insnSput) {
