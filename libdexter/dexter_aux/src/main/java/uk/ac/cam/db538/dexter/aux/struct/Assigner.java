@@ -34,7 +34,7 @@ public final class Assigner {
 	}
 	
 	public static final void defineExternal(Object obj, TaintExternal tobj, int taint) {
-		taint = TaintConstants.sinkTaint(obj, taint);
+		// taint = TaintConstants.sinkTaint(obj, taint);
 		tobj.define(obj, taint);
 		Cache.insert(obj, tobj);
 	}
@@ -54,7 +54,7 @@ public final class Assigner {
 	}
 
 	public static final TaintExternal lookupExternal(Object obj, int taint) {
-		taint = TaintConstants.sinkTaint(obj, taint);
+		// taint = TaintConstants.sinkTaint(obj, taint);
 		
 		if (TaintConstants.isImmutable(obj))
 			return new TaintImmutable(taint);
@@ -75,7 +75,7 @@ public final class Assigner {
 		else if (!(obj instanceof InternalDataStructure))
 			RuntimeUtils.die("Given object is not internal (" + obj.getClass().getName() + ")");
 
-		taint = TaintConstants.sinkTaint(obj, taint);
+		// taint = TaintConstants.sinkTaint(obj, taint);
 		
 		TaintInternal tobj = (TaintInternal) Cache.get(obj);
 		if (tobj == null) {

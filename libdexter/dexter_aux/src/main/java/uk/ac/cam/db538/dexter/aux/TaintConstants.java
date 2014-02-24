@@ -1,9 +1,7 @@
 package uk.ac.cam.db538.dexter.aux;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,11 +14,11 @@ public enum TaintConstants {
     SOURCE_CALL_LOG 		   (2, true),
     SOURCE_LOCATION 		   (3, true),
 	SOURCE_BROWSER 		       (4, true),
-	SOURCE_DEVICE_ID 		   (5, true),
+	SOURCE_DEVICE_ID 		   (5, true);
 
-	SINK_FILE   		     (29, false),
-	SINK_SOCKET   		     (30, false),
-	SINK_OUT   			     (31, false);
+//	SINK_FILE   		     (29, false),
+//	SINK_SOCKET   		     (30, false),
+//	SINK_OUT   			     (31, false);
   
 	public final int value;
 	public final boolean source;
@@ -70,13 +68,13 @@ public enum TaintConstants {
 			return EMPTY.value;
 	}
   
-	public static final int sinkTaint(Object obj, int taint) {
-		if (obj instanceof File)
-			taint |= SINK_FILE.value;
-		else if (obj instanceof Socket)
-			taint |= SINK_SOCKET.value;
-		return taint;
-	}
+//	public static final int sinkTaint(Object obj, int taint) {
+//		if (obj instanceof File)
+//			taint |= SINK_FILE.value;
+//		else if (obj instanceof Socket)
+//			taint |= SINK_SOCKET.value;
+//		return taint;
+//	}
   
 	public static final boolean isSourceTaint(int taint) {
 		return (taint & TAINT_SOURCE) != 0;
@@ -133,7 +131,7 @@ public enum TaintConstants {
 		System.err.println("==========   DEXTER DATA LEAK REPORT   ==========");
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 		System.err.println("Sink type: " + sinkType);
-		System.err.println("Taint: " + taintStr);
+		System.err.println("Taint: " + taintStr + " [" + taint + "]");
 		System.err.println("Stack trace:");
 		(new Throwable()).printStackTrace();		
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
