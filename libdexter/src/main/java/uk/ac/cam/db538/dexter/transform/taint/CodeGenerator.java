@@ -620,49 +620,38 @@ public final class CodeGenerator {
     	
     	int argCount = insnInvoke.getArgumentRegisters().size();
     	boolean isStatic = insnInvoke.isStaticCall();
+    	
+//    	AnalyzedDexInstruction insnAnalyzed = codeAnalysis.reverseLookup(insnInvoke)
 
     	for (int argIndex = 0; argIndex < argCount; ++argIndex) {
     		DexRegister rArg = insnInvoke.getArgumentRegisters().get(argIndex);
     		DexTaintRegister tArg = rArg.getTaintRegister();
 
-			RopType argRop = codeAnalysis.reverseLookup(insnInvoke).getUsedRegisterType(rArg);
-			if (argRop.category == Category.Reference) {
-				
-				/*
-				 *  TODO: could modify the TypeSolver to actually tell us if it could
-				 *  be a reference array, rather than say that all Objects could 
-				 *  (i.e. Integer x String = Object, but cannot be Object[])
-				 */
-				//
-				
-	    		DexRegisterType argType = argRop.type; 
+			/*
+			 *  TODO: could modify the TypeSolver to actually tell us if it could
+			 *  be a reference array, rather than say that all Objects could 
+			 *  (i.e. Integer x String = Object, but cannot be Object[])
+			 */
+			//
+			
+    		DexRegisterType argType = insnInvoke.getMethodId().getPrototype().getParameterType(argIndex, isStatic, insnInvoke.getClassType());
 
-	    		boolean isArgRef = 
-	    			(argType instanceof DexArrayType) &&
-	    			((DexArrayType) argType).getElementType() instanceof DexReferenceType;
-	    		boolean isObject = argType.equals(hierarchy.getRoot().getType());
-	    		
-	    		boolean instrument = isArgRef || isObject;
-	    		boolean checkType = isObject;
-	    		
-	    		if (instrument) {
-	        		if (checkType) {
-	        			
-	        			DexLabel lAfter =  label();
-	        			DexSingleRegister auxTaint = auxReg();
-	        			DexReferenceType typeTaintArrayReference = dexAux.getType_TaintArrayReference().getClassDef().getType();
-	        			
-	        			insn.add(ifNotInstanceOf(tArg, typeTaintArrayReference, lAfter));
-	    				insn.add(move_obj(auxTaint, tArg));
-	        			insn.add(checkCast(auxTaint, typeTaintArrayReference));
-		    			insn.add(taintArrayReference_Update(auxTaint, regCombinedTaint));
-	    				insn.add(lAfter);
-	    				
-	        		} else
-	        			
-	        			insn.add(taintArrayReference_Update(tArg, regCombinedTaint));
-	    		}
-			}
+    		boolean isObject = argType.equals(hierarchy.getRoot().getType());
+    		boolean isArgRef = 
+    			(argType instanceof DexArrayType) &&
+    			((DexArrayType) argType).getElementType() instanceof DexReferenceType;
+    		
+    		if (isObject || isArgRef) {
+    			DexLabel lAfter =  label();
+    			DexSingleRegister auxTaint = auxReg();
+    			DexReferenceType typeTaintArrayReference = dexAux.getType_TaintArrayReference().getClassDef().getType();
+    			
+    			insn.add(ifNotInstanceOf(tArg, typeTaintArrayReference, lAfter));
+				insn.add(move_obj(auxTaint, tArg));
+    			insn.add(checkCast(auxTaint, typeTaintArrayReference));
+    			insn.add(taintArrayReference_Update(auxTaint, regCombinedTaint));
+				insn.add(lAfter);
+    		}
     	}
     	
     	return new DexMacro(insn);
