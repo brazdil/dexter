@@ -91,7 +91,11 @@ public final class CodeGenerator {
     private final DexClassType typeThrowable;
     private final DexClassType typeStackTraceElement;
     private final DexClassType typeLog;
-    private final DexClassType typeUri;
+    private final DexClassType typeUri_Android;
+    private final DexClassType typeUri_Java;
+    private final DexClassType typeUrl;
+    private final DexClassType typeUrlConnection;
+    private final DexClassType typeHttpUriRequest;
     private final DexArrayType typeIntArray;
     private final DexArrayType typeByteArray;
     private final DexArrayType typeStackTraceElementArray;
@@ -104,6 +108,7 @@ public final class CodeGenerator {
 
     private final MethodDefinition method_Object_getClass;
     private final MethodDefinition method_Object_equals;
+    private final MethodDefinition method_Object_toString;
     private final MethodDefinition method_ThreadLocal_Get;
     private final MethodDefinition method_ThreadLocal_Set;
     private final MethodDefinition method_Integer_intValue;
@@ -122,6 +127,9 @@ public final class CodeGenerator {
     private final MethodDefinition method_Log_d;
     private final MethodDefinition method_Uri_toString;
     private final MethodDefinition method_Signature_constructor;
+    private final MethodDefinition method_URLConnection_getURL;
+    private final MethodDefinition method_HttpUriRequest_getMethod;
+    private final MethodDefinition method_HttpUriRequest_getURI;
 
     private int regAuxId;
     private int labelId;
@@ -147,7 +155,11 @@ public final class CodeGenerator {
         this.typeIntArray = DexArrayType.parse("[I", cache);
         this.typeStackTraceElementArray = DexArrayType.parse("[Ljava/lang/StackTraceElement;", cache);
         this.typeLog = DexClassType.parse("Landroid/util/Log;", cache);
-        this.typeUri = DexClassType.parse("Landroid/net/Uri;", cache);
+        this.typeUri_Android = DexClassType.parse("Landroid/net/Uri;", cache);
+        this.typeUri_Java = DexClassType.parse("Ljava/net/URI;", cache);
+        this.typeUrl = DexClassType.parse("Ljava/net/URL;", cache);
+        this.typeUrlConnection = DexClassType.parse("Ljava/net/URLConnection;", cache);
+        this.typeHttpUriRequest = DexClassType.parse("Lorg/apache/http/client/methods/HttpUriRequest;", cache);
         this.typeByteArray = DexArrayType.parse("[B", cache);
         this.typeSignatureArray = DexArrayType.parse("[Landroid/content/pm/Signature;", cache);
         this.typeSignature = (DexClassType) typeSignatureArray.getElementType();
@@ -160,6 +172,9 @@ public final class CodeGenerator {
         DexPrototype prototype_void_to_Object = DexPrototype.parse(typeObject, null, cache);
         DexPrototype prototype_void_to_Class = DexPrototype.parse(typeClass, null, cache);
         DexPrototype prototype_void_to_String = DexPrototype.parse(typeString, null, cache);
+        DexPrototype prototype_void_to_URL = DexPrototype.parse(typeUrl, null, cache);
+        DexPrototype prototype_void_to_AndroidUri = DexPrototype.parse(typeUri_Android, null, cache);
+        DexPrototype prototype_void_to_JavaUri = DexPrototype.parse(typeUri_Java, null, cache);
         DexPrototype prototype_void_to_TraceElemArray = DexPrototype.parse(typeStackTraceElementArray, null, cache);
         DexPrototype prototype_Object_to_void = DexPrototype.parse(cache.getCachedType_Void(), Arrays.asList(typeObject), cache);
         DexPrototype prototype_Object_to_boolean = DexPrototype.parse(cache.getCachedType_Boolean(), Arrays.asList(typeObject), cache);
@@ -191,9 +206,14 @@ public final class CodeGenerator {
         DexMethodId methodId_d_String_String_to_int = DexMethodId.parseMethodId("d", prototype_String_String_to_int, cache);
         DexMethodId methodId_toString_void_to_String = DexMethodId.parseMethodId("toString", prototype_void_to_String, cache);
         DexMethodId methodId_constructor_byteArray_to_void = DexMethodId.parseMethodId("<init>", prototype_byteArray_to_void, cache);
+        DexMethodId methodId_getURL_void_to_URL = DexMethodId.parseMethodId("getURL", prototype_void_to_URL, cache);
+        DexMethodId methodId_getURI_void_to_AndroidURI = DexMethodId.parseMethodId("getURI", prototype_void_to_AndroidUri, cache);
+        DexMethodId methodId_getURI_void_to_JavaURI = DexMethodId.parseMethodId("getURI", prototype_void_to_JavaUri, cache);
+        DexMethodId methodId_getMethod_void_to_String = DexMethodId.parseMethodId("getMethod", prototype_void_to_String, cache);
 
         this.method_Object_getClass = lookupMethod(typeObject, methodId_getClass_void_to_Class);
         this.method_Object_equals = lookupMethod(typeObject, methodId_equals_Object_to_boolean);
+        this.method_Object_toString = lookupMethod(typeObject, methodId_toString_void_to_String);
         this.method_ThreadLocal_Get = lookupMethod(typeThreadLocal, methodId_get_void_to_Object);
         this.method_ThreadLocal_Set = lookupMethod(typeThreadLocal, methodId_set_Object_to_void);
         this.method_Integer_intValue = lookupMethod(typeInteger, methodId_intValue_void_to_int);
@@ -210,12 +230,15 @@ public final class CodeGenerator {
         this.method_Class_getSuperclass = lookupMethod(typeClass, methodId_getSuperclass_void_to_Class);
         this.method_Method_getAnnotation = lookupMethod(typeMethod, methodId_getAnnotation_Class_to_Annotation);
         this.method_Log_d = lookupMethod(typeLog, methodId_d_String_String_to_int);
-        this.method_Uri_toString = lookupMethod(typeUri, methodId_toString_void_to_String);
+        this.method_Uri_toString = lookupMethod(typeUri_Android, methodId_toString_void_to_String);
         this.method_Signature_constructor = lookupMethod(typeSignature, methodId_constructor_byteArray_to_void);
+        this.method_URLConnection_getURL = lookupMethod(typeUrlConnection, methodId_getURL_void_to_URL);
+        this.method_HttpUriRequest_getURI = lookupMethod(typeHttpUriRequest, methodId_getURI_void_to_JavaURI);
+        this.method_HttpUriRequest_getMethod = lookupMethod(typeHttpUriRequest, methodId_getMethod_void_to_String);
     }
 
     private MethodDefinition lookupMethod(DexReferenceType classType, DexMethodId methodId) {
-        MethodDefinition def = hierarchy.getClassDefinition(classType).getMethod(methodId);
+        MethodDefinition def = hierarchy.getBaseClassDefinition(classType).getMethod(methodId);
 
         if (def == null)
             throw new Error("Cannot find method " + methodId + " in class " + classType);
@@ -777,11 +800,11 @@ public final class CodeGenerator {
     			invoke_result_obj(regTo, dexAux.getMethod_TaintConstants_ServiceTaint(), regStringName));
     }
 
-    public DexCodeElement logLeakage(DexSingleRegister regTaint, String leakType) {
+    public DexCodeElement logLeakage(DexSingleRegister regTaint, DexSingleRegister regTaintDetails, String leakType) {
     	DexSingleRegister auxLeakType = auxReg();
     	return new DexMacro(
     			constant(auxLeakType, leakType),
-    			invoke(dexAux.getMethod_TaintConstants_LogLeakage(), regTaint, auxLeakType));
+    			invoke(dexAux.getMethod_TaintConstants_LogLeakage(), regTaint, regTaintDetails, auxLeakType));
     }
 
     public DexCodeElement taintDefineExternal(DexSingleRegister regObject, DexSingleRegister regInitialTaint) {
@@ -975,6 +998,18 @@ public final class CodeGenerator {
     public DexCodeElement printStackTrace(DexSingleRegister regException) {
     	return invoke(method_Throwable_printStackTrace, regException);
     }
+    
+    public DexCodeElement getUrlString(DexSingleRegister regUrl, DexSingleRegister regUrlConnection) {
+    	return new DexMacro(
+			invoke_result_obj(regUrl, method_URLConnection_getURL, regUrlConnection),
+			invoke_result_obj(regUrl, method_Object_toString, regUrl));
+    }
+
+    public DexCodeElement getRequestUriString(DexSingleRegister regUri, DexSingleRegister regHttpUriRequest) {
+    	return new DexMacro(
+			invoke_result_obj(regUri, method_HttpUriRequest_getURI, regHttpUriRequest),
+			invoke_result_obj(regUri, method_Object_toString, regUri));
+    }
 
     /*
      * Combines taint of all the given registers. Does not matter if the given registers
@@ -1142,8 +1177,12 @@ public final class CodeGenerator {
     	return new DexInstruction_NewArray(regTo, regLength, typeSignatureArray, hierarchy);
     }
     
-    public DexCodeElement toString(DexSingleRegister regTo, DexSingleRegister regObject) {
+    public DexCodeElement valueOf(DexSingleRegister regTo, DexSingleRegister regObject) {
     	return invoke_result_obj(regTo, method_String_valueOf, regObject);
+    }
+
+    public DexCodeElement toString(DexSingleRegister regTo, DexSingleRegister regObject) {
+    	return invoke_result_obj(regTo, method_Object_toString, regObject);
     }
 
     public DexCodeElement jump(DexLabel target) {

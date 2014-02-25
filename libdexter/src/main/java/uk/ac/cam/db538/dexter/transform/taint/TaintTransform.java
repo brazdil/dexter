@@ -517,8 +517,8 @@ public class TaintTransform extends Transform {
     public LeakageAlert getLeakageAlert() {
     	return new LeakageAlert() {
 			@Override
-			public DexCodeElement generate(DexSingleRegister regTaint, String leakType, CodeGenerator codeGen) {
-				return codeGen.logLeakage(regTaint, leakType);
+			public DexCodeElement generate(DexSingleRegister regTaint, DexSingleRegister regTaintDetails, String leakType, CodeGenerator codeGen) {
+				return codeGen.logLeakage(regTaint, regTaintDetails, leakType);
 			}
 		};
     }
@@ -1152,7 +1152,7 @@ public class TaintTransform extends Transform {
 //    		DexSingleRegister auxStoredPackageName = codeGen.auxReg();
 //    		DexSingleRegister auxRequestedPackageName = codeGen.auxReg();
 //    		DexSingleRegister auxPackageEquals = codeGen.auxReg();
-//    		DexLabel lAfter = codeGen.label();
+//    		DexLabel lAfter = codeGen.label();codeGen.
 //    		
 //    		return new DexMacro(
 //    				codeGen.sget(auxStoredPackageName, dexAux.getField_FakeSignature_PackageName().getFieldDef()),

@@ -23,15 +23,15 @@ public final class LeakageNotification {
 		
 		Toast.makeText(context, "Dexter: LEAKAGE DETECTED!!!", Toast.LENGTH_LONG).show();
 		
-		Notification notification = new Notification.Builder(context)
-			.setContentTitle("Dexter: Leakage detected")
-			.setContentText(sinkType + ": " + taintStr)
-			.setSmallIcon(R.drawable.ic_delete)
-			.build();
-		
-		NotificationManager manager = (NotificationManager) 
-			context.getSystemService(Context.NOTIFICATION_SERVICE);
-		
-		manager.notify(NOTIFICATION_ID, notification);
+//		Notification notification = new Notification.Builder(context)
+//			.setContentTitle("Dexter: Leakage detected")
+//			.setContentText(sinkType + ": " + taintStr)
+//			.setSmallIcon(R.drawable.ic_delete)
+//			.build();
+//		
+//		NotificationManager manager = (NotificationManager) 
+//			context.getSystemService(Context.NOTIFICATION_SERVICE);
+//		
+//		manager.notify(NOTIFICATION_ID, notification);
 	}
 }

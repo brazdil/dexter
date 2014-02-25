@@ -5,5 +5,5 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.transform.taint.CodeGenerator;
 
 public interface LeakageAlert {
-	public DexCodeElement generate(DexSingleRegister regTaint, String leakType, CodeGenerator codeGen);
+	public DexCodeElement generate(DexSingleRegister regTaint, DexSingleRegister regTaintDetails, String leakType, CodeGenerator codeGen);
 }

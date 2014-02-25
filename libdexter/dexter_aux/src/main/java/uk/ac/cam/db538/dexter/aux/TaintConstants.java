@@ -124,7 +124,7 @@ public enum TaintConstants {
 		return str.toString();
 	}
 	
-	public static final void logLeakage(int taint, String sinkType) {
+	public static final void logLeakage(int taint, String taintDetails, String sinkType) {
 		String taintStr = taint2str(taint);
 		
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
@@ -132,6 +132,7 @@ public enum TaintConstants {
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 		System.err.println("Sink type: " + sinkType);
 		System.err.println("Taint: " + taintStr + " [" + taint + "]");
+		System.err.println("Taint details: " + taintDetails);
 		System.err.println("Stack trace:");
 		(new Throwable()).printStackTrace();		
 		System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
