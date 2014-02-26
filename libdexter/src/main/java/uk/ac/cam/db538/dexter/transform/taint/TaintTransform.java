@@ -509,7 +509,7 @@ public class TaintTransform extends Transform {
         
         // insert static taint field initialization into <clinit>
         createEmptyClinit(clazz);
-        insertStaticFieldInit(clazz);
+        insertStaticFieldInit(clazz, false);
         
         super.doLast(clazz);
     }
@@ -1176,29 +1176,57 @@ public class TaintTransform extends Transform {
          * otherwise in a special auxiliary class.
          */
 
-        DexStaticField taintField = getTaintField(insnSput.getFieldDef());
-        DexTaintRegister regFromTaint = insnSput.getRegFrom().getTaintRegister();
+        if (insnSput.getFieldDef().getParentClass().isInternal()) {
+            DexStaticField taintField = getTaintField(insnSput.getFieldDef());
+            DexTaintRegister regFromTaint = insnSput.getRegFrom().getTaintRegister();
 
-        return builder.create(
-                   insnSput,
-                   codeGen.sput(regFromTaint, taintField.getFieldDef()));                   
+	        return builder.create(
+	                   insnSput,
+	                   codeGen.sput(regFromTaint, taintField.getFieldDef()));
+        } else
+        	return insnSput;
     }
 
     private DexCodeElement instrument_StaticGet(DexInstruction_StaticGet insnSget) {
-        DexStaticField taintField = getTaintField(insnSget.getFieldDef());
         DexRegister regTo = insnSget.getRegTo();
         DexTaintRegister regToTaint = regTo.getTaintRegister();
 
         DexRegisterType resultType = insnSget.getFieldDef().getFieldId().getType();
         boolean isPrimitive = (resultType instanceof DexPrimitiveType); 
+		TypeClassification sfield_type = hierarchy.classifyType(resultType);        		
 
-        return builder.create(
-                   insnSget,
-                   new DexMacro(
-                		   codeGen.sget(regToTaint, taintField.getFieldDef()),
-                		   isPrimitive ?
-                				codeGen.empty() :
-                				codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insnSget, regTo))));
+        if (insnSget.getFieldDef().getParentClass().isInternal()) {
+	        DexStaticField taintField = getTaintField(insnSget.getFieldDef());
+	
+	        return builder.create(
+	                   insnSget,
+	                   new DexMacro(
+	                		   codeGen.sget(regToTaint, taintField.getFieldDef()),
+	                		   isPrimitive ?
+	                				codeGen.empty() :
+	                				codeGen.taintCast((DexSingleRegister) regTo, regToTaint, analysis_DefReg(insnSget, regTo))));
+    	} else {
+    		if (isPrimitive) {
+	    		return builder.create(
+	    				insnSget,
+	    				codeGen.constant(regToTaint, 0));
+    		} else {
+        		DexLabel lNull = codeGen.label();
+        		DexLabel lAfter = codeGen.label();
+        		DexSingleRegister auxZero = codeGen.auxReg();
+
+        		return builder.create(
+    					insnSget,
+    					new DexMacro(
+    						codeGen.constant(auxZero, 0),
+    						codeGen.ifZero((DexSingleRegister) regTo, lNull),
+    						codeGen.taintLookup(regToTaint, (DexSingleRegister) regTo, auxZero, sfield_type),
+    						codeGen.jump(lAfter),
+    						lNull,
+    						codeGen.taintCreate_External_Null(regToTaint, auxZero),
+    						lAfter));
+    		}
+    	}
     }
 
     private DexCodeElement instrument_MoveException(DexInstruction_MoveException insn) {
@@ -1267,7 +1295,7 @@ public class TaintTransform extends Transform {
         return new DexCode(code, new InstructionList(insns));
     }
     
-    private void insertStaticFieldInit(DexClass clazz) {
+    private void insertStaticFieldInit(DexClass clazz, boolean isExternalStaticTaintClass) {
         codeGen.resetAsmIds();
         
     	DexMethod clinitMethod = clazz.getMethod(getClinit(clazz));
@@ -1297,15 +1325,18 @@ public class TaintTransform extends Transform {
             if (sfield_type == TypeClassification.PRIMITIVE)
             	insns.add(codeGen.sput(regEmptyTaint, tfield.getFieldDef()));
             else {
-            	if (!nullTaintReady) {
-            		/*
-            		 * The type of NULL taint we create does not matter.
-            		 * It will get converted after SGET anyway.
-            		 */
-            		insns.add(codeGen.taintCreate_External_Null(regTaintObject, regEmptyTaint));
-            		nullTaintReady = true;
+            	if (!isExternalStaticTaintClass) {
+	            	if (!nullTaintReady) {
+	            		/*
+	            		 * The type of NULL taint we create does not matter.
+	            		 * It will get converted after SGET anyway.
+	            		 */
+	            		insns.add(codeGen.taintCreate_External_Null(regTaintObject, regEmptyTaint));
+	            		nullTaintReady = true;
+	            	}
+	            	insns.add(codeGen.sput(regTaintObject, tfield.getFieldDef()));
+            	} else {
             	}
-            	insns.add(codeGen.sput(regTaintObject, tfield.getFieldDef()));
             }
         }
 
@@ -1647,7 +1678,7 @@ public class TaintTransform extends Transform {
         // add static field initializer into StaticTaintFields class
         DexClass staticFieldsClass = dexAux.getType_StaticTaintFields();
         createEmptyClinit(staticFieldsClass);
-        insertStaticFieldInit(staticFieldsClass);
+        insertStaticFieldInit(staticFieldsClass, true);
     }
     
     private boolean isConstructorWithSuperclassCall(DexCode code, DexMethod method) {
@@ -1674,7 +1705,7 @@ public class TaintTransform extends Transform {
 	public void doClass(DexClass cls) {
 		if (isStaticTaintFieldsClass(cls)) {
 			createEmptyClinit(cls);
-			insertStaticFieldInit(cls);
+			insertStaticFieldInit(cls, true);
 		} else
 			super.doClass(cls);
 	}
