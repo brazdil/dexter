@@ -849,13 +849,13 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
         case Short:
             doThrowingInsn(Rops.AGET_SHORT, array, index);
             break;
-        case Wide:
         case IntFloat:
             if(getDestRegSpec(to).getType() == Type.FLOAT)
                 doThrowingInsn(Rops.AGET_FLOAT, array, index);
             else
                 doThrowingInsn(Rops.AGET_INT, array, index);
             break;
+        case Wide:
         default:
             doThrowingInsn(Rops.opAget(getDestRegSpec(to)), array, index);
             break;
@@ -887,13 +887,13 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
         case Short:
             doThrowingInsn(Rops.APUT_SHORT, src, array, index);
             break;
-        case Wide:
         case IntFloat:
             if(getSourceRegSpec(src).getType() == Type.FLOAT)
-                doThrowingInsn(Rops.AGET_FLOAT, src, array, index);
+                doThrowingInsn(Rops.APUT_FLOAT, src, array, index);
             else
-                doThrowingInsn(Rops.AGET_INT, src, array, index);
+                doThrowingInsn(Rops.APUT_INT, src, array, index);
             break;
+        case Wide:
         default:
             doThrowingInsn(Rops.opAput(getSourceRegSpec(src)), src, array, index);
             break;
