@@ -76,7 +76,7 @@ import uk.ac.cam.db538.dexter.transform.MethodCall;
 
 public final class CodeGenerator {
 
-    private final AuxiliaryDex dexAux;
+    @Getter private final AuxiliaryDex dexAux;
     private final RuntimeHierarchy hierarchy;
     private final DexTypeCache cache;
 

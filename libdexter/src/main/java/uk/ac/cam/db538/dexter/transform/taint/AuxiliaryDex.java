@@ -10,6 +10,7 @@ import uk.ac.cam.db538.dexter.aux.FakeSignature;
 import uk.ac.cam.db538.dexter.aux.InvokeTaintStore;
 import uk.ac.cam.db538.dexter.aux.StaticTaintFields;
 import uk.ac.cam.db538.dexter.aux.TaintConstants;
+import uk.ac.cam.db538.dexter.aux.TaintHelper;
 import uk.ac.cam.db538.dexter.aux.anno.InternalMethod;
 import uk.ac.cam.db538.dexter.aux.struct.Assigner;
 import uk.ac.cam.db538.dexter.aux.struct.InternalDataStructure;
@@ -109,6 +110,7 @@ public class AuxiliaryDex extends Dex {
     @Getter private final DexStaticField field_FakeSignature_PackageName;
     @Getter private final DexStaticField field_FakeSignature_Signatures;
 
+    @Getter private final DexMethod method_TaintHelper_getHttpUriRequestDetails;
 
     public AuxiliaryDex(DexFile dexAux, RuntimeHierarchy hierarchy, ClassRenamer renamer) {
         super(dexAux, hierarchy, null, null, null, renamer);
@@ -189,6 +191,10 @@ public class AuxiliaryDex extends Dex {
         this.method_FakeSignature_Clinit = findStaticMethodByName(type_FakeSignature, "<clinit>");
         this.field_FakeSignature_PackageName = findStaticFieldByName(type_FakeSignature, "PACKAGE_NAME");
         this.field_FakeSignature_Signatures = findStaticFieldByName(type_FakeSignature, "SIGNATURES");
+        
+        // Taint Helper
+        val clsTaintHelper = getDexClass(TaintHelper.class, hierarchy, renamer);
+        this.method_TaintHelper_getHttpUriRequestDetails = findStaticMethodByName(clsTaintHelper, "getHttpUriRequestDetails");
     }
 
     /*

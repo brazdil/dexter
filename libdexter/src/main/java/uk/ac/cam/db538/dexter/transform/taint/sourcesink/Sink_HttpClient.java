@@ -26,7 +26,7 @@ public class Sink_HttpClient extends SimpleSink {
 			if (paramIsOfType(i, "Lorg/apache/http/client/methods/HttpUriRequest;")) {
 				DexRegister regRequest = methodCall.getInvoke().getArgumentRegisters().get(i);
 				assert (regRequest instanceof DexSingleRegister);
-				return codeGen.getRequestUriString(regDetails, (DexSingleRegister) regRequest);
+				return codeGen.invoke_result_obj(regDetails, codeGen.getDexAux().getMethod_TaintHelper_getHttpUriRequestDetails(), regRequest);
 			}
 		}
 		
